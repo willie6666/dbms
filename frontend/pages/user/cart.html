@@ -5,64 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>購物車 — VaporAuror</title>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        .cart-container {
-            max-width: 900px;
-            margin: 40px auto;
-        }
-        .cart-header {
-            border-bottom: 2px solid rgba(0, 240, 255, 0.2);
-            padding-bottom: 15px;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .cart-header h1 {
-            color: var(--text-primary);
-            font-size: 2rem;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: var(--glow-cyan);
-        }
-        .library-item {
-            background: rgba(16, 19, 35, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            margin-bottom: 20px;
-            padding: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-        }
-        .library-item:hover {
-            border-color: rgba(0, 240, 255, 0.3);
-            box-shadow: 0 5px 20px rgba(0, 240, 255, 0.1);
-            transform: translateX(5px);
-        }
-        .cart-summary {
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            border-radius: 16px;
-            padding: 30px;
-            margin-top: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            position: sticky;
-            bottom: 20px;
-        }
-        .cart-total-price {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: var(--accent-cyan);
-            font-family: 'Space Mono', monospace;
-            text-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-            margin: 10px 0;
-        }
-    </style>
 </head>
 <body>
 

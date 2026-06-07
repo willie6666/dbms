@@ -5,65 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理員後台 — VaporAuror</title>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 30px;
-            margin-top: 30px;
-        }
-        .dashboard-panel {
-            background: rgba(16, 19, 35, 0.6);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 240, 255, 0.15);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            height: fit-content;
-        }
-        .dashboard-panel h2 {
-            color: var(--accent-pink);
-            margin-bottom: 25px;
-            font-size: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .dashboard-panel h2::before {
-            content: ''; display: block; width: 4px; height: 20px;
-            background: var(--accent-pink); border-radius: 2px;
-            box-shadow: 0 0 10px var(--accent-pink);
-        }
-        .library-item {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.05);
-            margin-bottom: 15px;
-            transition: all 0.3s;
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .library-item:hover {
-            background: rgba(255, 0, 85, 0.05);
-            border-color: rgba(255, 0, 85, 0.2);
-            transform: scale(1.01);
-        }
-        .role-select {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            outline: none;
-        }
-        .role-select:focus {
-            border-color: var(--accent-cyan);
-        }
-    </style>
 </head>
 <body>
 

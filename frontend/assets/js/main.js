@@ -1,10 +1,7 @@
 // ============================================================
 // VaporAuror — main.js
-// 全域狀態、假資料、共用元件
-// 所有後端 API 呼叫預留點皆以 // [API] 標記
+// 全域狀態與共用元件
 // ============================================================
-
-// 移除 mockGames，全數改為 API 介接
 
 // ============================================================
 // 頁面初始化
@@ -19,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const keyword = document.getElementById('search-input').value.trim();
             if (keyword) {
-                // [API] GET /api/games?q={keyword}
                 window.location.href = `/pages/store/search.html?q=${encodeURIComponent(keyword)}`;
             }
         });
@@ -54,7 +50,6 @@ function renderHeader() {
         return;
     }
 
-    // [API] 未來由後端 session/token 判斷，目前由 localStorage 模擬
     const currentRole = localStorage.getItem('userRole') || 'GUEST';
     const userDataStr = localStorage.getItem('currentUser');
     const username = userDataStr ? JSON.parse(userDataStr).username : '玩家';
@@ -205,7 +200,6 @@ function renderGames(games) {
             </div>
         `;
 
-        // [API] 使用真實 id 導向
         card.addEventListener('click', () => {
             const gameId = game.game_id || game.id;
             window.location.href = `/pages/store/game_detail?id=${gameId}`;
@@ -229,13 +223,11 @@ function escapeHtml(str) {
 }
 
 function getCurrentUser() {
-    // [API] 未來由後端 session 提供
     const str = localStorage.getItem('currentUser');
     return str ? JSON.parse(str) : null;
 }
 
 function getCurrentRole() {
-    // [API] 未來由後端 JWT Token 解碼
     return localStorage.getItem('userRole') || 'GUEST';
 }
 
