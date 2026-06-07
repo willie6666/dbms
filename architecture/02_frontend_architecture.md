@@ -20,10 +20,9 @@ frontend/
 ├── assets/                     # 靜態資源共用區 (前端的核心引擎)
 │   ├── css/
 │   │   └── style.css           # 全域樣式表 (載入 Bulma CSS 框架並定義額外色票、版面與 UI)
-│   ├── js/
-│   │   ├── api.js              # [API 溝通層] 集中封裝所有與後端的 RESTful API 呼叫
-│   │   └── main.js             # [共用邏輯層] 全域導覽列渲染、身分權限驗證、Toast 提示組件
-│   └── images/                 # 靜態圖片、Logo 與圖示
+│   └── js/
+│       ├── api.js              # [API 溝通層] 集中封裝所有與後端的 RESTful API 呼叫
+│       └── main.js             # [共用邏輯層] 全域導覽列渲染、身分權限驗證、Toast 提示組件
 └── pages/                      # 功能畫面區 (依業務邏輯高度模組化)
     ├── auth/                   # [身分驗證模組]
     │   ├── login.html          # 登入畫面

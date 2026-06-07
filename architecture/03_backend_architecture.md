@@ -19,6 +19,9 @@
 ```text
 backend/
 ├── main.go                     # [系統啟動點] 負責初始化 DB 連線、註冊全域路由、並啟動 Gin Server 監聽 Port 8000
+├── assets/                     # [靜態資源層] (儲存所有遊戲上傳的圖片與檔案)
+│   ├── images/                 # 遊戲封面圖與截圖 (經由 /media/images 對外服務)
+│   └── game-files/             # 遊戲可下載檔案 (經由 API 授權下載)
 ├── database/                   # [資料庫連線層]
 │   └── database.go             # 建立與 PostgreSQL 的連線池，並初始化全域的 GORM DB 實例
 ├── models/                     # [資料映射層 ORM]
