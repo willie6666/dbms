@@ -44,6 +44,7 @@ func SetupRouter() *gin.Engine {
 			// 2. Checkout & Transactions
 			protected.POST("/checkout", controllers.Checkout)
 			protected.GET("/transactions", controllers.GetTransactions)
+			protected.GET("/refunds", controllers.GetMyRefunds)
 
 			// 3. Library & Wishlist
 			protected.GET("/library", controllers.GetLibrary)

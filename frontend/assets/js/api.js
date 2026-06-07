@@ -269,6 +269,12 @@ async function apiRequestRefund(transactionItemId, reason) {
     return parseResponse(res);
 }
 
+// GET /api/protected/refunds (取得個人退款歷史)
+async function apiGetMyRefunds() {
+    const res = await authFetch('/api/protected/refunds');
+    return parseResponse(res);
+}
+
 // GET /api/csr/refunds  [CSR]
 async function apiGetRefunds() {
     const res = await authFetch('/api/csr/refunds');

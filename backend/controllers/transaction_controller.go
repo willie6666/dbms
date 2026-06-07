@@ -103,7 +103,7 @@ func GetTransactions(c *gin.Context) {
 		for ii := range transactions[ti].Items {
 			var refund models.RefundRequest
 			itemID := transactions[ti].Items[ii].ItemID
-			if err := database.DB.Where("transaction_item_id = ?", itemID).First(&refund).Error; err == nil {
+			if err := database.DB.Where("transaction_item_id = ?", itemID).Order("created_at desc").First(&refund).Error; err == nil {
 				transactions[ti].Items[ii].RefundStatus = refund.Status
 			}
 		}

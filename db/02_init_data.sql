@@ -74,7 +74,7 @@ INSERT INTO shopping_carts (user_id, game_id) VALUES
 -- ==========================================
 INSERT INTO game_licenses (game_id, user_id, transaction_item_id, status) VALUES
 (1, 1, 1, 'ACTIVE'), 
-(2, 1, 2, 'ACTIVE'), 
+(2, 1, 2, 'REVOKED'), 
 (4, 2, 3, 'ACTIVE'), 
 (3, 1, 4, 'REVOKED');
 

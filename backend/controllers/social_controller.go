@@ -178,10 +178,18 @@ func ApplyRefund(c *gin.Context) {
 	}
 
 	// 2. Prevent Duplicate Refunds
-	var existing models.RefundRequest
-	if err := database.DB.Where("transaction_item_id = ?", input.TransactionItemID).First(&existing).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "A refund request already exists for this item"})
-		return
+	var existing []models.RefundRequest
+	if err := database.DB.Where("transaction_item_id = ?", input.TransactionItemID).Find(&existing).Error; err == nil {
+		for _, req := range existing {
+			if req.Status == "PENDING" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "A refund request is already pending for this item"})
+				return
+			}
+			if req.Status == "APPROVED" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "This item has already been refunded"})
+				return
+			}
+		}
 	}
 
 	req := models.RefundRequest{
@@ -550,4 +558,44 @@ func GetBlacklist(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": result})
+}
+
+// GetMyRefunds handles GET /api/protected/refunds
+// It returns the refund history for the current user.
+func GetMyRefunds(c *gin.Context) {
+	userIDFloat, _ := c.Get("user_id")
+	userID := uint(userIDFloat.(float64))
+
+	var refunds []models.RefundRequest
+	// We might need to manually populate Game details later, but for now we fetch the requests.
+	if err := database.DB.Where("buyer_id = ?", userID).Order("created_at desc").Find(&refunds).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch refunds"})
+		return
+	}
+
+	// Fetch transaction items and their game details so frontend can display titles
+	type RefundWithGameDTO struct {
+		models.RefundRequest
+		GameTitle string `json:"game_title"`
+		GameCover string `json:"game_cover"`
+	}
+
+	var results []RefundWithGameDTO
+	for _, req := range refunds {
+		var item models.TransactionItem
+		title := "未知遊戲"
+		cover := ""
+		if err := database.DB.Preload("Game").Where("item_id = ?", req.TransactionItemID).First(&item).Error; err == nil {
+			title = item.Game.Title
+			// We won't fetch the full media array here to keep it fast, or we could if needed.
+		}
+
+		results = append(results, RefundWithGameDTO{
+			RefundRequest: req,
+			GameTitle:     title,
+			GameCover:     cover,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": results})
 }

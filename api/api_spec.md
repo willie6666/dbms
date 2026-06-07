@@ -315,6 +315,11 @@
 - **Responses**:
   - `200 OK`: `{"data": [ { ...transactions... } ]}`
 
+### `[GET] /api/protected/refunds` (查看個人退款歷史)
+- **Headers**: `Authorization: Bearer <token>`
+- **Responses**:
+  - `200 OK`: `{"data": [ { "refund_id": 1, "status": "REJECTED", "game_title": "...", "game_cover": "..." } ]}`
+
 ### `[POST] /api/social/refunds` (申請退款)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**:
@@ -326,7 +331,7 @@
   ```
 - **Responses**:
   - `201 Created`: `{"message": "Refund request submitted. A CSR will review it shortly."}`
-  - `400 Bad Request`: `{"error": "A refund request already exists for this item"}`
+  - `400 Bad Request`: `{"error": "A refund request is already pending for this item"}` 或 `{"error": "This item has already been refunded"}` (若前次申請被 REJECTED，則允許重新申請)
   - `403 Forbidden`: `{"error": "Forbidden: Transaction item not found in your library"}`
 
 ### `[GET] /api/csr/refunds` (查看待處理退款)

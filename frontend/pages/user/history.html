@@ -12,7 +12,7 @@
 
     <main class="history-container">
         <div class="history-header">
-            <h1 class="title section-title" style="margin:0;">購買紀錄與退款</h1>
+            <h1 class="title section-title" style="margin:0;">購買紀錄與狀態</h1>
         </div>
         <div class="library-list" id="history-list">
             <p style="color:var(--text-muted);text-align:center;padding:40px;">載入中...</p>
@@ -51,8 +51,16 @@
             transactions.forEach(tx => {
                 const txItems = tx.Items || tx.items || [];
                 const txId    = tx.transaction_id || tx.id;
-                const date    = (tx.transaction_date || tx.created_at || '').slice(0, 10);
                 
+                // Format Date: 2026-06-07 14:30:00
+                const txDateStr = tx.transaction_date || tx.created_at || '';
+                let dateStr = '';
+                if (txDateStr) {
+                    const d = new Date(txDateStr);
+                    const pad = (n) => n.toString().padStart(2, '0');
+                    dateStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+                }
+
                 txItems.forEach(itemInfo => {
                     const item    = document.createElement('div');
                     item.className = 'library-item';
@@ -61,23 +69,17 @@
                     const game    = itemInfo.Game || itemInfo.game || {};
                     const title   = game.title || '未知遊戲';
                     const price   = Number(itemInfo.purchase_price || itemInfo.price || 0);
-                    const refundStatus = itemInfo.refund_status || itemInfo.refundStatus;
-                    const status  = refundStatus === 'APPROVED' ? 'REFUNDED' : (refundStatus || itemInfo.status || tx.status || 'COMPLETED');
+                    const refundStatus = itemInfo.refund_status || itemInfo.refundStatus || '';
 
-                    let statusBadge, actionHtml;
+                    let statusBadge;
 
-                    if (status === 'COMPLETED') {
-                        statusBadge = `<span class="status-badge status-completed">購買成功</span>`;
-                        actionHtml  = `<button class="button is-light" onclick="requestRefund(${itemId})">申請退款</button>`;
-                    } else if (status === 'REFUNDED') {
-                        statusBadge = `<span class="status-badge status-refunded">已退款</span>`;
-                        actionHtml  = `<span style="color:var(--text-muted);font-size:13px;">退款已處理</span>`;
-                    } else if (status === 'PENDING_REFUND' || status === 'PENDING') {
-                        statusBadge = `<span class="status-badge status-pending">退款審核中</span>`;
-                        actionHtml  = `<span style="color:var(--accent-yellow);font-size:13px;">客服審核中...</span>`;
+                    if (refundStatus === 'PENDING') {
+                        statusBadge = `<span class="status-badge status-pending" style="color:var(--accent-yellow);">退款審核中</span>`;
+                    } else if (refundStatus === 'APPROVED') {
+                        statusBadge = `<span class="status-badge status-refunded" style="color:var(--text-muted); border: 1px solid var(--border-color); background: transparent;">已退款</span>`;
                     } else {
-                        statusBadge = `<span class="status-badge">${status}</span>`;
-                        actionHtml  = '';
+                        // REJECTED or Empty (No refund request)
+                        statusBadge = `<span class="status-badge status-completed" style="color:var(--accent-green); border: 1px solid var(--accent-green); background: transparent;">購買成功</span>`;
                     }
 
                     item.innerHTML = `
@@ -85,12 +87,11 @@
                             <h3 style="color:white; font-size:1.2rem; margin-bottom:8px;">${escapeHtml(title)}</h3>
                             <p style="color:var(--text-secondary);font-size:14px;">
                                 訂單：<span style="color:white;font-family:monospace;">#${txId}</span> &nbsp;|&nbsp; 
-                                日期：${date} &nbsp;|&nbsp; 
+                                日期：${dateStr} &nbsp;|&nbsp; 
                                 金額：<span style="color:var(--accent-pink);font-weight:bold;">NT$ ${price.toLocaleString()}</span> &nbsp;|&nbsp; 
                                 ${statusBadge}
                             </p>
                         </div>
-                        <div class="library-item-actions">${actionHtml}</div>
                     `;
                     listEl.appendChild(item);
                 });

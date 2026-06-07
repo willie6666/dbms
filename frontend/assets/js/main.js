@@ -87,6 +87,7 @@ function renderHeader() {
                 <div class="navbar-dropdown is-right">
                     <a class="navbar-item" href="/pages/user/profile">基本資料</a>
                     <a class="navbar-item" href="/pages/user/history">購買紀錄</a>
+                    <a class="navbar-item" href="/pages/user/refund_request">退款申請</a>
                     <a class="navbar-item" href="/pages/user/wishlist">願望清單</a>
                     <hr class="navbar-divider">
                     <a class="navbar-item" href="#" id="logout-btn">登出</a>

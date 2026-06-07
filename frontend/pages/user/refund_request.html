@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>退款申請 — VaporAuror</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        .refund-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border: 1px solid var(--border-color);
+        }
+        .refund-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .refund-cover {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .refund-info {
+            flex-grow: 1;
+        }
+        .refund-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .refund-textarea {
+            width: 100%;
+            min-height: 80px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        .refund-textarea:focus {
+            border-color: var(--accent-blue);
+            outline: none;
+        }
+        .refund-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+
+    <header id="global-header"></header>
+
+    <main class="history-container">
+        <div class="history-header">
+            <h1 class="title section-title" style="margin:0;">退款申請</h1>
+            <p style="color:var(--text-secondary); margin-top: 10px;">請從下方擁有的遊戲中選擇，填寫退款理由並送出審核。</p>
+        </div>
+        <div id="refund-list">
+            <p style="color:var(--text-muted);text-align:center;padding:40px;">載入中...</p>
+        </div>
+
+        <div class="history-header" style="margin-top: 50px;">
+            <h2 class="title section-title" style="margin:0; font-size: 1.5rem;">退款歷史紀錄</h2>
+        </div>
+        <div id="refund-history-list">
+            <p style="color:var(--text-muted);text-align:center;padding:40px;">載入中...</p>
+        </div>
+    </main>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!requireLogin()) return;
+            await loadRefunds();
+        });
+
+        async function loadRefunds() {
+            try {
+                const [libraryResult, historyResult] = await Promise.all([
+                    apiGetLibrary(),
+                    apiGetMyRefunds().catch(() => ({ data: [] }))
+                ]);
+                
+                const games = Array.isArray(libraryResult) ? libraryResult : (libraryResult.data || libraryResult.games || []);
+                const history = Array.isArray(historyResult) ? historyResult : (historyResult.data || []);
+                
+                renderRefundList(games, history);
+                renderRefundHistory(history);
+            } catch (err) {
+                document.getElementById('refund-list').innerHTML =
+                    `<p style="color:var(--accent-red);text-align:center;padding:40px;">載入失敗：${err.message}</p>`;
+            }
+        }
+
+        function renderRefundList(games, history) {
+            const listEl = document.getElementById('refund-list');
+            listEl.innerHTML = '';
+
+            const activeGames = games.filter(item => item.status === 'ACTIVE' || !item.status);
+
+            if (activeGames.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <p>你的遊戲庫空空如也，目前沒有可以退款的遊戲。</p>
+                        <a href="/" class="button is-primary" style="margin-top:12px;">前往商店</a>
+                    </div>`;
+                return;
+            }
+
+            activeGames.forEach(item => {
+                const game     = item.game || item;
+                const gameId   = game.game_id || game.id || item.game_id;
+                const title    = game.title || item.title || '未知遊戲';
+                const txItemId = item.transaction_item_id;
+                
+                const acquiredDate = (item.acquired_date || '').slice(0, 10) || '未知日期';
+                
+                let coverImg = 'https://placehold.co/400x300/1a1a2e/00f0ff?text=No+Cover';
+                const apiCover = getGameCoverUrl(game);
+                if (apiCover) coverImg = apiCover;
+
+                // Check if there is a pending or approved request for this item
+                const pendingRequest = history.find(req => req.transaction_item_id === txItemId && req.status === 'PENDING');
+                const approvedRequest = history.find(req => req.transaction_item_id === txItemId && req.status === 'APPROVED');
+
+                const el = document.createElement('div');
+                el.className = 'refund-card';
+
+                let formHtml = '';
+                if (pendingRequest) {
+                    formHtml = `
+                        <div style="background:var(--bg-dark); padding: 15px; border-radius: 4px; border: 1px dashed var(--accent-yellow); text-align: center;">
+                            <span style="color:var(--accent-yellow); font-weight: bold;">退款審核中</span>
+                            <p style="color:var(--text-secondary); font-size: 14px; margin-top: 5px;">您的退款申請已送出，目前正由客服人員審核中。</p>
+                        </div>
+                    `;
+                } else if (approvedRequest) {
+                     formHtml = `
+                        <div style="background:var(--bg-dark); padding: 15px; border-radius: 4px; border: 1px dashed var(--border-color); text-align: center;">
+                            <span style="color:var(--text-muted); font-weight: bold;">已退款成功</span>
+                            <p style="color:var(--text-secondary); font-size: 14px; margin-top: 5px;">此遊戲已成功退款。若遊戲仍在庫中，為系統異常。</p>
+                        </div>
+                    `;
+                } else {
+                    formHtml = `
+                        <div class="refund-form">
+                            <textarea class="refund-textarea" id="reason-${txItemId}" placeholder="分享你對這款遊戲的看法...（請輸入申請退款理由）"></textarea>
+                            <div class="refund-actions">
+                                <button class="button is-light" onclick="submitRefund(${txItemId})">申請退款</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                el.innerHTML = `
+                    <div class="refund-header">
+                        <img class="refund-cover" src="${coverImg}" alt="${escapeHtml(title)}" onerror="this.onerror=null; this.src='https://placehold.co/400x300/1a1a2e/00f0ff?text=No+Cover'">
+                        <div class="refund-info">
+                            <h3 style="color:white; font-size:1.2rem; margin-bottom:8px;">${escapeHtml(title)}</h3>
+                            <p style="color:var(--text-secondary);font-size:14px;">取得日期：${acquiredDate}</p>
+                        </div>
+                    </div>
+                    ${formHtml}
+                `;
+                listEl.appendChild(el);
+            });
+        }
+
+        function renderRefundHistory(history) {
+            const listEl = document.getElementById('refund-history-list');
+            listEl.innerHTML = '';
+
+            if (history.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state" style="padding: 20px;">
+                        <p style="font-size: 14px;">目前沒有任何退款紀錄。</p>
+                    </div>`;
+                return;
+            }
+
+            history.forEach(req => {
+                const date = (req.created_at || '').slice(0, 10);
+                const title = req.game_title || '未知遊戲';
+                
+                let statusHtml = '';
+                if (req.status === 'PENDING') {
+                    statusHtml = `<span class="status-badge status-pending" style="color:var(--accent-yellow);">審核中</span>`;
+                } else if (req.status === 'APPROVED') {
+                    statusHtml = `<span class="status-badge status-refunded" style="color:var(--text-muted); border: 1px solid var(--border-color); background: transparent;">已退款</span>`;
+                } else if (req.status === 'REJECTED') {
+                    statusHtml = `<span class="status-badge status-refunded" style="color:var(--accent-red); border: 1px solid var(--accent-red); background: transparent;">已拒絕</span>`;
+                }
+
+                let rejectInfo = '';
+                if (req.status === 'REJECTED' && req.reject_reason) {
+                    rejectInfo = `<div style="background:var(--bg-dark); padding:10px; margin-top:10px; border-radius:4px; font-size:13px; color:var(--text-secondary); border-left: 3px solid var(--accent-red);">
+                        <strong>拒絕理由：</strong> ${escapeHtml(req.reject_reason)}
+                    </div>`;
+                }
+
+                const el = document.createElement('div');
+                el.className = 'library-item';
+                el.innerHTML = `
+                    <div class="library-item-info">
+                        <h3 style="color:white; font-size:1.1rem; margin-bottom:8px;">${escapeHtml(title)}</h3>
+                        <p style="color:var(--text-secondary);font-size:13px;">
+                            申請日期：${date} &nbsp;|&nbsp; 
+                            申請理由：${escapeHtml(req.reason)}
+                        </p>
+                        ${rejectInfo}
+                    </div>
+                    <div class="library-item-actions">
+                        ${statusHtml}
+                    </div>
+                `;
+                listEl.appendChild(el);
+            });
+        }
+
+        async function submitRefund(transactionItemId) {
+            const reasonInput = document.getElementById('reason-' + transactionItemId);
+            const reason = reasonInput.value.trim();
+            if (!reason) {
+                alert("請填寫退款理由！");
+                reasonInput.focus();
+                return;
+            }
+
+            try {
+                await apiRequestRefund(transactionItemId, reason);
+                alert("已送出退款申請，請等候客服審核。");
+                loadRefunds(); // Reload list to update (if game is now pending refund, it won't disappear unless we implement that, but that's handled by API)
+            } catch (err) {
+                alert("申請失敗：" + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
