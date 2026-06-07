@@ -475,6 +475,7 @@ func AddBlacklist(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add user to blacklist"})
 		return
 	}
+
 	c.JSON(http.StatusCreated, gin.H{"message": "User added to blacklist"})
 }
 
@@ -498,7 +499,7 @@ func GetFriendRequests(c *gin.Context) {
 	userID := uint(userIDFloat.(float64))
 
 	var requests []models.Friendship
-	database.DB.Where("receiver_id = ? AND status = ?", userID, "PENDING").Order("created_at desc").Find(&requests)
+	database.DB.Where("(receiver_id = ? OR sender_id = ?) AND status = ?", userID, userID, "PENDING").Order("created_at desc").Find(&requests)
 
 	type RequestDTO struct {
 		ID           uint          `json:"id"`
@@ -506,6 +507,7 @@ func GetFriendRequests(c *gin.Context) {
 		SenderID     uint          `json:"sender_id"`
 		ReceiverID   uint          `json:"receiver_id"`
 		Sender       socialUserDTO `json:"sender"`
+		Receiver     socialUserDTO `json:"receiver"`
 		Status       string        `json:"status"`
 	}
 
@@ -517,6 +519,7 @@ func GetFriendRequests(c *gin.Context) {
 			SenderID:     req.SenderID,
 			ReceiverID:   req.ReceiverID,
 			Sender:       getSocialUser(req.SenderID),
+			Receiver:     getSocialUser(req.ReceiverID),
 			Status:       req.Status,
 		})
 	}

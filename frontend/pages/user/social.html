@@ -112,7 +112,16 @@
             }
 
             targetArray.forEach(item => {
-                const user = item.sender || item.receiver || item.user || item;
+                if (currentActiveTab === 'requests') {
+                    const currentUser = getCurrentUser() || {};
+                    if (item.sender_id === currentUser.id) {
+                        user = item.receiver || { id: item.receiver_id, username: `玩家 #${item.receiver_id}` };
+                    } else {
+                        user = item.sender || { id: item.sender_id, username: `玩家 #${item.sender_id}` };
+                    }
+                } else {
+                    user = item.sender || item.receiver || item.user || item;
+                }
                 const userId = user.id || item.blocked_id || item.user_id || item.friend_id || item.id;
                 const username = user.username || item.username || `玩家 #${userId}`;
 
@@ -129,18 +138,35 @@
                 let actionHtml = '';
 
                 if (currentActiveTab === 'friends') {
+                    const isBlockedByMe = socialData.blocked && socialData.blocked.some(b => b.blocked_id === userId);
                     div.onclick = () => openChat(userId, username);
-                    actionHtml = `<button class="button is-danger is-light is-small" onclick="event.stopPropagation(); blockUser(${userId}, '${escapeHtml(username)}')">封鎖</button>`;
+                    if (isBlockedByMe) {
+                        actionHtml = `<button class="button is-light is-small" onclick="event.stopPropagation(); unblockUser(${userId})">解除封鎖</button>`;
+                    } else {
+                        actionHtml = `<button class="button is-danger is-light is-small" onclick="event.stopPropagation(); blockUser(${userId}, '${escapeHtml(username)}')">封鎖</button>`;
+                    }
                 } 
                 else if (currentActiveTab === 'requests') {
                     const requestId = item.friendship_id || item.id || userId;
-                    actionHtml = `
-                        <div style="display:flex; gap:6px;">
-                            <button class="button is-success is-light is-small" onclick="event.stopPropagation(); handleRequest(${requestId}, true)">接受</button>
-                            <button class="button is-danger is-light is-small" onclick="event.stopPropagation(); handleRequest(${requestId}, false)">拒絕</button>
-                        </div>
-                    `;
-                } 
+                    const currentUser = getCurrentUser() || {};
+                    const isOutgoing = item.sender_id === currentUser.id;
+
+                    if (isOutgoing) {
+                        actionHtml = `
+                            <div style="display:flex; gap:6px;">
+                                <button class="button is-warning is-light is-small" disabled style="opacity: 0.7;">待確認</button>
+                                <button class="button is-danger is-light is-small" onclick="event.stopPropagation(); handleCancelRequest(${requestId})">收回</button>
+                            </div>
+                        `;
+                    } else {
+                        actionHtml = `
+                            <div style="display:flex; gap:6px;">
+                                <button class="button is-success is-light is-small" onclick="event.stopPropagation(); handleRequest(${requestId}, true)">接受</button>
+                                <button class="button is-danger is-light is-small" onclick="event.stopPropagation(); handleRequest(${requestId}, false)">拒絕</button>
+                            </div>
+                        `;
+                    }
+                }  
                 else if (currentActiveTab === 'blocked') {
                     actionHtml = `<button class="button is-light is-small" onclick="event.stopPropagation(); unblockUser(${userId})">解除封鎖</button>`;
                 }
@@ -181,6 +207,17 @@
                     await apiFriendDecline(requestId);
                     alert("已拒絕好友邀請。");
                 }
+                await loadSocialData();
+            } catch (err) {
+                alert(`操作失敗：${err.message}`);
+            }
+        }
+
+        // 處理收回發出的邀請
+        async function handleCancelRequest(requestId) {
+            try {
+                await apiFriendCancelRequest(requestId);
+                alert("已成功收回好友邀請。");
                 await loadSocialData();
             } catch (err) {
                 alert(`操作失敗：${err.message}`);
@@ -229,27 +266,38 @@
         }
 
         // 打開聊天視窗
-        async function openChat(friendId, friendName) {
-            if (chatInterval) {
-                clearInterval(chatInterval);
-            }
-            currentChatFriendId = friendId;
-            currentChatFriendName = friendName;
-            document.getElementById('chat-header').innerText = `與 ${friendName} 聊天中`;
-            document.getElementById('chat-form').style.display = 'flex';
-            
-            // 立即渲染，然後開啟輪詢
-            await renderChat();
-            
-            // 每 3 秒輪詢新訊息
-            chatInterval = setInterval(async () => {
-                if (currentChatFriendId === friendId) {
-                    await renderChat(true);
-                }
-            }, 3000);
+        async function openChat(userId, friendName) {
+            currentChatFriendId = userId;
+            const isBlockedByMe = socialData.blocked && socialData.blocked.some(b => b.blocked_id === userId);
 
-            // 重新選取左側選單的 active 樣式
+            const headerEl = document.getElementById('chat-header');
+            const inputEl = document.getElementById('chat-input');
+            const formEl = document.getElementById('chat-form');
+
+            formEl.style.display = 'flex';
+            if (isBlockedByMe) {
+                headerEl.innerText = `與 ${friendName} 聊天中 (封鎖中)`;
+                inputEl.disabled = true;
+                inputEl.placeholder = "已封鎖此用戶，無法接收與傳送新訊息";
+                if (chatInterval) clearInterval(chatInterval);
+                await renderChat();
+            } else {
+                headerEl.innerText = `與 ${friendName} 聊天中`;
+                inputEl.disabled = false;
+                inputEl.placeholder = "輸入訊息...";
+                
+                await renderChat();
+                
+                if (chatInterval) clearInterval(chatInterval);
+                chatInterval = setInterval(async () => {
+                    if (currentChatFriendId === userId) {
+                        await renderChat(true);
+                    }
+                }, 3000);
+            }
+
             renderList();
+            inputEl.focus();
         }
 
         // 渲染聊天訊息
