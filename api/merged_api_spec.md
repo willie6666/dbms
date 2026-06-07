@@ -1,8 +1,9 @@
-# VaporAuror 詳細 API 規格書 (API Specification)
+# VaporAuror 詳細 API 規格書 (API Specification) — Merged
 
 這份文件專為**前端開發人員**撰寫。詳細列出所有 API 的傳入參數 (Request Body)、必要的標頭 (Headers)、以及各種成功與失敗情境的回傳格式 (Response JSON)。
 
 > 所有路徑皆為同源相對路徑；瀏覽器經由 Caddy 入口代理 `/api/*` 到後端。
+> 本文件由 `add_api_spec.md` 與 `bananaapi_spec.md` 合併而成，所有差異處已經過 **Go server 原始碼驗證**。
 
 ## ⚠️ 通用錯誤回應 (Global Errors)
 在所有端點中，如果發生以下情況，後端會統一回傳對應的錯誤代碼，下方各端點的說明中將**不再贅述**這些基本錯誤：
@@ -34,6 +35,7 @@
       "user": {
         "id": 1,
         "username": "PlayerOne",
+        "email": "player1@test.com",
         "role": "USERS"
       }
     }
@@ -56,7 +58,7 @@
     ```json
     {
       "message": "Login successful",
-      "token": "eyJhbGciOi...", 
+      "token": "eyJhbGciOi...",
       "user": {
         "id": 1,
         "username": "PlayerOne",
@@ -66,6 +68,7 @@
     }
     ```
   - `401 Unauthorized`: `{"error": "Invalid email or password"}`
+  - `403 Forbidden`: `{"error": "This account is not active"}` (帳號已被停權或角色為 NULL)
 
 ### `[POST] /api/auth/logout` (登出)
 - **Headers**: `Authorization: Bearer <token>`
@@ -85,7 +88,18 @@
   }
   ```
 - **Responses**:
-  - `200 OK`: `{"message": "Profile updated successfully"}`
+  - `200 OK`:
+    ```json
+    {
+      "message": "Profile updated successfully",
+      "user": {
+        "id": 1,
+        "username": "NewName",
+        "email": "new@test.com",
+        "role": "USERS"
+      }
+    }
+    ```
   - `404 Not Found`: `{"error": "User not found"}`
 
 ### `[GET] /api/admin/users` (查看所有使用者清單)
@@ -94,9 +108,10 @@
   - `200 OK`: `{"data": [ { "id": 1, "username": "PlayerOne", "role": "USERS" } ]}`
   - `403 Forbidden`: `{"error": "Forbidden: Requires ADMIN role"}`
 
-### `[PUT] /api/admin/users/{id}/suspend` (停權帳號)
+### `[PUT] /api/admin/users/{id}/suspend` (切換帳號停權狀態)
 - **Headers**: `Authorization: Bearer <admin_token>`
 - **Request Body**: 無
+- **說明**: 此端點為 **Toggle** 行為。若帳號為 `ACTIVE` 則切換為 `DEACTIVE`；若為 `DEACTIVE` 則切換回 `ACTIVE`。
 - **Responses**:
   - `200 OK`: `{"message": "User account has been suspended"}`
   - `404 Not Found`: `{"error": "User not found"}`
@@ -150,34 +165,35 @@
   - `200 OK`: `[ { "review_id": 1, "content": "...", "attitude": "POSITIVE", "user": {...}, "replies": [...] } ]`
   - **注意**: 回傳格式為陣列 (非包在 `{"data": [...]}` 內)。
 
-### `[GET] /api/developer/games` (取得開發者自己的遊戲清單)
+### `[GET] /api/developer/games` (查看自己的遊戲列表)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Responses**:
-  - `200 OK`: `{"data": [ { "game_id": 1, "title": "...", "price": 350 } ]}`
+  - `200 OK`: `{"data": [ { ...game_objects_with_media... } ]}`
+  - **說明**: DEVELOPER 只會看到自己上架的遊戲；ADMIN 可查看全部遊戲。
 
 ### `[POST] /api/developer/games` (上架新遊戲)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Request Body**:
   ```json
   {
-    "title": "My Indie Game",  // 必填
-    "price": 350.00,           // 必填，最小值 0
-    "desc": "遊戲描述..."        // 選填
+    "title": "My Indie Game",    // 必填
+    "price": 350.00,             // 必填，最小值 0
+    "desc": "遊戲描述 (選填，支援 Markdown)"  // 選填
   }
   ```
 - **Responses**:
   - `201 Created`: `{"message": "Game uploaded successfully", "game": {...}}`
 
-### `[PUT] /api/developer/games/{id}` (更新自己的遊戲資訊)
+### `[PUT] /api/developer/games/{id}` (編輯遊戲資訊)
 - **Headers**: `Authorization: Bearer <developer_token>`
-- **Request Body**: (皆為選填，至少傳一個)
+- **Request Body**:
   ```json
   {
-    "price": 400.00,        // 選填，最小值 0
-    "desc": "新的遊戲描述..." // 選填
+    "price": 299.00,        // 選填，最小值 0
+    "desc": "更新的遊戲描述" // 選填
   }
   ```
-  > **注意**: `title` 無法透過此 API 修改；`price` 若傳 `0` 仍會被視為有效值並寫入。
+  > **注意**: `title` 無法透過此 API 修改；`price` 若傳 `0` 仍會被視為有效值並寫入。ADMIN 可編輯任何遊戲。
 - **Responses**:
   - `200 OK`: `{"message": "Game updated successfully", "game": {...}}`
   - `403 Forbidden`: `{"error": "Forbidden: You can only edit your own games"}`
@@ -196,14 +212,15 @@
   - `200 OK`: `{"message": "Game deleted successfully by Admin"}`
 
 ### `[POST] /api/developer/games/{id}/media` (上傳遊戲素材)
-- **Headers**: `Authorization: Bearer <developer_token>`
-- **Content-Type**: `multipart/form-data`
-- **Request Form Fields**:
-  | 欄位 | 必填 | 說明 |
-  |---|---|---|
-  | `file` | ✅ | 要上傳的檔案本體 |
-  | `media_type` | 選填 | `"media"`（圖片，預設）或 `"game_file"`（遊戲執行檔）|
-  > **儲存路徑**: `media` → `/media/images/{game_id}/{sha256}.{ext}`；`game_file` → `/downloads/{game_id}/{original_name}`
+- **Headers**: `Authorization: Bearer <developer_token>`, `Content-Type: multipart/form-data`
+- **Request Body** (`multipart/form-data`):
+  | 欄位名稱 | 類型 | 必填 | 說明 |
+  |----------|------|------|------|
+  | `file` | File | ✅ | 要上傳的圖片或遊戲檔案 |
+  | `media_type` | String | 否 | `"media"` (圖片，預設) 或 `"game_file"` (遊戲檔案) |
+- **儲存路徑**:
+  - `media` → `assets/images/{game_id}/{sha256}.{ext}`，對外 URL `/media/images/{game_id}/{sha256}.{ext}`
+  - `game_file` → `assets/game-files/{game_id}/{original_name}`，對外 URL `/downloads/{game_id}/{original_name}`
 - **Responses**:
   - `201 Created`: `{"message": "Media uploaded successfully", "data": {...}, "file_url": "/media/images/..."}`
   - `400 Bad Request`: `{"error": "Missing file field"}`
@@ -215,7 +232,7 @@
 - **Responses**:
   - `200 OK`: `{"message": "Media deleted successfully"}`
   - `403 Forbidden`: `{"error": "Forbidden: You can only manage your own games"}`
-  - `404 Not Found`: `{"error": "Game not found"}`
+  - `404 Not Found`: `{"error": "Media not found"}` 或 `{"error": "Game not found"}`
 
 ### `[GET] /api/developer/games/{id}/stats` (查看遊戲銷售數據)
 - **Headers**: `Authorization: Bearer <developer_token>`
@@ -241,7 +258,7 @@
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Request Body**: `{"tag_name": "Action"}`
 - **Responses**:
-  - `201 Created`: `{"message": "Tag created successfully"}`
+  - `201 Created`: `{"message": "Tag created successfully", "data": { "tag_id": 1, "tag_name": "Action" }}`
   - `500 Internal Server Error`: `{"error": "Failed to create tag (might already exist)"}`
 
 ### `[POST] /api/developer/games/{id}/tags` (為遊戲貼標籤)
@@ -359,8 +376,10 @@
 ### `[GET] /api/protected/library/{game_id}/download` (下載遊戲)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
-  - `200 OK`: `{"message": "Download link generated", "download_url": "http://cdn.vaporauror.com/downloads/5.zip"}`
+  - `200 OK`: 直接回傳檔案串流 (binary)，附帶 `Content-Disposition: attachment; filename="{filename}"` 標頭。
+    > 前端應直接觸發瀏覽器下載 (例如 `window.location.href = url` 或 `<a>` 標籤)，而非當作 JSON 處理。
   - `403 Forbidden`: `{"error": "You do not own this game or the license is inactive"}`
+  - `404 Not Found`: `{"error": "No downloadable game file is available"}`
 
 ---
 
@@ -412,9 +431,18 @@
 
 ### `[POST] /api/social/friends/request` (發送好友邀請)
 - **Headers**: `Authorization: Bearer <token>`
-- **Request Body**: `{"receiver_id": 2}`
+- **Request Body**: (擇一即可)
+  ```json
+  { "receiver_id": 2 }
+  ```
+  或依使用者名稱查找：
+  ```json
+  { "username": "PlayerTwo" }
+  ```
 - **Responses**:
   - `201 Created`: `{"message": "Friend request sent"}`
+  - `400 Bad Request`: `{"error": "Friend request already exists"}` 或 `{"error": "Cannot send a friend request to yourself"}` 或 `{"error": "receiver_id or username is required"}`
+  - `404 Not Found`: `{"error": "User not found"}` (使用 username 查找時)
 
 ### `[PUT] /api/social/friends/request/{id}/accept` (接受好友邀請)
 - **Headers**: `Authorization: Bearer <token>`
@@ -461,9 +489,10 @@
 
 ### `[POST] /api/social/blacklist` (加入黑名單)
 - **Headers**: `Authorization: Bearer <token>`
-- **Request Body**: `{"blocked_id": 5}`
+- **Request Body**: `{"blocked_id": 5}` (也可使用 `{"user_id": 5}` 作為替代欄位名稱)
 - **Responses**:
   - `201 Created`: `{"message": "User added to blacklist"}`
+  - `400 Bad Request`: `{"error": "Cannot blacklist yourself"}` 或 `{"error": "blocked_id is required"}`
 
 ### `[DELETE] /api/social/blacklist/{user_id}` (移除黑名單)
 - **Headers**: `Authorization: Bearer <token>`
