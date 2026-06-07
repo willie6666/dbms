@@ -71,19 +71,26 @@
                 const item = document.createElement('div');
                 item.className = 'library-item';
 
+                const isDeleted    = user.permission === 'DELETED';
                 const isBanned     = user.permission === 'DEACTIVE';
-                const statusBadge  = !isBanned
-                    ? `<span class="tag status-badge status-active">正常</span>`
-                    : `<span class="tag status-badge status-banned">已停權</span>`;
+                
+                let statusBadge = '';
+                if (isDeleted) {
+                    statusBadge = `<span class="tag status-badge" style="background-color:var(--bg-card); color:var(--text-muted); border:1px solid var(--border-color);">已刪除</span>`;
+                } else if (isBanned) {
+                    statusBadge = `<span class="tag status-badge status-banned">已停權</span>`;
+                } else {
+                    statusBadge = `<span class="tag status-badge status-active">正常</span>`;
+                }
+
                 const banText      = !isBanned ? "停權" : "解除停權";
                 const banColor     = !isBanned ? "var(--accent-red)" : "var(--accent-yellow)";
 
-                item.innerHTML = `
-                    <div class="library-item-info">
-                        <h3>ID: ${user.id} — ${escapeHtml(user.username)}</h3>
-                        <p>信箱：${escapeHtml(user.email || '')} &nbsp;|&nbsp; 狀態：${statusBadge}</p>
-                    </div>
-                    <div class="library-item-actions">
+                let actionHtml = '';
+                if (isDeleted) {
+                    actionHtml = `<button class="button is-light" disabled style="opacity: 0.5;">已永久刪除</button>`;
+                } else {
+                    actionHtml = `
                         <select class="select role-select" onchange="changeRole(${user.id}, this.value)">
                             <option value="USERS"     ${user.role==='USERS'     ? 'selected':''}>玩家 (User)</option>
                             <option value="DEVELOPER" ${user.role==='DEVELOPER' ? 'selected':''}>開發者 (Dev)</option>
@@ -94,6 +101,16 @@
                                 style="background-color:${banColor};color:#fff;border-color:${banColor};"
                                 onclick="toggleSuspend(${user.id}, ${isBanned})">${banText}</button>
                         <button class="button is-danger is-light" onclick="deleteUser(${user.id})">永久刪除</button>
+                    `;
+                }
+
+                item.innerHTML = `
+                    <div class="library-item-info">
+                        <h3>ID: ${user.id} — ${escapeHtml(user.username)}</h3>
+                        <p>信箱：${escapeHtml(user.email || '')} &nbsp;|&nbsp; 狀態：${statusBadge}</p>
+                    </div>
+                    <div class="library-item-actions">
+                        ${actionHtml}
                     </div>
                 `;
                 list.appendChild(item);
