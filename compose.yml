@@ -1,0 +1,35 @@
+services:
+  frontend:
+    image: caddy:2-alpine
+    container_name: vapor_frontend
+    restart: always
+    ports:
+      - 3000:80
+    volumes:
+      - ./frontend/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/index.html:/srv/index.html:ro
+      - ./frontend/assets:/srv/assets:ro
+      - ./frontend/pages:/srv/pages:ro
+
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    container_name: vapor_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: vapor_auror
+
+    ports:
+      - 5432:5432
+
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d/
+  
+  adminer:
+    image: adminer
+    restart: always
+    container_name: adminer
+    ports:
+      - 8080:8080

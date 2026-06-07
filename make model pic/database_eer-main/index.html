@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EER 模型視覺化工具</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+    <!-- Editor Panel -->
+    <div class="editor-panel" id="editorPanel">
+        <div class="editor-header">
+            <div class="logo">ER</div>
+            <h1>EER 視覺化工具</h1>
+            <span class="badge">Chen Notation</span>
+        </div>
+        <div class="editor-toolbar">
+            <button class="btn primary" id="btnRender">▶ 渲染</button>
+            <button class="btn danger" id="btnClear">✕ 清空</button>
+        </div>
+        <div class="editor-body">
+            <textarea id="mermaidInput" placeholder="在此貼上 Mermaid erDiagram 語法（支援 is a (d)/(o)）..." spellcheck="false"></textarea>
+        </div>
+        <div class="editor-status idle" id="statusBar">
+            <div class="dot"></div>
+            <span id="statusText">就緒 — 貼上 Mermaid erDiagram（含 is a (d)）後按「渲染」</span>
+        </div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas-area" id="canvasArea">
+        <button class="toggle-editor" id="toggleEditor">◀</button>
+
+        <!-- Stats -->
+        <div class="stats-overlay" id="statsBox">
+            <div class="stat-item"><span class="stat-val" id="statEntities">0</span>實體</div>
+            <div class="stat-item"><span class="stat-val" id="statRelations">0</span>關係</div>
+            <div class="stat-item"><span class="stat-val" id="statAttrs">0</span>屬性</div>
+        </div>
+
+        <!-- HUD -->
+        <div class="canvas-hud">
+            <button class="hud-btn" id="btnFit" title="適應螢幕">⊞</button>
+            <button class="hud-btn" id="btnUnpin" title="解除圖釘">⊙</button>
+            <button class="hud-btn" id="btnZoomIn" title="放大">+</button>
+            <button class="hud-btn" id="btnZoomOut" title="縮小">−</button>
+        </div>
+
+        <svg id="svgCanvas">
+            <defs>
+                <filter id="nodeShadow" x="-25%" y="-25%" width="150%" height="150%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#1e2340" flood-opacity="0.10"/>
+                </filter>
+                <filter id="nodeHover" x="-30%" y="-30%" width="160%" height="160%">
+                    <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#2563eb" flood-opacity="0.22"/>
+                </filter>
+            </defs>
+        </svg>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入 — VaporAuror</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+    <header id="global-header"></header>
+
+    <main>
+        <div class="auth-container">
+            <h2>歡迎回來</h2>
+            <p class="auth-subtitle">登入你的 VaporAuror 帳號</p>
+
+            <div id="login-error" class="alert-info" style="display:none;background:rgba(255,89,89,0.1);border-color:rgba(255,89,89,0.3);color:#ff5959;"></div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">電子郵件 (Email)</label>
+                    <input type="email" id="email" placeholder="輸入你的註冊信箱" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">密碼 (Password)</label>
+                    <input type="password" id="password" placeholder="輸入你的密碼" required>
+                </div>
+                <button type="submit" class="btn-primary" id="login-btn">登入</button>
+            </form>
+
+            <div class="form-divider">或</div>
+
+            <p style="text-align:center; font-size:14px; color:var(--text-muted);">
+                還沒有帳號？
+                <a href="/pages/auth/register.html" style="color:var(--accent-blue); font-weight:600;">立即免費註冊</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const errorEl  = document.getElementById('login-error');
+            const btn      = document.getElementById('login-btn');
+
+            btn.disabled = true;
+            btn.textContent = '登入中...';
+            errorEl.style.display = 'none';
+
+            try {
+                const data = await apiLogin(email, password);
+                // 後端回傳 { token, user: { id, username, email, role } }
+                saveAuthState(data);
+                window.location.href = '/';
+            } catch (err) {
+                errorEl.textContent = err.message || '登入失敗，請確認帳號與密碼。';
+                errorEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '登入';
+            }
+        });
+    </script>
+</body>
+</html>

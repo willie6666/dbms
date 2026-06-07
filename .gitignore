@@ -1,0 +1,25 @@
+# Backend
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+backend/test
+backend/out
+backend/bin
+
+# Frontend
+frontend/node_modules/
+frontend/.npm/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+
+# OS Generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

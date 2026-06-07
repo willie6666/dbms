@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遊戲詳情 — VaporAuror</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        /* Cybernetic Aurora Detail Layout */
+        .game-detail-layout {
+            display: flex;
+            gap: 40px;
+            margin: 40px auto;
+            max-width: 1200px;
+            align-items: stretch;
+        }
+        
+        .game-media-left {
+            flex: 0 0 65%;
+            max-width: 65%;
+            aspect-ratio: 16/9;
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), var(--glow-cyan);
+            position: relative;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+        }
+        
+        .game-info-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 30px;
+            background: rgba(16, 19, 35, 0.6);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(0, 240, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,240,255,0.02);
+            position: relative;
+        }
+
+        .game-info-right::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.05) 0%, transparent 100%);
+            pointer-events: none;
+            border-radius: 16px;
+        }
+        
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 184, 0, 0.1);
+            color: var(--accent-yellow);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 18px;
+            gap: 8px;
+            border: 1px solid rgba(255, 184, 0, 0.2);
+            box-shadow: 0 0 15px rgba(255, 184, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .developer-badge {
+            color: var(--accent-cyan);
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+        
+        #detail-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.8rem;
+            margin: 0;
+            line-height: 1.1;
+            background: linear-gradient(90deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+        }
+        
+        #detail-price {
+            font-size: 2rem;
+            color: var(--accent-green);
+            font-weight: 700;
+            margin-top: 5px;
+            text-shadow: var(--glow-green);
+            font-family: 'Space Mono', monospace;
+            position: relative;
+            z-index: 1;
+        }
+        
+        #detail-desc {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 1.05rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Carousel Styles */
+        .carousel-slide { transition: opacity 0.4s ease-in-out; }
+        .carousel-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            color: var(--accent-cyan); border: 1px solid var(--border-cyan);
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .carousel-btn:hover {
+            background: var(--accent-cyan); color: #000;
+            box-shadow: var(--glow-cyan);
+        }
+        .carousel-btn.prev { left: 15px; }
+        .carousel-btn.next { right: 15px; }
+
+        /* Review Styles */
+        .review-item {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .review-item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0, 240, 255, 0.2);
+        }
+        .review-item.positive { border-left: 4px solid var(--accent-cyan); }
+        .review-item.negative { border-left: 4px solid var(--accent-pink); }
+
+        .review-author {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+        .review-sentiment {
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .sentiment-positive { background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan); }
+        .sentiment-negative { background: rgba(255, 0, 85, 0.1); color: var(--accent-pink); }
+        
+        /* Replies Styles */
+        .reply-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .reply-item {
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid rgba(255,255,255,0.1);
+        }
+        .reply-author { font-size: 13px; font-weight: bold; color: var(--accent-cyan); }
+        .reply-text { font-size: 13px; color: var(--text-secondary); margin-top: 5px; line-height: 1.5; }
+        .reply-input-area { display: flex; gap: 10px; margin-top: 10px; }
+        .reply-input-area input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 8px 12px; color: white; outline: none; }
+        .reply-input-area input:focus { border-color: var(--accent-cyan); }
+        .reply-input-area button { background: var(--accent-cyan); color: #000; font-weight: bold; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; transition: all 0.3s; }
+        .reply-input-area button:hover { box-shadow: 0 0 10px var(--accent-cyan); transform: scale(1.05); }
+    </style>
+</head>
+
+<body>
+
+    <header id="global-header"></header>
+
+    <main>
+        <div class="game-detail-layout" id="game-detail-header">
+            <div class="game-media-left" id="game-cover">
+                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);background:#1a1a2e;">
+                    [遊戲封面載入中...]
+                </div>
+            </div>
+            <div class="game-info-right">
+                <p class="developer-badge" id="detail-developer"></p>
+                <h1 id="detail-title">載入中...</h1>
+                <div>
+                    <span class="rating-badge" id="detail-rating">⭐ --</span>
+                </div>
+                <div class="game-price-tag" id="detail-price"></div>
+                <p class="game-desc" id="detail-desc"></p>
+                <div id="detail-tags" class="game-list-tags"></div>
+                <div id="action-area" style="margin-top: auto; padding-top: 10px; position:relative; z-index:1;"></div>
+            </div>
+        </div>
+
+        <div class="review-section">
+            <div id="review-write-area"></div>
+            <h2 class="section-title">玩家評論</h2>
+            <div id="reviews-container">
+                <p style="color:var(--text-muted);padding:20px 0;">載入中...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script>
+        let currentGameId = null;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const params = new URLSearchParams(window.location.search);
+            currentGameId = parseInt(params.get('id'));
+
+            if (!currentGameId) {
+                document.getElementById('detail-title').textContent = '找不到遊戲資料';
+                return;
+            }
+
+            const role = getCurrentRole();
+            const user = getCurrentUser();
+
+            try {
+                // GET /api/games/{id} — 公開端點
+                const response = await apiGetGame(currentGameId);
+                const game = response.data || response;
+
+                document.title = `${game.game.title || game.title} — VaporAuror`;
+                document.getElementById('detail-title').textContent = game.game.title || game.title;
+                document.getElementById('detail-desc').textContent = game.game.description || game.game.desc || game.desc || '';
+                
+                const devName = game.developer_name || game.game.developer_name || game.game.developer || game.developer || '未知';
+                document.getElementById('detail-developer').textContent = `BY ${devName}`;
+                
+                const rating = game.game.overall_rating || game.overall_rating || 0;
+                document.getElementById('detail-rating').innerHTML = `⭐ ${rating.toFixed(1)} <span style="font-size:12px; font-weight:normal; opacity:0.8; margin-left:4px;">/ 5.0</span>`;
+                
+                const price = Number(game.game.price || game.price || 0);
+                document.getElementById('detail-price').textContent =
+                    price === 0 ? '免費遊玩' : `NT$ ${price.toLocaleString()}`;
+
+                // 處理封面圖與多圖輪播 (Carousel)
+                const media = game.media || [];
+                const coverEl = document.getElementById('game-cover');
+                if (media.length > 0) {
+                    let displayMedia = media.filter(m => m.media_type === 'media' || m.media_type === 'thumbnail');
+                    if (displayMedia.length === 0) displayMedia = media;
+
+                    let carouselHtml = `<div style="width:100%; height:100%; position:relative;">`;
+                    displayMedia.forEach((m, idx) => {
+                        let content = m.file_url.endsWith('.mp4') 
+                            ? `<video src="${m.file_url}" controls style="width:100%;height:100%;object-fit:cover;"></video>`
+                            : `<img src="${m.file_url}" alt="Media" style="width:100%;height:100%;object-fit:cover;">`;
+                        let display = idx === 0 ? 'block' : 'none';
+                        carouselHtml += `<div class="carousel-slide" id="slide-${idx}" style="display:${display}; width:100%; height:100%;">${content}</div>`;
+                    });
+
+                    if (displayMedia.length > 1) {
+                        carouselHtml += `
+                            <div class="carousel-btn prev" onclick="changeSlide(-1, ${displayMedia.length})">❮</div>
+                            <div class="carousel-btn next" onclick="changeSlide(1, ${displayMedia.length})">❯</div>
+                        `;
+                    }
+                    carouselHtml += `</div>`;
+                    coverEl.innerHTML = carouselHtml;
+                }
+
+                const tagsEl = document.getElementById('detail-tags');
+                const tags = game.tags || [];
+                tags.forEach(t => {
+                    const span = document.createElement('span');
+                    span.className = 'tag';
+                    span.textContent = typeof t === 'string' ? t : (t.tag_name || t.name || t);
+                    tagsEl.appendChild(span);
+                });
+
+                // 判斷是否已擁有（需登入才呼叫 GET /api/library）
+                let isOwned = false;
+                if (role !== 'GUEST') {
+                    try {
+                        const lib = await apiGetLibrary();
+                        const libArr = Array.isArray(lib) ? lib : (lib.data || lib.games || []);
+                        isOwned = libArr.some(g => (g.id || g.game_id) === currentGameId && (g.status === 'ACTIVE' || !g.status));
+                    } catch (_) { }
+                }
+
+                renderActionArea(game, role, isOwned);
+                renderReviewWriteArea(game, role, user, isOwned);
+
+                // GET /api/games/{id}/reviews
+                try {
+                    const reviews = await apiGetReviews(currentGameId);
+                    renderReviews(Array.isArray(reviews) ? reviews : (reviews.data || reviews.reviews || []));
+                } catch (_) {
+                    renderReviews([]);
+                }
+
+            } catch (err) {
+                document.getElementById('detail-title').textContent = `載入失敗：${err.message}`;
+            }
+        });
+
+        // ─── Carousel Logic ────────────────────────────────────
+        let currentSlideIdx = 0;
+        window.changeSlide = function(direction, total) {
+            document.getElementById(`slide-${currentSlideIdx}`).style.display = 'none';
+            currentSlideIdx = (currentSlideIdx + direction + total) % total;
+            document.getElementById(`slide-${currentSlideIdx}`).style.display = 'block';
+        };
+
+        // ─── 動作按鈕區 ────────────────────────────────────────
+        function renderActionArea(game, role, isOwned) {
+            const area = document.getElementById('action-area');
+            let html = '';
+
+            if (isOwned) {
+                html += `<div class="game-owned-badge">已在你的遊戲庫</div><br>`;
+            }
+
+            html += `<div class="action-buttons">`;
+
+            if (role === 'GUEST') {
+                html += `<a href="/pages/auth/login.html" class="btn-primary" style="width:auto;padding:10px 28px;">登入後購買</a>`;
+                html += `<button class="btn-secondary" onclick="showToast('請先登入！', 'error')">加入願望清單</button>`;
+            } else if (isOwned) {
+                html += `<button class="btn-primary" style="width:auto;padding:10px 28px;" onclick="showToast('正在啟動遊戲...', 'success')">開始遊戲</button>`;
+            } else {
+                html += `<button class="btn-primary" style="width:auto;padding:10px 28px;" onclick="addToCart(this)">加入購物車</button>`;
+                html += `<button class="btn-secondary" onclick="addToWishlist()">加入願望清單</button>`;
+            }
+
+            if (role === 'ADMIN') {
+                html += `<button class="btn-danger" onclick="adminTakeDown()" style="margin:0;">強制下架</button>`;
+            }
+
+            html += `</div>`;
+            area.innerHTML = html;
+        }
+
+        // ─── 評論撰寫框 ────────────────────────────────────────
+        function renderReviewWriteArea(game, role, user, isOwned) {
+            const area = document.getElementById('review-write-area');
+            if (!area) return;
+
+            let canReview = false;
+            let reasonMsg = '';
+
+            if (role === 'GUEST') {
+                reasonMsg = `<p style="color:var(--text-muted);font-size:14px;">請 <a href="/pages/auth/login.html">登入</a> 後才能發表評論。</p>`;
+            } else if (role === 'CSR') {
+                canReview = true;
+            } else if (role === 'DEVELOPER') {
+                // Developer 可評論自己的遊戲或已擁有的遊戲
+                // 是否為自己的遊戲由後端 POST 時驗證，前端皆顯示框
+                canReview = true;
+            } else {
+                canReview = isOwned;
+                if (!canReview) reasonMsg = `<p style="color:var(--text-muted);font-size:14px;">購買此遊戲後即可發表評論。</p>`;
+            }
+
+            if (!canReview) {
+                area.innerHTML = reasonMsg ? `<div class="review-write-box">${reasonMsg}</div>` : '';
+                return;
+            }
+
+            area.innerHTML = `
+                <div class="review-write-box">
+                    <h3>發表評論</h3>
+                    <div class="review-rating" id="rating-group">
+                        <label class="selected">
+                            <input type="radio" name="sentiment" value="positive" checked>
+                            推薦
+                        </label>
+                        <label>
+                            <input type="radio" name="sentiment" value="negative">
+                            不推薦
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin-bottom:12px;">
+                        <textarea id="review-text" placeholder="分享你對這款遊戲的看法..." style="min-height:90px;"></textarea>
+                    </div>
+                    <button class="btn-primary" id="submit-review-btn" style="width:auto;padding:10px 28px;margin-top:0;" onclick="submitReview()">送出評論</button>
+                </div>
+            `;
+
+            document.querySelectorAll('.review-rating label').forEach(label => {
+                label.addEventListener('click', () => {
+                    document.querySelectorAll('.review-rating label').forEach(l => l.classList.remove('selected'));
+                    label.classList.add('selected');
+                });
+            });
+        }
+
+        // ─── 渲染評論列表 ──────────────────────────────────────
+        function renderReviews(reviews) {
+            const container = document.getElementById('reviews-container');
+
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="padding:40px;">
+                        <p>還沒有人留下評論，成為第一個吧！</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            reviews.forEach(r => {
+                const div = document.createElement('div');
+                const sentiment = r.sentiment || r.rating || 'positive';
+                div.className = `review-item ${sentiment}`;
+                const badge = sentiment === 'positive'
+                    ? `<span class="review-sentiment sentiment-positive">推薦</span>`
+                    : `<span class="review-sentiment sentiment-negative">不推薦</span>`;
+                const author = escapeHtml(r.author || r.username || '玩家');
+                const playtime = r.playtime || r.play_time || '未知';
+                const date = (r.date || r.created_at || '').slice(0, 10);
+                const text = escapeHtml(r.text || r.content || r.body || '');
+                const reviewId = r.id || r.review_id || r.ID;
+                const replies = r.replies || [];
+
+                let repliesHtml = '';
+                if (replies.length > 0) {
+                    repliesHtml += `<div class="reply-section">`;
+                    const currentUser = getCurrentUser();
+                    const currentUserId = currentUser ? (currentUser.user_id || currentUser.id) : null;
+                    replies.forEach(reply => {
+                        const rAuthor = escapeHtml(reply.author || reply.username || reply.User?.username || '玩家');
+                        const rText = escapeHtml(reply.content || reply.text || '');
+                        const replyId = reply.id || reply.review_reply_id;
+                        const replyUserId = reply.user_id || (reply.User && reply.User.user_id);
+                        const canDelete = currentUserId && (replyUserId == currentUserId);
+                        const deleteBtn = canDelete
+                            ? `<button onclick="deleteReply(${replyId})" style="background:none;border:none;color:var(--accent-red);cursor:pointer;font-size:12px;margin-left:8px;opacity:0.6;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="刪除此回覆">✖</button>`
+                            : '';
+                        repliesHtml += `
+                            <div class="reply-item">
+                                <div class="reply-author">${rAuthor}${deleteBtn}</div>
+                                <div class="reply-text">${rText}</div>
+                            </div>
+                        `;
+                    });
+                    repliesHtml += `</div>`;
+                }
+
+                // Add Reply Input Area (Only if logged in)
+                const role = getCurrentRole();
+                if (role !== 'GUEST') {
+                    repliesHtml += `
+                        <div class="reply-input-area">
+                            <input type="text" id="reply-input-${reviewId}" placeholder="留個言吧...">
+                            <button onclick="submitReply(${reviewId})">回覆</button>
+                        </div>
+                    `;
+                }
+
+                div.innerHTML = `
+                    <div class="review-header">
+                        <span class="review-author">${author}</span>
+                        ${badge}
+                        <span class="review-meta">遊玩時間：${playtime} &nbsp;·&nbsp; ${date}</span>
+                    </div>
+                    <p style="color:var(--text-secondary);font-size:14px;line-height:1.7;">${text}</p>
+                    ${repliesHtml}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function submitReply(reviewId) {
+            const input = document.getElementById(`reply-input-${reviewId}`);
+            const content = input.value.trim();
+            if (!content) return;
+            try {
+                await apiPostReply(reviewId, content);
+                showToast('回覆成功！', 'success');
+                // 重新載入評論
+                const reviews = await apiGetReviews(currentGameId);
+                renderReviews(Array.isArray(reviews) ? reviews : (reviews.data || reviews.reviews || []));
+            } catch (err) {
+                showToast(`回覆失敗：${err.message}`, 'error');
+            }
+        }
+
+        async function deleteReply(replyId) {
+            if (!confirm('確定要刪除此回覆嗎？')) return;
+            try {
+                // DELETE /api/social/reviews/replies/{id}
+                await authFetch(`/api/social/reviews/replies/${replyId}`, { method: 'DELETE' });
+                showToast('回覆已刪除！', 'success');
+                // Reload reviews
+                const reviews = await apiGetReviews(currentGameId);
+                renderReviews(Array.isArray(reviews) ? reviews : (reviews.data || reviews.reviews || []));
+            } catch (err) {
+                showToast(`刪除失敗：${err.message}`, 'error');
+            }
+        }
+
+        // ─── 互動函式 ─────────────────────────────────────────
+        async function addToCart(btnElement) {
+            try {
+                await apiAddToCart(currentGameId);
+                showToast('已加入購物車！', 'success');
+                if (btnElement) {
+                    btnElement.disabled = true;
+                    btnElement.textContent = '已在購物車中';
+                    btnElement.style.background = 'var(--bg-lighter)';
+                    btnElement.style.color = 'var(--text-muted)';
+                    btnElement.style.cursor = 'not-allowed';
+                }
+            } catch (err) {
+                showToast(`加入購物車失敗：${err.message}`, 'error');
+            }
+        }
+
+        async function addToWishlist() {
+            try {
+                await apiAddWishlist(currentGameId);
+                showToast('已加入願望清單！', 'success');
+            } catch (err) {
+                showToast(`加入願望清單失敗：${err.message}`, 'error');
+            }
+        }
+
+        async function adminTakeDown() {
+            if (!confirm('確定要以官方身分強制下架此遊戲嗎？')) return;
+            try {
+                await apiAdminDeleteGame(currentGameId);
+                showToast('遊戲已成功下架。', 'success');
+                setTimeout(() => window.location.href = '/', 1500);
+            } catch (err) {
+                showToast(`下架失敗：${err.message}`, 'error');
+            }
+        }
+
+        async function submitReview() {
+            const textEl = document.getElementById('review-text');
+            const text = textEl ? textEl.value.trim() : '';
+            if (!text) { showToast('請輸入評論內容！', 'error'); return; }
+
+            const radio = document.querySelector('input[name="sentiment"]:checked');
+            const sentiment = radio ? radio.value : 'positive';
+            const btn = document.getElementById('submit-review-btn');
+
+            btn.disabled = true;
+            btn.textContent = '送出中...';
+
+            try {
+                await apiPostReview(currentGameId, sentiment, text);
+                textEl.value = '';
+                showToast('評論已送出！', 'success');
+                // 重新載入評論
+                const reviews = await apiGetReviews(currentGameId);
+                renderReviews(Array.isArray(reviews) ? reviews : (reviews.data || reviews.reviews || []));
+            } catch (err) {
+                showToast(`評論送出失敗：${err.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '送出評論';
+            }
+        }
+    </script>
+</body>
+
+</html>

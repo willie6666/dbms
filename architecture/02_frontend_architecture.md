@@ -1,0 +1,84 @@
+# VaporAuror 前端架構與技術解析 (Frontend Architecture)
+
+本文件詳細解析 VaporAuror 專案的前端底層架構，採用純原生（Vanilla JS）的多頁面架構（MPA），職責切割清晰，確保前後端溝通順暢。
+
+---
+
+## 1. 前端技術棧與整體架構概述
+- **架構類型**: 多頁面應用程式 (MPA, Multi-Page Application)
+- **核心語言**: HTML5, CSS3, Vanilla JavaScript (原生 JS，無使用 React / Vue 等框架)
+- **狀態管理**: 依賴瀏覽器的 `localStorage` (儲存 JWT Token 與 User Info)
+- **畫面渲染機制**: 後端伺服器 (Live-Server) 提供靜態 HTML 骨架，前端 JS 載入後發起 AJAX (Fetch) 請求，取得 JSON 資料後，透過 DOM API 動態寫入內容。
+
+---
+
+## 2. 檔案目錄結構與職責劃分 (Tree Architecture)
+
+```text
+frontend/
+├── index.html                  # 系統總入口 (商店首頁：顯示熱門與所有遊戲)
+├── assets/                     # 靜態資源共用區 (前端的核心引擎)
+│   ├── css/
+│   │   └── style.css           # 全域樣式表 (定義 CSS 色票變數、版面配置、按鈕與表單 UI)
+│   ├── js/
+│   │   ├── api.js              # [API 溝通層] 集中封裝所有與後端的 RESTful API 呼叫
+│   │   └── main.js             # [共用邏輯層] 全域導覽列渲染、身分權限驗證、Toast 提示組件
+│   └── images/                 # 靜態圖片、Logo 與圖示
+└── pages/                      # 功能畫面區 (依業務邏輯高度模組化)
+    ├── auth/                   # [身分驗證模組]
+    │   ├── login.html          # 登入畫面
+    │   └── register.html       # 註冊畫面
+    ├── store/                  # [商店模組]
+    │   ├── search.html         # 關鍵字與標籤搜尋結果頁面
+    │   └── game_detail.html    # 遊戲詳細介紹、評論展示與加入購物車操作
+    ├── user/                   # [玩家專屬模組]
+    │   ├── library.html        # 個人遊戲庫 (遊玩、下載)
+    │   ├── cart.html           # 購物車結帳頁面
+    │   └── profile.html        # 個人資料修改、好友與黑名單管理
+    └── dashboard/              # [後台管理模組 (嚴格依角色隔離)]
+        ├── admin_dashboard.html # 系統管理員後台 (管理所有帳號權限與強制下架遊戲)
+        ├── csr_dashboard.html   # 客服人員後台 (審核玩家退款申請)
+        └── dev_dashboard.html   # 開發者後台 (上架新遊戲、上傳圖片素材、查看銷售數據)
+```
+
+---
+
+## 3. 核心模組深度解析 (Core Modules Details)
+
+### 🔴 API 溝通層 (API Layer) - `assets/js/api.js`
+- **職責**: 作為前端與後端溝通的「唯一閘口」。所有跨頁面的 API 請求都必須且只能透過此檔案發出。
+- **核心機制**:
+  - **自動授權 `authFetch()`**: 封裝了原生的 `fetch()` API。每次發送受保護的請求時，會自動從 `localStorage` 取出 JWT Token，並注入 HTTP Header (`Authorization: Bearer <token>`) 中。
+  - **401 攔截器**: 負責全域錯誤攔截。如果後端回傳 HTTP Status `401 Unauthorized` (Token 過期或被竄改)，會自動強制登出，清空快取並導向 `login.html`。
+  - **業務函數映射**: 提供具語意化的函數如 `apiGetGames()`, `apiAddToCart()`, `apiApproveRefund()`，隱藏底層的 URL 路徑與 HTTP Method 差異，讓各頁面的程式碼保持乾淨。
+
+### 🟡 共用邏輯與狀態層 (Shared Logic Layer) - `assets/js/main.js`
+- **職責**: 處理全站共用的 DOM 操作與全域狀態快取。
+- **核心機制**:
+  - **動態導覽列 `renderHeader()`**: 根據當前使用者的登入狀態（遊客、已登入）與角色權限（`USERS`, `ADMIN`, `CSR`, `DEVELOPER`），動態生成右上角的選單按鈕（例如：只有開發者才會看到「開發者後台」按鈕）。
+  - **全域提示組件 `showToast(msg, type)`**: 畫面的右下角彈出通知 (Success/Error)，處理非同步請求完成後的使用者回饋。
+  - **狀態管理 API**: 提供 `getToken()`, `getCurrentUser()`, `getCurrentRole()` 等封裝函式，避免直接操作 localStorage 造成的拼字錯誤。
+
+### 🔵 視圖與渲染層 (View Layer) - `pages/**/*.html`
+- **職責**: 負責骨架繪製與畫面獨有的業務邏輯 (Page-specific logic)。
+- **核心機制**:
+  - **高內聚低耦合**: 每個 `.html` 檔案各自獨立，保有自己的專屬 JavaScript 邏輯，例如 `cart.html` 內的 JS 只負責解析購物車陣列並迴圈印出 `div.cart-item`，絕不干涉其他頁面。
+  - **事件綁定**: 透過 `onclick`, `onsubmit` 攔截使用者的表單送出與點擊，收集資料後交由 `api.js` 處理。
+
+---
+
+## 4. 頁面生命週期與渲染流程 (Page Lifecycle)
+
+當使用者在瀏覽器中打開任何一個頁面（例如「遊戲詳情頁」）時，前端的完整運作流程如下：
+
+```text
+1. [載入階段] 瀏覽器向 Server 請求 HTML 檔案。
+2. [解析階段] 瀏覽器解析 DOM Tree，並載入 style.css 畫出基礎外觀與顏色。
+3. [依賴載入] 執行位於 HTML 文件底部的 <script src="/assets/js/api.js"> 與 main.js。
+4. [初始化] 觸發原生事件 document.addEventListener("DOMContentLoaded")。
+5. [共用渲染] main.js 自動執行 renderHeader()，讀取 Token 判斷身分並畫出導覽列。
+6. [資料請求] 該頁面專屬的腳本被觸發，向 api.js 呼叫函式 (如 apiGetGameDetails(id))。
+7. [等待回覆] api.js 將請求包裝後送往 http://localhost:8000/api/...
+8. [動態更新] 收到後端 JSON 回應後，透過 document.getElementById() 將數據 (如價格、評論) 動態寫入畫面。
+9. [等待互動] 頁面渲染完畢，靜待使用者的點擊或表單輸入操作。
+```

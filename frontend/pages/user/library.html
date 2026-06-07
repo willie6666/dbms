@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人遊戲庫 — VaporAuror</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        .library-container {
+            max-width: 1000px;
+            margin: 40px auto;
+        }
+        .library-header {
+            border-bottom: 2px solid rgba(0, 240, 255, 0.2);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .library-header h1 {
+            color: var(--text-primary);
+            font-size: 2.2rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: var(--glow-cyan);
+        }
+        
+        /* Grid Layout for Library Games */
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .lib-game-card {
+            background: rgba(16, 19, 35, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        .lib-game-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(0, 240, 255, 0.4);
+            box-shadow: 0 15px 30px rgba(0, 240, 255, 0.15);
+        }
+        .lib-game-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .lib-game-card:hover::before { opacity: 1; }
+
+        .lib-game-cover {
+            height: 140px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        .lib-game-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        .lib-game-card:hover .lib-game-cover img { opacity: 1; }
+
+        .lib-game-info {
+            padding: 20px;
+        }
+        .lib-game-info h3 {
+            color: white;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+        .lib-game-meta {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .lib-game-actions {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            gap: 10px;
+        }
+        .btn-play {
+            flex: 2;
+            background: linear-gradient(135deg, var(--accent-cyan), #00aaff);
+            color: #000;
+            font-weight: 800;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+        .btn-play:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+        }
+        .btn-download {
+            flex: 1;
+            background: transparent;
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 255, 100, 0.4);
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-download:hover {
+            background: rgba(0, 255, 100, 0.1);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px rgba(0, 255, 100, 0.2);
+        }
+        .btn-review {
+            flex: 1;
+            background: transparent;
+            color: var(--accent-pink);
+            border: 1px solid rgba(255,0,85,0.4);
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-review:hover {
+            background: rgba(255,0,85,0.1);
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 15px rgba(255,0,85,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <header id="global-header"></header>
+
+    <main class="library-container">
+        <div class="library-header">
+            <h1 style="margin:0;">🎮 我的遊戲庫</h1>
+        </div>
+        <div class="library-grid" id="my-games-list">
+            <p style="color:var(--text-muted);text-align:center;padding:40px; grid-column: 1 / -1;">載入中...</p>
+        </div>
+    </main>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!requireLogin()) return;
+
+            try {
+                // GET /api/library
+                const result = await apiGetLibrary();
+                const games  = Array.isArray(result) ? result : (result.data || result.games || []);
+                renderLibrary(games);
+            } catch (err) {
+                document.getElementById('my-games-list').innerHTML =
+                    `<p style="color:var(--accent-red);text-align:center;padding:40px;">載入失敗：${err.message}</p>`;
+            }
+        });
+
+        function renderLibrary(games) {
+            const listEl = document.getElementById('my-games-list');
+            listEl.innerHTML = '';
+
+            // Filter out revoked/inactive licenses
+            const activeGames = games.filter(item => item.status === 'ACTIVE' || !item.status);
+
+            if (activeGames.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <p>你的遊戲庫空空如也，去商店逛逛吧！</p>
+                        <a href="/" class="btn-primary" style="display:inline-block;width:auto;padding:10px 24px;margin-top:12px;">前往商店</a>
+                    </div>`;
+                return;
+            }
+
+            activeGames.forEach(item => {
+                const game     = item.game || item;
+                const gameId   = game.id   || item.game_id;
+                const title    = game.title || item.title || '';
+                const playtime = item.playtime || item.play_time || item.hours || '0 小時';
+                const lastPlayed = (item.last_played || item.lastPlayed || '').slice(0, 10) || '—';
+
+                const el = document.createElement('div');
+                el.className = 'lib-game-card';
+                // Try to find a cover image if available (using placeholder if not)
+                let coverImg = 'https://placehold.co/400x300/1a1a2e/00f0ff?text=No+Cover';
+                if (game.media && game.media.length > 0) {
+                    const thumb = game.media.find(m => m.media_type === 'thumbnail') || game.media.find(m => m.media_type === 'media') || game.media[0];
+                    coverImg = thumb.file_url;
+                }
+
+                el.innerHTML = `
+                    <div class="lib-game-cover">
+                        <img src="${coverImg}" alt="${escapeHtml(title)}" onerror="this.onerror=null; this.src='https://placehold.co/400x300/1a1a2e/00f0ff?text=No+Cover'">
+                    </div>
+                    <div class="lib-game-info">
+                        <h3>${escapeHtml(title)}</h3>
+                        <div class="lib-game-meta">
+                            <span>🕒 遊玩：${playtime}</span>
+                            <span style="color:var(--accent-cyan);">最後：${lastPlayed}</span>
+                        </div>
+                    </div>
+                    <div class="lib-game-actions">
+                        <button class="btn-play" onclick="playGame(${gameId})">▶ 啟動</button>
+                        <button class="btn-download" onclick="downloadGame(${gameId})">⬇ 下載</button>
+                        <button class="btn-review" onclick="window.location.href='/pages/store/game_detail?id=${gameId}'">★ 評價</button>
+                    </div>
+                `;
+                listEl.appendChild(el);
+            });
+        }
+
+        async function playGame(gameId) {
+            try {
+                // GET /api/protected/library/{game_id}/play
+                const result = await authFetch(`/api/protected/library/${gameId}/play`);
+                const data   = await result.json();
+                // 後端可回傳遊戲啟動 URL 或 token
+                if (data && data.launch_url) {
+                    window.open(data.launch_url, '_blank');
+                } else {
+                    showToast('遊戲啟動中...', 'success');
+                }
+            } catch (err) {
+                showToast(`啟動失敗：${err.message}`, 'error');
+            }
+        }
+
+        async function downloadGame(gameId) {
+            try {
+                // GET /api/protected/library/{game_id}/download
+                const result = await authFetch(`/api/protected/library/${gameId}/download`);
+                const data = await result.json();
+                if (data && data.download_url) {
+                    window.open(data.download_url, '_blank');
+                } else {
+                    showToast('開始下載遊戲...', 'success');
+                }
+            } catch (err) {
+                showToast(`下載失敗：${err.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客服處理中心 — VaporAuror</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        .dashboard-panel {
+            background: rgba(16, 19, 35, 0.6);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            height: fit-content;
+        }
+        .dashboard-panel h2 {
+            color: var(--text-primary);
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dashboard-panel h2::before {
+            content: ''; display: block; width: 4px; height: 20px;
+            background: var(--accent-cyan); border-radius: 2px;
+            box-shadow: var(--glow-cyan);
+        }
+        .library-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .library-item:hover {
+            background: rgba(0, 240, 255, 0.05);
+            border-color: rgba(0, 240, 255, 0.2);
+            transform: scale(1.01);
+        }
+    </style>
+</head>
+<body>
+
+    <header id="global-header"></header>
+
+    <main>
+        <div class="dashboard-header">
+            <h1>客服處理中心</h1>
+            <span class="role-badge csr">CSR</span>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-panel">
+                <h2>待處理退款申請</h2>
+                <div class="library-list" id="refund-requests-list">
+                    <p style="color:var(--text-muted);">載入中...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const role = getCurrentRole();
+            if (role !== 'CSR' && role !== 'ADMIN') {
+                alert("存取被拒：您沒有客服權限");
+                window.location.href = '/';
+                return;
+            }
+            await loadRefunds();
+        });
+
+        // ─── 退款列表 ──────────────────────────────────────────
+        async function loadRefunds() {
+            try {
+                // GET /api/admin/refunds
+                const result  = await apiGetRefunds();
+                const refunds = Array.isArray(result) ? result : (result.data || result.refunds || []);
+                renderRefunds(refunds.filter(r => r.status === 'PENDING' || r.status === 'pending'));
+            } catch (err) {
+                document.getElementById('refund-requests-list').innerHTML =
+                    `<p style="color:var(--accent-red);">載入失敗：${err.message}</p>`;
+            }
+        }
+
+        function renderRefunds(refunds) {
+            const listEl = document.getElementById('refund-requests-list');
+            listEl.innerHTML = '';
+
+            if (refunds.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state" style="padding:32px;">
+                        <p>目前沒有待處理的退款申請</p>
+                    </div>`;
+                return;
+            }
+
+            refunds.forEach(req => {
+                const item = document.createElement('div');
+                item.className = 'library-item';
+
+                const refundId  = req.id || req.refund_id;
+                const username  = req.username || (req.user && req.user.username) || '玩家';
+                const gameTitle = req.game_title || (req.game && req.game.title) || req.title || '';
+                const price     = Number(req.amount || req.price || 0);
+                const reason    = req.reason || req.description || '未填寫';
+
+                item.innerHTML = `
+                    <div class="library-item-info">
+                        <h3>申請 #${refundId} — ${escapeHtml(gameTitle)}</h3>
+                        <p>申請人：${escapeHtml(username)} &nbsp;|&nbsp; 金額：NT$ ${price.toLocaleString()} &nbsp;|&nbsp; 理由：${escapeHtml(reason)}</p>
+                    </div>
+                    <div class="library-item-actions">
+                        <button class="btn-success" style="padding:8px 16px; margin:0 5px;" onclick="processRefund(${refundId}, 'APPROVED')">核准退款</button>
+                        <button class="btn-danger" style="padding:8px 16px; margin:0;" onclick="processRefund(${refundId}, 'REJECTED')">駁回</button>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        async function processRefund(refundId, status) {
+            const label = status === 'APPROVED' ? '核准' : '駁回';
+            if (!confirm(`確定要${label}此退款申請嗎？`)) return;
+            try {
+                // PUT /api/csr/refunds/{id}
+                await apiProcessRefund(refundId, status);
+                alert(`已${label}退款申請！`);
+                await loadRefunds();
+            } catch (err) {
+                alert(`操作失敗：${err.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

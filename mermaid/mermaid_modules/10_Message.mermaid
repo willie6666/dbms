@@ -1,0 +1,23 @@
+erDiagram
+    USERS {
+        INT user_id PK
+        VARCHAR username
+        VARCHAR email
+        VARCHAR password_hash
+        DATETIME registration_date
+        VARCHAR last_visit_ip
+        VARCHAR role "NULL | USERS | CSR | ADMIN | DEVELOPER"
+        VARCHAR status "ONLINE | OFFLINE"
+        VARCHAR permission "ACTIVE | DEACTIVE | DELETED"
+    }
+    MESSAGE {
+        INT message_id PK
+        INT sender_id FK
+        INT receiver_id FK
+        TEXT content
+        DATETIME sent_at
+        BOOLEAN is_read
+    }
+
+    USERS ||--o{ MESSAGE : sends
+    USERS ||--o{ MESSAGE : receives

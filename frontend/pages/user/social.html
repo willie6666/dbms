@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社群中心 — VaporAuror</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        /* Cyber Aurora Social Styles */
+        .social-container {
+            display: flex;
+            gap: 0;
+            height: 70vh;
+            background: rgba(16, 19, 35, 0.6);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .social-sidebar {
+            width: 320px;
+            background: rgba(10, 12, 22, 0.8);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-tabs button {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 15px 0;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .sidebar-tabs button.active {
+            color: var(--accent-cyan);
+            border-bottom: 2px solid var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.05);
+        }
+
+        .list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .list-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .list-item.active {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: rgba(0, 240, 255, 0.3);
+        }
+
+        .list-item-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            margin-right: 15px;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+            flex-shrink: 0;
+        }
+
+        .social-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+        }
+
+        .chat-header {
+            padding: 20px 30px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-primary);
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 16px;
+            font-size: 1rem;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .msg-me {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 150, 255, 0.05));
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(0,240,255,0.05);
+        }
+
+        .msg-them {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            gap: 10px;
+        }
+
+        #chat-input {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 0 20px;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #chat-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <header id="global-header"></header>
+
+    <main>
+        <div class="dashboard-header" style="margin-bottom:20px;">
+            <h1 style="font-size:22px;">社群中心</h1>
+            <button class="btn-primary" style="width:auto;padding:9px 20px;margin-top:0;" onclick="addFriendPrompt()">新增好友</button>
+        </div>
+
+        <div class="social-container">
+            <div class="social-sidebar">
+                <div class="sidebar-tabs">
+                    <button id="tab-friends" class="active" onclick="switchTab('friends')">好友名單</button>
+                    <button id="tab-requests" onclick="switchTab('requests')">好友邀請</button>
+                    <button id="tab-blocked" onclick="switchTab('blocked')">黑名單</button>
+                </div>
+                <div class="list-container" id="social-list">
+                    </div>
+            </div>
+
+            <div class="social-chat">
+                <div class="chat-header" id="chat-header">請選擇一位好友開始聊天</div>
+                <div class="chat-messages" id="chat-messages">
+                    </div>
+                <form class="chat-input-area" id="chat-form" style="display: none;">
+                    <input type="text" id="chat-input" placeholder="輸入訊息..." autocomplete="off" required>
+                    <button type="submit" class="btn-primary" style="margin: 0; width: 80px;">發送</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script>
+        let socialData = {
+            friends: [],
+            requests: [],
+            blocked: []
+        };
+
+        let currentActiveTab = 'friends';
+        let currentChatFriendId = null;
+        let currentChatFriendName = '';
+        let chatInterval = null;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!requireLogin()) return;
+            await loadSocialData();
+        });
+
+        // 載入好友、邀請與黑名單資料
+        async function loadSocialData() {
+            try {
+                const res = await apiGetFriends();
+                
+                // 相容於整合回傳或個別欄位
+                if (res && !Array.isArray(res) && (res.friends || res.requests || res.blocked)) {
+                    socialData.friends = res.friends || [];
+                    socialData.requests = res.requests || [];
+                    socialData.blocked = res.blocked || [];
+                } else {
+                    socialData.friends = Array.isArray(res) ? res : [];
+                    
+                    // Fallback 取得邀請列表
+                    try {
+                        const reqs = await apiGetFriendRequests();
+                        socialData.requests = Array.isArray(reqs) ? reqs : (reqs.requests || reqs.data || []);
+                    } catch (e) {
+                        console.warn("使用 fallback 取得好友邀請失敗，預設為空列表", e);
+                        socialData.requests = [];
+                    }
+
+                    // Fallback 取得黑名單列表
+                    try {
+                        const bl = await apiGetBlacklist();
+                        socialData.blocked = Array.isArray(bl) ? bl : (bl.blocked || bl.data || []);
+                    } catch (e) {
+                        console.warn("使用 fallback 取得黑名單失敗，預設為空列表", e);
+                        socialData.blocked = [];
+                    }
+                }
+                
+                renderList();
+            } catch (err) {
+                console.error("載入社群資料失敗：", err);
+                const listContainer = document.getElementById('social-list');
+                listContainer.innerHTML = `<p style="color:var(--accent-red); text-align:center; margin-top:20px;">載入失敗：${err.message}</p>`;
+            }
+        }
+
+        // 處理左側名單渲染
+        function renderList() {
+            const listContainer = document.getElementById('social-list');
+            listContainer.innerHTML = '';
+
+            let targetArray = socialData[currentActiveTab] || [];
+
+            if (targetArray.length === 0) {
+                listContainer.innerHTML = '<p style="color:#8f98a0; text-align:center; margin-top:20px;">列表為空</p>';
+                return;
+            }
+
+            targetArray.forEach(item => {
+                const user = item.sender || item.receiver || item.user || item;
+                const userId = user.id || item.id || item.user_id || item.friend_id;
+                const username = user.username || item.username || `玩家 #${userId}`;
+
+                const div = document.createElement('div');
+                div.className = 'list-item' + (currentActiveTab === 'blocked' ? ' blocked' : '') + (currentChatFriendId === userId ? ' active' : '');
+                
+                const avatarChar = username.charAt(0).toUpperCase();
+                let contentHtml = `
+                    <div style="display:flex; align-items:center;">
+                        <div class="list-item-avatar">${avatarChar}</div>
+                        <span style="color: white; font-weight: 500;">${escapeHtml(username)}</span>
+                    </div>
+                `;
+                let actionHtml = '';
+
+                if (currentActiveTab === 'friends') {
+                    div.onclick = () => openChat(userId, username);
+                    actionHtml = `<button class="btn-secondary" style="padding: 4px 8px; font-size:12px; background-color:#ff5959; color:white; width:auto; margin:0;" onclick="event.stopPropagation(); blockUser(${userId}, '${escapeHtml(username)}')">封鎖</button>`;
+                } 
+                else if (currentActiveTab === 'requests') {
+                    const requestId = item.id || userId;
+                    actionHtml = `
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-primary" style="padding: 4px 8px; font-size:12px; width:auto; margin:0;" onclick="event.stopPropagation(); handleRequest(${requestId}, true)">接受</button>
+                            <button class="btn-secondary" style="padding: 4px 8px; font-size:12px; width:auto; margin:0;" onclick="event.stopPropagation(); handleRequest(${requestId}, false)">拒絕</button>
+                        </div>
+                    `;
+                } 
+                else if (currentActiveTab === 'blocked') {
+                    actionHtml = `<button class="btn-secondary" style="padding: 4px 8px; font-size:12px; width:auto; margin:0;" onclick="event.stopPropagation(); unblockUser(${userId})">解除封鎖</button>`;
+                }
+
+                div.innerHTML = contentHtml + actionHtml;
+                listContainer.appendChild(div);
+            });
+        }
+
+        // 切換頁籤
+        function switchTab(tabName) {
+            document.getElementById(`tab-${currentActiveTab}`).classList.remove('active');
+            currentActiveTab = tabName;
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            renderList();
+        }
+
+        // 發送好友邀請
+        async function addFriendPrompt() {
+            const name = prompt("請輸入玩家的 Username 來發送好友邀請：");
+            if (!name) return;
+            try {
+                await apiFriendRequest(name);
+                alert(`已向玩家 [${name}] 發送好友邀請！`);
+                await loadSocialData();
+            } catch (err) {
+                alert(`發送邀請失敗：${err.message}`);
+            }
+        }
+
+        // 處理收到的邀請
+        async function handleRequest(requestId, isAccepted) {
+            try {
+                if (isAccepted) {
+                    await apiFriendAccept(requestId);
+                    alert("已接受好友邀請！");
+                } else {
+                    await apiFriendDecline(requestId);
+                    alert("已拒絕好友邀請。");
+                }
+                await loadSocialData();
+            } catch (err) {
+                alert(`操作失敗：${err.message}`);
+            }
+        }
+
+        // 封鎖邏輯 (移出好友，加入黑名單)
+        async function blockUser(userId, username) {
+            if (confirm(`確定要封鎖 ${username} 嗎？他將無法再傳送訊息給你。`)) {
+                try {
+                    await apiAddBlacklist(userId);
+                    alert(`已封鎖 ${username}`);
+                    
+                    if (currentChatFriendId === userId) {
+                        closeChat();
+                    }
+                    await loadSocialData();
+                } catch (err) {
+                    alert(`封鎖失敗：${err.message}`);
+                }
+            }
+        }
+
+        // 關閉聊天視窗
+        function closeChat() {
+            if (chatInterval) {
+                clearInterval(chatInterval);
+                chatInterval = null;
+            }
+            currentChatFriendId = null;
+            currentChatFriendName = '';
+            document.getElementById('chat-header').innerText = "請選擇一位好友開始聊天";
+            document.getElementById('chat-messages').innerHTML = '';
+            document.getElementById('chat-form').style.display = 'none';
+        }
+
+        // 解除封鎖
+        async function unblockUser(userId) {
+            try {
+                await apiRemoveBlacklist(userId);
+                alert("已解除封鎖。");
+                await loadSocialData();
+            } catch (err) {
+                alert(`解除封鎖失敗：${err.message}`);
+            }
+        }
+
+        // 打開聊天視窗
+        async function openChat(friendId, friendName) {
+            if (chatInterval) {
+                clearInterval(chatInterval);
+            }
+            currentChatFriendId = friendId;
+            currentChatFriendName = friendName;
+            document.getElementById('chat-header').innerText = `與 ${friendName} 聊天中`;
+            document.getElementById('chat-form').style.display = 'flex';
+            
+            // 立即渲染，然後開啟輪詢
+            await renderChat();
+            
+            // 每 3 秒輪詢新訊息
+            chatInterval = setInterval(async () => {
+                if (currentChatFriendId === friendId) {
+                    await renderChat(true);
+                }
+            }, 3000);
+
+            // 重新選取左側選單的 active 樣式
+            renderList();
+        }
+
+        // 渲染聊天訊息
+        async function renderChat(isSilent = false) {
+            if (!currentChatFriendId) return;
+            const chatBox = document.getElementById('chat-messages');
+            
+            try {
+                const res = await apiGetMessages(currentChatFriendId);
+                const messages = Array.isArray(res) ? res : (res.data || res.messages || []);
+                
+                const isAtBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 50;
+
+                if (messages.length === 0) {
+                    chatBox.innerHTML = '<p style="color:#8f98a0; text-align:center; margin-top:50px;">尚無聊天紀錄，打個招呼吧！</p>';
+                    return;
+                }
+
+                const currentUser = getCurrentUser() || {};
+                const currentUserId = currentUser.id;
+
+                chatBox.innerHTML = '';
+                messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    
+                    const isMe = msg.sender === 'me' || 
+                                 msg.sender_id === currentUserId || 
+                                 (msg.sender && msg.sender.id === currentUserId);
+                    
+                    const text = msg.text || msg.content || '';
+                    
+                    div.className = `message ${isMe ? 'msg-me' : 'msg-them'}`;
+                    div.innerText = text;
+                    chatBox.appendChild(div);
+                });
+
+                if (!isSilent || isAtBottom) {
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            } catch (err) {
+                console.error("載入聊天記錄失敗：", err);
+                if (!isSilent) {
+                    chatBox.innerHTML = `<p style="color:var(--accent-red); text-align:center; margin-top:50px;">載入聊天記錄失敗：${err.message}</p>`;
+                }
+            }
+        }
+
+        // 發送訊息
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+
+            if (text && currentChatFriendId) {
+                try {
+                    await apiSendMessage(currentChatFriendId, text);
+                    input.value = '';
+                    await renderChat();
+                } catch (err) {
+                    alert(`發送訊息失敗：${err.message}`);
+                }
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (chatInterval) {
+                clearInterval(chatInterval);
+            }
+        });
+    </script>
+</body>
+</html>

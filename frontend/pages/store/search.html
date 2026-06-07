@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜尋結果 — VaporAuror</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+    <header id="global-header"></header>
+
+    <main>
+        <div class="search-hero" style="position:relative; overflow:hidden; border-radius:16px; padding:40px; margin-bottom: 40px; background: rgba(16, 19, 35, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(0, 240, 255, 0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div style="position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle at center, rgba(0, 240, 255, 0.05) 0%, transparent 60%); z-index:0; pointer-events:none;"></div>
+            
+            <form class="search-bar" id="search-form" style="position:relative; z-index:1; max-width:800px; margin:0 auto; display:flex; gap:10px; background: rgba(0,0,0,0.5); padding:8px; border-radius:50px; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 0 20px rgba(0,0,0,0.5);">
+                <input type="text" id="search-input" placeholder="搜尋遊戲名稱、類型、開發者..." style="flex:1; background:transparent; border:none; color:white; padding:12px 25px; font-size:1.1rem; outline:none; font-family:'Outfit', sans-serif;">
+                <button type="submit" style="background:var(--accent-cyan); color:#000; border:none; padding:10px 30px; border-radius:40px; font-weight:800; font-size:1.1rem; cursor:pointer; transition:all 0.3s ease; box-shadow:var(--glow-cyan);">搜尋</button>
+            </form>
+            <style>
+                #search-form button:hover { background:white; box-shadow:0 0 20px rgba(255,255,255,0.5); transform:scale(1.05); }
+                #search-input::placeholder { color: rgba(255,255,255,0.4); }
+            </style>
+        </div>
+
+        <div class="search-results-header" id="search-results-header"></div>
+        <h2 class="section-title" id="search-section-title">搜尋結果</h2>
+        <div class="game-list-container" id="game-list">
+            <p style="color:var(--text-muted);text-align:center;padding:40px;">載入中...</p>
+        </div>
+    </main>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const params  = new URLSearchParams(window.location.search);
+            const keyword = params.get('q') || '';
+
+            document.getElementById('search-input').value = keyword;
+            document.title = keyword ? `"${keyword}" 的搜尋結果 — VaporAuror` : '搜尋遊戲 — VaporAuror';
+
+            if (!keyword) {
+                document.getElementById('search-section-title').textContent = '瀏覽所有遊戲';
+                document.getElementById('search-results-header').innerHTML = '';
+            }
+
+            // 顯示骨架屏
+            renderGames(null);
+
+            try {
+                // GET /api/games?q=keyword — 公開端點
+                const result = await apiGetGames(keyword);
+                const games  = Array.isArray(result) ? result : (result.data || result.games || []);
+
+                const headerEl = document.getElementById('search-results-header');
+                if (keyword) {
+                    headerEl.innerHTML = `找到 <strong>${games.length}</strong> 個符合「<strong>${escapeHtml(keyword)}</strong>」的結果`;
+                    document.getElementById('search-section-title').textContent =
+                        `搜尋結果 (${games.length})`;
+                }
+
+                renderGames(games);
+            } catch (err) {
+                document.getElementById('game-list').innerHTML =
+                    `<p style="color:var(--accent-red);text-align:center;padding:40px;">搜尋失敗：${err.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

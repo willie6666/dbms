@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人資料 — VaporAuror</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        .profile-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: rgba(16, 19, 35, 0.6);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .profile-container h2 {
+            color: var(--accent-cyan);
+            margin-bottom: 5px;
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: var(--glow-cyan);
+            text-align: center;
+        }
+        .profile-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+        .profile-info-box {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 0, 85, 0.2);
+            border-left: 4px solid var(--accent-pink);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .form-group input {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        .form-group input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header id="global-header"></header>
+
+    <main>
+        <div class="profile-container">
+            <h2>個人資料管理</h2>
+            <p class="profile-subtitle">自訂您的 VaporAuror 身份</p>
+
+            <div id="profile-info" class="profile-info-box">
+                <p style="margin-bottom:12px; font-size:1.1rem;">
+                    <strong style="color:var(--text-secondary);">帳號權限：</strong>
+                    <span id="display-role" style="color:var(--accent-pink);font-weight:700;"></span>
+                </p>
+                <p style="font-size:1.1rem;">
+                    <strong style="color:var(--text-secondary);">錢包餘額：</strong>
+                    <span style="color:var(--accent-cyan);font-weight:700;text-shadow:0 0 5px rgba(0,240,255,0.5);">無限 💎</span>
+                </p>
+            </div>
+
+            <div id="profile-error" class="alert-info" style="display:none;background:rgba(255,89,89,0.1);border-color:rgba(255,89,89,0.3);color:#ff5959;"></div>
+            <div id="profile-success" class="alert-info" style="display:none;"></div>
+
+            <form id="profile-form">
+                <div class="form-group">
+                    <label for="prof-username">使用者名稱 (Username)</label>
+                    <input type="text" id="prof-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="prof-email">電子郵件 (Email)</label>
+                    <input type="email" id="prof-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="prof-password">新密碼（不修改請留空）</label>
+                    <input type="password" id="prof-password" placeholder="輸入新密碼">
+                </div>
+                <button type="submit" class="btn-primary" id="save-btn">儲存變更</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!requireLogin()) return;
+
+            const userData = getCurrentUser();
+            const roleLabels = {
+                USER: '一般玩家 (User)',
+                DEVELOPER: '開發者 (Developer)',
+                CSR: '客服人員 (CSR)',
+                ADMIN: '管理員 (Admin)'
+            };
+
+            document.getElementById('display-role').textContent = roleLabels[userData.role] || userData.role;
+            document.getElementById('prof-username').value = userData.username;
+            document.getElementById('prof-email').value    = userData.email;
+
+            document.getElementById('profile-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newUsername = document.getElementById('prof-username').value.trim();
+                const newEmail    = document.getElementById('prof-email').value.trim();
+                const newPassword = document.getElementById('prof-password').value;
+                const errorEl     = document.getElementById('profile-error');
+                const successEl   = document.getElementById('profile-success');
+                const btn         = document.getElementById('save-btn');
+
+                errorEl.style.display   = 'none';
+                successEl.style.display = 'none';
+                btn.disabled = true;
+                btn.textContent = '儲存中...';
+
+                const payload = { username: newUsername, email: newEmail };
+                if (newPassword) payload.password = newPassword;
+
+                try {
+                    // PUT /api/users/profile
+                    const updatedUser = await apiUpdateProfile(payload);
+
+                    // 更新本地 localStorage
+                    const merged = { ...userData, ...updatedUser, username: newUsername, email: newEmail };
+                    localStorage.setItem('currentUser', JSON.stringify(merged));
+
+                    successEl.textContent = '資料更新成功！';
+                    successEl.style.display = 'block';
+                    document.getElementById('prof-password').value = '';
+                } catch (err) {
+                    errorEl.textContent = `更新失敗：${err.message}`;
+                    errorEl.style.display = 'block';
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = '儲存變更';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
