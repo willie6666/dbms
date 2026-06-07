@@ -19,8 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const keyword = document.getElementById('search-input').value.trim();
             if (keyword) {
-                // [API] 未來替換為 GET /api/games?q={keyword}
-                window.location.href = `/pages/store/search?q=${encodeURIComponent(keyword)}`;
+                // [API] GET /api/games?q={keyword}
+                window.location.href = `/pages/store/search.html?q=${encodeURIComponent(keyword)}`;
             }
         });
     }

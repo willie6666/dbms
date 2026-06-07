@@ -7,11 +7,11 @@
     <title>遊戲詳情 — VaporAuror</title>
     <link rel="stylesheet" href="/assets/css/style.css">
     <style>
-        /* Cybernetic Aurora Detail Layout */
+        /* VaporAuror Console Store Detail Layout */
         .game-detail-layout {
             display: flex;
             gap: 40px;
-            margin: 40px auto;
+            margin: 0 auto 40px;
             max-width: 1200px;
             align-items: stretch;
         }
@@ -21,11 +21,10 @@
             max-width: 65%;
             aspect-ratio: 16/9;
             background: var(--bg-card);
-            border-radius: 16px;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), var(--glow-cyan);
+            border: 1px solid var(--bg-hover);
             position: relative;
-            border: 1px solid rgba(0, 240, 255, 0.1);
         }
         
         .game-info-right {
@@ -33,155 +32,91 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            padding: 30px;
-            background: rgba(16, 19, 35, 0.6);
-            backdrop-filter: blur(15px);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-top: 1px solid rgba(0, 240, 255, 0.2);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,240,255,0.02);
+            padding: 24px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--bg-hover);
             position: relative;
-        }
-
-        .game-info-right::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.05) 0%, transparent 100%);
-            pointer-events: none;
-            border-radius: 16px;
         }
         
         .rating-badge {
             display: inline-flex;
             align-items: center;
-            background: rgba(255, 184, 0, 0.1);
+            background: rgba(247, 201, 107, 0.1);
             color: var(--accent-yellow);
             padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 800;
-            font-size: 18px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 16px;
             gap: 8px;
-            border: 1px solid rgba(255, 184, 0, 0.2);
-            box-shadow: 0 0 15px rgba(255, 184, 0, 0.1);
-            position: relative;
-            z-index: 1;
+            border: 1px solid rgba(247, 201, 107, 0.2);
         }
         
         .developer-badge {
-            color: var(--accent-cyan);
+            color: var(--text-muted);
             font-size: 13px;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             text-transform: uppercase;
             font-weight: 600;
-            position: relative;
-            z-index: 1;
         }
         
         #detail-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 2.8rem;
+            font-size: 36px;
             margin: 0;
             line-height: 1.1;
-            background: linear-gradient(90deg, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            position: relative;
-            z-index: 1;
+            color: var(--text-primary);
         }
         
         #detail-price {
-            font-size: 2rem;
-            color: var(--accent-green);
+            font-size: 24px;
+            color: var(--text-primary);
             font-weight: 700;
             margin-top: 5px;
-            text-shadow: var(--glow-green);
-            font-family: 'Space Mono', monospace;
-            position: relative;
-            z-index: 1;
         }
         
         #detail-desc {
             color: var(--text-secondary);
             line-height: 1.7;
-            font-size: 1.05rem;
-            position: relative;
-            z-index: 1;
+            font-size: 15px;
         }
 
-        /* Carousel Styles */
-        .carousel-slide { transition: opacity 0.4s ease-in-out; }
+        .carousel-slide { transition: opacity 0.3s ease; }
         .carousel-btn {
             position: absolute; top: 50%; transform: translateY(-50%);
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-            color: var(--accent-cyan); border: 1px solid var(--border-cyan);
+            background: var(--bg-panel);
+            color: var(--text-primary); border: 1px solid var(--bg-hover);
             width: 40px; height: 40px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.3s ease;
+            cursor: pointer; transition: all 0.2s ease;
             z-index: 10;
         }
         .carousel-btn:hover {
-            background: var(--accent-cyan); color: #000;
-            box-shadow: var(--glow-cyan);
+            background: var(--bg-hover);
         }
         .carousel-btn.prev { left: 15px; }
         .carousel-btn.next { right: 15px; }
 
-        /* Review Styles */
-        .review-item {
-            background: var(--bg-card);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-        .review-item:hover {
-            transform: translateY(-2px);
-            border-color: rgba(0, 240, 255, 0.2);
-        }
-        .review-item.positive { border-left: 4px solid var(--accent-cyan); }
-        .review-item.negative { border-left: 4px solid var(--accent-pink); }
-
-        .review-author {
-            font-weight: 700;
-            color: var(--text-primary);
-            font-size: 1.1rem;
-        }
-        .review-sentiment {
-            font-size: 12px;
-            font-weight: 800;
-            padding: 4px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .sentiment-positive { background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan); }
-        .sentiment-negative { background: rgba(255, 0, 85, 0.1); color: var(--accent-pink); }
-        
-        /* Replies Styles */
         .reply-section {
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 1px solid var(--bg-hover);
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
         .reply-item {
-            background: rgba(0,0,0,0.2);
+            background: var(--bg-primary);
             padding: 12px;
-            border-radius: 8px;
-            border-left: 3px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+            border-left: 3px solid var(--bg-hover);
         }
-        .reply-author { font-size: 13px; font-weight: bold; color: var(--accent-cyan); }
+        .reply-author { font-size: 13px; font-weight: bold; color: var(--text-primary); }
         .reply-text { font-size: 13px; color: var(--text-secondary); margin-top: 5px; line-height: 1.5; }
         .reply-input-area { display: flex; gap: 10px; margin-top: 10px; }
-        .reply-input-area input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 8px 12px; color: white; outline: none; }
+        .reply-input-area input { flex: 1; background: var(--bg-primary); border: 1px solid var(--bg-hover); border-radius: 4px; padding: 8px 12px; color: white; outline: none; }
         .reply-input-area input:focus { border-color: var(--accent-cyan); }
-        .reply-input-area button { background: var(--accent-cyan); color: #000; font-weight: bold; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; transition: all 0.3s; }
-        .reply-input-area button:hover { box-shadow: 0 0 10px var(--accent-cyan); transform: scale(1.05); }
+        .reply-input-area button { background: var(--bg-hover); color: var(--text-primary); font-weight: bold; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+        .reply-input-area button:hover { background: var(--accent-cyan); color: #fff; }
     </style>
 </head>
 
