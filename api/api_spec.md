@@ -104,7 +104,7 @@
 ### `[GET] /api/admin/users` (查看所有使用者清單)
 - **Headers**: `Authorization: Bearer <admin_token>`
 - **Responses**:
-  - `200 OK`: `{"data": [ { "id": 1, "username": "PlayerOne", "role": "USERS" } ]}`
+  - `200 OK`: `{"data": [ { "id": 1, "username": "PlayerOne", "role": "USERS", "permission": "ACTIVE" } ]}` (permission 包含: `ACTIVE`, `DEACTIVE`, `DELETED`)
   - `403 Forbidden`: `{"error": "Forbidden: Requires ADMIN role"}`
 
 ### `[PUT] /api/admin/users/{id}/suspend` (切換帳號停權狀態)
