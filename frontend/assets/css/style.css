@@ -2,7 +2,7 @@
    VaporAuror Game Store — Cybernetic Aurora Stylesheet
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
 
 /* --- Design Tokens (CSS Variables) --- */
 :root {
@@ -36,6 +36,334 @@
     --radius-lg:       8px;
     
     --transition:      0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================
+   2026 Visual Refresh — Nocturne Arcade
+   Deep cabinet glass, brass light, aurora phosphor.
+   ============================================================ */
+:root {
+    --bg-primary: #070806;
+    --bg-secondary: #10100b;
+    --bg-card: rgba(24, 23, 15, 0.78);
+    --bg-hover: rgba(38, 35, 22, 0.9);
+    --bg-panel: rgba(18, 18, 12, 0.82);
+    --accent-cyan: #5fffe1;
+    --accent-pink: #ff4f79;
+    --accent-green: #d6ff63;
+    --accent-yellow: #f7c96b;
+    --accent-purple: #9f8cff;
+    --text-primary: #fff9e8;
+    --text-secondary: #d8cfb2;
+    --text-muted: #8f856a;
+    --border-cyan: rgba(95, 255, 225, 0.18);
+    --border-pink: rgba(255, 79, 121, 0.22);
+    --glow-cyan: 0 0 26px rgba(95, 255, 225, 0.24), 0 0 70px rgba(95, 255, 225, 0.08);
+    --glow-pink: 0 0 26px rgba(255, 79, 121, 0.25);
+    --glow-green: 0 0 28px rgba(214, 255, 99, 0.22);
+    --shadow-card: 0 24px 70px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 249, 232, 0.06);
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --radius-lg: 32px;
+    --transition: 0.32s cubic-bezier(.2,.8,.2,1);
+}
+
+body {
+    background:
+        radial-gradient(circle at 12% 8%, rgba(247, 201, 107, 0.12), transparent 28rem),
+        radial-gradient(circle at 88% 4%, rgba(95, 255, 225, 0.13), transparent 32rem),
+        radial-gradient(circle at 70% 90%, rgba(255, 79, 121, 0.10), transparent 34rem),
+        linear-gradient(135deg, #070806 0%, #0d0d08 48%, #151108 100%);
+    color: var(--text-secondary);
+    font-family: 'Noto Sans TC', 'Bricolage Grotesque', sans-serif;
+    letter-spacing: 0.01em;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image:
+        linear-gradient(rgba(255, 249, 232, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 249, 232, 0.025) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(circle at center, black, transparent 78%);
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2000;
+    opacity: 0.075;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    mix-blend-mode: soft-light;
+}
+
+main {
+    max-width: 1240px;
+    padding: 48px 28px 96px;
+}
+
+.logo,
+.section-title,
+.game-list-title,
+.auth-container h2,
+#detail-title,
+.stat-value {
+    font-family: 'Bricolage Grotesque', 'Noto Sans TC', sans-serif !important;
+}
+
+.main-menu a,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-success,
+.nav-cart,
+.form-group label,
+.tag,
+.status-badge,
+.review-sentiment {
+    font-family: 'DM Mono', 'Noto Sans TC', monospace !important;
+}
+
+header {
+    height: 78px;
+    background: linear-gradient(180deg, rgba(17, 18, 11, 0.86), rgba(10, 10, 7, 0.66));
+    border-bottom: 1px solid rgba(247, 201, 107, 0.22);
+    box-shadow: 0 18px 70px rgba(0, 0, 0, 0.42);
+}
+
+.logo {
+    letter-spacing: 0.08em;
+    background: linear-gradient(105deg, #fff9e8 5%, #f7c96b 38%, #5fffe1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.main-menu a {
+    border-bottom: 0;
+    color: rgba(216, 207, 178, 0.78);
+    letter-spacing: 0.08em;
+}
+
+.main-menu a:hover {
+    background: rgba(247, 201, 107, 0.08);
+    color: var(--text-primary);
+    border-bottom-color: transparent;
+}
+
+.nav-cart,
+.btn-secondary {
+    background: rgba(255, 249, 232, 0.035);
+    border: 1px solid rgba(247, 201, 107, 0.25);
+    color: var(--accent-yellow);
+}
+
+.btn-primary,
+.search-bar button {
+    background: linear-gradient(135deg, var(--accent-yellow), var(--accent-green));
+    border: 0;
+    color: #111006;
+    box-shadow: 0 10px 28px rgba(247, 201, 107, 0.18), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.btn-primary:hover,
+.search-bar button:hover {
+    background: linear-gradient(135deg, #fff1a8, #5fffe1);
+    color: #070806;
+    box-shadow: 0 16px 42px rgba(95, 255, 225, 0.18);
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff4f79, #a61943);
+    border: 0;
+}
+
+.auth-container,
+.library-item,
+.stat-card,
+.review-item,
+.review-write-box,
+.game-info-right,
+.admin-section,
+.dashboard-section,
+.dev-form {
+    background: linear-gradient(145deg, rgba(28, 27, 18, 0.86), rgba(12, 13, 9, 0.78)) !important;
+    border: 1px solid rgba(247, 201, 107, 0.18) !important;
+    box-shadow: var(--shadow-card) !important;
+    backdrop-filter: blur(18px) saturate(1.15);
+}
+
+.search-hero {
+    isolation: isolate;
+    border-radius: 36px !important;
+    border: 1px solid rgba(247, 201, 107, 0.24) !important;
+    background:
+        linear-gradient(110deg, rgba(10,10,7,.92), rgba(30,25,12,.74) 46%, rgba(8,24,22,.76)) !important;
+    box-shadow: 0 34px 100px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,249,232,.08) !important;
+}
+
+.search-hero::after {
+    content: 'VAPOR AUROR';
+    position: absolute;
+    right: -20px;
+    bottom: -32px;
+    z-index: -1;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: clamp(58px, 11vw, 150px);
+    font-weight: 800;
+    letter-spacing: -0.08em;
+    color: rgba(255, 249, 232, 0.035);
+    white-space: nowrap;
+}
+
+.search-hero h2 {
+    font-family: 'Bricolage Grotesque', 'Noto Sans TC', sans-serif !important;
+    font-size: clamp(44px, 7vw, 92px) !important;
+    line-height: 0.92 !important;
+    letter-spacing: -0.06em !important;
+    text-wrap: balance;
+}
+
+.search-bar,
+.form-group input,
+.form-group select,
+.form-group textarea,
+.search-bar input {
+    border-radius: 18px !important;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea,
+.search-bar input {
+    background: rgba(5, 6, 4, 0.72) !important;
+    border: 1px solid rgba(247, 201, 107, 0.18) !important;
+    color: var(--text-primary) !important;
+    box-shadow: inset 0 1px 0 rgba(255,249,232,.04);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+.search-bar input:focus {
+    border-color: var(--accent-cyan) !important;
+    box-shadow: 0 0 0 4px rgba(95, 255, 225, 0.08), var(--glow-cyan) !important;
+}
+
+.game-list-container {
+    gap: 24px;
+}
+
+.game-list-card {
+    position: relative;
+    border: 1px solid rgba(247, 201, 107, 0.14) !important;
+    background: linear-gradient(135deg, rgba(30, 29, 20, 0.78), rgba(9, 11, 8, 0.86)) !important;
+    border-radius: 28px !important;
+    overflow: hidden;
+}
+
+.game-list-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(95,255,225,.12), transparent);
+    transform: translateX(-120%);
+    transition: transform .8s cubic-bezier(.2,.8,.2,1);
+}
+
+.game-list-card:hover::after {
+    transform: translateX(120%);
+}
+
+.game-list-card:hover {
+    border-color: rgba(95, 255, 225, 0.42) !important;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45), 0 0 0 1px rgba(95,255,225,.1) !important;
+}
+
+.game-list-title {
+    font-size: clamp(24px, 3vw, 36px) !important;
+    letter-spacing: -0.035em;
+}
+
+.tag {
+    background: rgba(247, 201, 107, 0.1) !important;
+    color: #f7d891 !important;
+    border: 1px solid rgba(247, 201, 107, 0.18) !important;
+    border-radius: 999px !important;
+}
+
+.review-item {
+    border-radius: 24px !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.review-item.positive { border-left: 0 !important; box-shadow: var(--shadow-card), inset 5px 0 0 rgba(95,255,225,.74) !important; }
+.review-item.negative { border-left: 0 !important; box-shadow: var(--shadow-card), inset 5px 0 0 rgba(255,79,121,.74) !important; }
+
+.review-author {
+    color: var(--text-primary) !important;
+    font-family: 'Bricolage Grotesque', 'Noto Sans TC', sans-serif;
+    font-size: 1.18rem !important;
+}
+
+.reply-item {
+    background: rgba(255, 249, 232, 0.045) !important;
+    border-left: 3px solid rgba(247, 201, 107, 0.36) !important;
+    border-radius: 16px !important;
+}
+
+.dropdown-content {
+    top: 78px;
+    border-color: rgba(247, 201, 107, 0.22);
+    background: rgba(14, 14, 9, 0.94);
+    border-radius: 0 0 22px 22px;
+}
+
+.toast {
+    border-radius: 18px !important;
+    border: 1px solid rgba(247,201,107,.22) !important;
+    box-shadow: 0 18px 60px rgba(0,0,0,.46) !important;
+}
+
+@media (max-width: 760px) {
+    header {
+        height: auto;
+        min-height: 72px;
+        padding: 14px 18px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .main-menu {
+        margin-left: 0;
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    .main-menu a {
+        padding: 12px 14px;
+        white-space: nowrap;
+    }
+
+    main {
+        padding: 28px 16px 72px;
+    }
+
+    .game-list-card {
+        flex-direction: column;
+    }
+
+    .game-thumbnail {
+        width: 100% !important;
+    }
 }
 
 /* --- Base & Reset --- */
@@ -1414,4 +1742,152 @@ header {
 .toast-message.show {
     transform: translateX(0);
     opacity: 1;
+}
+
+/* Final cascade lock: keep Nocturne Arcade above legacy page rules. */
+body {
+    background:
+        radial-gradient(circle at 12% 8%, rgba(247, 201, 107, 0.12), transparent 28rem),
+        radial-gradient(circle at 88% 4%, rgba(95, 255, 225, 0.13), transparent 32rem),
+        radial-gradient(circle at 70% 90%, rgba(255, 79, 121, 0.10), transparent 34rem),
+        linear-gradient(135deg, #070806 0%, #0d0d08 48%, #151108 100%) !important;
+    font-family: 'Noto Sans TC', 'Bricolage Grotesque', sans-serif !important;
+}
+
+header {
+    height: 78px;
+    background: linear-gradient(180deg, rgba(17, 18, 11, 0.88), rgba(10, 10, 7, 0.68)) !important;
+    border-bottom: 1px solid rgba(247, 201, 107, 0.22) !important;
+    box-shadow: 0 18px 70px rgba(0, 0, 0, 0.42) !important;
+}
+
+.logo,
+.section-title,
+.game-list-title,
+.auth-container h2,
+#detail-title,
+.stat-value {
+    font-family: 'Bricolage Grotesque', 'Noto Sans TC', sans-serif !important;
+}
+
+.main-menu a,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-success,
+.nav-cart,
+.form-group label,
+.tag,
+.status-badge,
+.review-sentiment,
+.toast-message {
+    font-family: 'DM Mono', 'Noto Sans TC', monospace !important;
+}
+
+.logo {
+    background: linear-gradient(105deg, #fff9e8 5%, #f7c96b 38%, #5fffe1 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+.search-hero {
+    border-radius: 36px !important;
+    border: 1px solid rgba(247, 201, 107, 0.24) !important;
+    background: linear-gradient(110deg, rgba(10,10,7,.92), rgba(30,25,12,.74) 46%, rgba(8,24,22,.76)) !important;
+    box-shadow: 0 34px 100px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,249,232,.08) !important;
+}
+
+.search-hero h2 {
+    font-family: 'Bricolage Grotesque', 'Noto Sans TC', sans-serif !important;
+    font-size: clamp(44px, 7vw, 92px) !important;
+    line-height: 0.92 !important;
+    letter-spacing: -0.06em !important;
+}
+
+.btn-primary,
+.search-bar button {
+    background: linear-gradient(135deg, var(--accent-yellow), var(--accent-green)) !important;
+    border: 0 !important;
+    color: #111006 !important;
+    border-radius: 999px !important;
+    box-shadow: 0 10px 28px rgba(247, 201, 107, 0.18), inset 0 1px 0 rgba(255,255,255,0.4) !important;
+}
+
+.btn-primary:hover,
+.search-bar button:hover {
+    background: linear-gradient(135deg, #fff1a8, #5fffe1) !important;
+    color: #070806 !important;
+    transform: translateY(-2px);
+}
+
+.btn-secondary,
+.nav-cart {
+    background: rgba(255, 249, 232, 0.035) !important;
+    border: 1px solid rgba(247, 201, 107, 0.25) !important;
+    color: var(--accent-yellow) !important;
+    border-radius: 999px !important;
+}
+
+.auth-container,
+.library-item,
+.stat-card,
+.review-item,
+.review-write-box,
+.game-info-right,
+.admin-section,
+.dashboard-section,
+.dev-form {
+    background: linear-gradient(145deg, rgba(28, 27, 18, 0.86), rgba(12, 13, 9, 0.78)) !important;
+    border: 1px solid rgba(247, 201, 107, 0.18) !important;
+    box-shadow: var(--shadow-card) !important;
+    backdrop-filter: blur(18px) saturate(1.15);
+}
+
+.game-list-card {
+    border: 1px solid rgba(247, 201, 107, 0.14) !important;
+    background: linear-gradient(135deg, rgba(30, 29, 20, 0.78), rgba(9, 11, 8, 0.86)) !important;
+    border-radius: 28px !important;
+}
+
+.game-list-title {
+    font-size: clamp(24px, 3vw, 36px) !important;
+    letter-spacing: -0.035em;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea,
+.search-bar input {
+    background: rgba(5, 6, 4, 0.72) !important;
+    border: 1px solid rgba(247, 201, 107, 0.18) !important;
+    border-radius: 18px !important;
+    color: var(--text-primary) !important;
+}
+
+.tag {
+    background: rgba(247, 201, 107, 0.1) !important;
+    color: #f7d891 !important;
+    border: 1px solid rgba(247, 201, 107, 0.18) !important;
+    border-radius: 999px !important;
+}
+
+.review-item {
+    border-radius: 24px !important;
+}
+
+.review-item.positive { border-left: 0 !important; box-shadow: var(--shadow-card), inset 5px 0 0 rgba(95,255,225,.74) !important; }
+.review-item.negative { border-left: 0 !important; box-shadow: var(--shadow-card), inset 5px 0 0 rgba(255,79,121,.74) !important; }
+
+@media (max-width: 760px) {
+    header {
+        height: auto;
+        min-height: 72px;
+        padding: 14px 18px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    main {
+        padding: 28px 16px 72px;
+    }
 }

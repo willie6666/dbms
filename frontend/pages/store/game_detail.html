@@ -424,7 +424,7 @@
                 const badge = sentiment === 'positive'
                     ? `<span class="review-sentiment sentiment-positive">推薦</span>`
                     : `<span class="review-sentiment sentiment-negative">不推薦</span>`;
-                const author = escapeHtml(r.author || r.username || (r.user && r.user.username) || '玩家');
+                const author = escapeHtml(r.author_username || r.author || r.username || (r.user && r.user.username) || '玩家');
                 const playtime = r.playtime || r.play_time || '未知';
                 const date = (r.date || r.created_at || '').slice(0, 10);
                 const text = escapeHtml(r.text || r.content || r.body || '');
@@ -437,7 +437,7 @@
                     const currentUser = getCurrentUser();
                     const currentUserId = currentUser ? (currentUser.user_id || currentUser.id) : null;
                     replies.forEach(reply => {
-                        const rAuthor = escapeHtml(reply.author || reply.username || (reply.user && reply.user.username) || '玩家');
+                        const rAuthor = escapeHtml(reply.author_username || reply.author || reply.username || (reply.user && reply.user.username) || '玩家');
                         const rText = escapeHtml(reply.content || reply.text || '');
                         const replyId = reply.id || reply.review_reply_id;
                         const replyUserId = reply.user_id || (reply.User && reply.User.user_id);

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 	"vapor_auror_backend/database"
 	"vapor_auror_backend/models"
 
@@ -9,6 +10,11 @@ import (
 )
 
 type socialUserDTO struct {
+	ID       uint   `json:"id"`
+	Username string `json:"username"`
+}
+
+type reviewAuthorDTO struct {
 	ID       uint   `json:"id"`
 	Username string `json:"username"`
 }
@@ -21,27 +27,86 @@ func getSocialUser(id uint) socialUserDTO {
 	return socialUserDTO{ID: user.UserID, Username: user.Username}
 }
 
+func getReviewAuthor(user models.User, fallbackID uint) reviewAuthorDTO {
+	if user.UserID == 0 || user.Permission == "DELETED" || user.Role == "NULL" {
+		return reviewAuthorDTO{ID: fallbackID, Username: "已刪除玩家"}
+	}
+	return reviewAuthorDTO{ID: user.UserID, Username: user.Username}
+}
+
+func getReviewAuthorByID(userID uint) reviewAuthorDTO {
+	var user models.User
+	if err := database.DB.Where("user_id = ?", userID).First(&user).Error; err != nil {
+		return reviewAuthorDTO{ID: userID, Username: "已刪除玩家"}
+	}
+	return getReviewAuthor(user, userID)
+}
+
 // GetReviews handles GET /api/games/:id/reviews
 func GetReviews(c *gin.Context) {
 	gameID := c.Param("id")
 	var reviews []models.Review
 
 	// Preload the User to get Username
-	if err := database.DB.Preload("User").Where("game_id = ?", gameID).Order("created_at desc").Find(&reviews).Error; err != nil {
+	if err := database.DB.Where("game_id = ?", gameID).Order("created_at desc").Find(&reviews).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch reviews"})
 		return
 	}
 
-	type ReviewWithReplies struct {
-		models.Review
-		Replies []models.ReviewReply `json:"replies"`
+	type ReviewReplyDTO struct {
+		ReviewReplyID uint            `json:"review_reply_id"`
+		ReviewID      uint            `json:"review_id"`
+		UserID        uint            `json:"user_id"`
+		Author        reviewAuthorDTO `json:"user"`
+		AuthorName    string          `json:"author_username"`
+		Content       string          `json:"content"`
+		CreatedAt     string          `json:"created_at"`
+	}
+	type ReviewDTO struct {
+		ReviewID   uint             `json:"review_id"`
+		GameID     uint             `json:"game_id"`
+		UserID     uint             `json:"user_id"`
+		Author     reviewAuthorDTO  `json:"user"`
+		AuthorName string           `json:"author_username"`
+		Content    string           `json:"content"`
+		Attitude   string           `json:"attitude"`
+		Status     string           `json:"status"`
+		CreatedAt  string           `json:"created_at"`
+		Replies    []ReviewReplyDTO `json:"replies"`
 	}
 
-	var fullReviews []ReviewWithReplies
+	var fullReviews []ReviewDTO
 	for _, r := range reviews {
 		var replies []models.ReviewReply
-		database.DB.Preload("User").Where("review_id = ?", r.ReviewID).Order("created_at asc").Find(&replies)
-		fullReviews = append(fullReviews, ReviewWithReplies{Review: r, Replies: replies})
+		database.DB.Where("review_id = ?", r.ReviewID).Order("created_at asc").Find(&replies)
+
+		replyDTOs := make([]ReviewReplyDTO, 0, len(replies))
+		for _, reply := range replies {
+			author := getReviewAuthorByID(reply.UserID)
+			replyDTOs = append(replyDTOs, ReviewReplyDTO{
+				ReviewReplyID: reply.ReviewReplyID,
+				ReviewID:      reply.ReviewID,
+				UserID:        reply.UserID,
+				Author:        author,
+				AuthorName:    author.Username,
+				Content:       reply.Content,
+				CreatedAt:     reply.CreatedAt.Format(time.RFC3339),
+			})
+		}
+
+		author := getReviewAuthorByID(r.UserID)
+		fullReviews = append(fullReviews, ReviewDTO{
+			ReviewID:   r.ReviewID,
+			GameID:     r.GameID,
+			UserID:     r.UserID,
+			Author:     author,
+			AuthorName: author.Username,
+			Content:    r.Content,
+			Attitude:   r.Attitude,
+			Status:     r.Status,
+			CreatedAt:  r.CreatedAt.Format(time.RFC3339),
+			Replies:    replyDTOs,
+		})
 	}
 
 	c.JSON(http.StatusOK, fullReviews)

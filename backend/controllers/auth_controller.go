@@ -96,6 +96,10 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
+	if user.Permission != "ACTIVE" || user.Role == "NULL" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "This account is not active"})
+		return
+	}
 
 	// 4. Generate JWT Token
 	token, err := utils.GenerateToken(user.UserID, user.Role)
