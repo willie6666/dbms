@@ -23,7 +23,7 @@
 =========================================
 2. 商店與遊戲 (Store & Games)
 =========================================
-[GET]    /api/games                           - 取得所有遊戲 (含搜尋 q=keyword) (UC-01, UC-02)
+[GET]    /api/games                           - 取得所有遊戲 (含搜尋 q=keyword, 標籤 tag=Action) (UC-01, UC-02)
 [GET]    /api/games/{id}                      - 取得單一遊戲詳情 (UC-03)
 [GET]    /api/games/{id}/reviews              - 取得遊戲評論
 [GET]    /api/developer/games                 - [JWT + DEVELOPER] 查看自己的遊戲列表 (ADMIN 可查看全部)

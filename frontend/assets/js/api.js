@@ -99,9 +99,13 @@ async function apiUpdateProfile(data) {
 // 2. 商店與遊戲 (Games)
 // ============================================================
 
-// GET /api/games?q=keyword
-async function apiGetGames(query = '') {
-    const url = query ? `/api/games?q=${encodeURIComponent(query)}` : '/api/games';
+// GET /api/games?q=keyword&tag=tag
+async function apiGetGames(query = '', tag = '') {
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    if (tag) params.append('tag', tag);
+    const qs = params.toString();
+    const url = qs ? `/api/games?${qs}` : '/api/games';
     const res = await fetch(`${API_BASE}${url}`);
     return parseResponse(res);
 }

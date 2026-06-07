@@ -34,11 +34,17 @@ func refreshStoredGameRating(gameID uint) {
 func GetGames(c *gin.Context) {
 	var games []models.Game
 	q := c.Query("q")
+	tag := c.Query("tag")
 
-	query := database.DB
+	query := database.DB.Model(&models.Game{})
 	if q != "" {
 		// PostgreSQL ILIKE is case-insensitive
-		query = query.Where("title ILIKE ?", "%"+q+"%")
+		query = query.Where("games.title ILIKE ?", "%"+q+"%")
+	}
+	if tag != "" {
+		query = query.Joins("JOIN game_tags ON game_tags.game_id = games.game_id").
+			Joins("JOIN tags ON tags.tag_id = game_tags.tag_id").
+			Where("tags.tag_name ILIKE ?", tag)
 	}
 
 	// Retrieve games from the database with their media

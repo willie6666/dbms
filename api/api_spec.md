@@ -136,7 +136,7 @@
 
 ### `[GET] /api/games` (瀏覽/搜尋遊戲)
 - **Headers**: 無
-- **Query Params** (可選): `?q=elden`
+- **Query Params** (可選): `?q=elden` (關鍵字搜尋), `?tag=RPG` (標籤篩選)
 - **Responses**:
   - `200 OK`:
     ```json
