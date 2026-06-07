@@ -141,7 +141,7 @@
   - `?tag=Action` (標籤精準篩選)
   - `?developer=StudioAurora` (開發者名稱篩選)
   - `?min_price=100&max_price=500` (價格區間篩選)
-  - `?sort=popular` (排序方式：`new` 最新, `price_asc` 便宜到貴, `price_desc` 貴到便宜, `popular` 預設人氣)
+  - `?sort=price_asc` (排序方式：`price_asc` 便宜到貴, `price_desc` 貴到便宜)
 - **Responses**:
   - `200 OK`:
     ```json

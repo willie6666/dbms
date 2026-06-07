@@ -37,7 +37,7 @@ func GetGames(c *gin.Context) {
 	q := c.Query("q")
 	tag := c.Query("tag")
 	developer := c.Query("developer")
-	sort := c.DefaultQuery("sort", "popular")
+	sort := c.DefaultQuery("sort", "price_asc")
 
 	query := database.DB.Model(&models.Game{}).Group("games.game_id")
 	if q != "" {
@@ -67,16 +67,12 @@ func GetGames(c *gin.Context) {
 	}
 
 	switch sort {
-	case "new":
-		query = query.Order("games.game_id DESC")
-	case "price_asc":
-		query = query.Order("games.price ASC, games.game_id DESC")
 	case "price_desc":
 		query = query.Order("games.price DESC, games.game_id DESC")
+	case "price_asc":
+		fallthrough
 	default:
-		query = query.
-			Joins("LEFT JOIN transaction_items popularity_items ON popularity_items.game_id = games.game_id").
-			Order("COUNT(popularity_items.item_id) DESC, games.overall_rating DESC, games.game_id DESC")
+		query = query.Order("games.price ASC, games.game_id DESC")
 	}
 
 	// Retrieve games from the database with their media
