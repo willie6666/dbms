@@ -3,12 +3,14 @@
 ## Project Shape
 - VaporAuror is a small three-tier game-store app: static vanilla HTML/CSS/JS frontend, Go/Gin REST API, PostgreSQL database.
 - Backend entrypoint is `backend/main.go`; route registration and inline CORS live in `backend/routes/routes.go`.
-- Frontend entrypoint is `frontend/index.html`; Caddy config is `frontend/Caddyfile`; shared API calls must go through `frontend/assets/js/api.js`, which hardcodes `API_BASE = 'http://localhost:8000'`.
+- Frontend entrypoint is `frontend/index.html`; Caddy config is `frontend/Caddyfile`; shared API calls must go through `frontend/assets/js/api.js`, which uses same-origin relative URLs (`API_BASE = ''`).
+- Caddy is the browser-facing entrypoint: `/api/*` and `/media/*` reverse proxy to the backend service, so frontend code should not hardcode backend hosts.
+- Backend serves media at `/media/images/*` from `backend/assets/images`; downloadable game files live under `backend/assets/game-files` and are returned by `GET /api/protected/library/{game_id}/download` after license checks.
 - PostgreSQL schema and seed data are `db/01_init_table.sql` then `db/02_init_data.sql`, mounted by Compose into `/docker-entrypoint-initdb.d/`.
 
 ## Commands
 - Start frontend/database/Adminer from repo root: `docker compose up -d`; Caddy serves the frontend at `http://localhost:3000`.
-- Start the full stack from repo root: `docker compose up -d --build`; frontend is `:3000`, backend is `:8000`, Adminer is `:8080`, Postgres is `:5432`.
+- Start the full stack from repo root: `docker compose up -d --build`; Caddy is the browser entrypoint at `:3000`, Adminer is `:8080`, Postgres is `:5432`, and backend is internal as `backend:8000`.
 - Run backend locally from `backend`: `go run .`; it reads `DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME` and defaults to `localhost:5432`, `admin/admin`, database `vapor_auror`.
 - Verify backend compile/tests from `backend`: `go test ./...`.
 - Frontend has no Node build step or npm scripts; use the Caddy service in Compose instead of `npm start`.

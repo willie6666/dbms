@@ -35,16 +35,16 @@ INSERT INTO game_tags (game_id, tag_id) VALUES
 -- 4. 寫入 game_media 資料 (4筆)
 -- ==========================================
 INSERT INTO game_media (game_id, file_url, media_type) VALUES
-(1, '/assets/images/master_secure.jpg', 'media'),
-(1, '/assets/images/no_master_secure.jpg', 'media'),
-(1, '/assets/images/protoss_12+8.png', 'game_file'),
-(1, '/assets/images/protoss_cross.png', 'media'),
-(1, '/assets/images/arming.png', 'media'),
-(1, '/assets/images/protoss_knife.png', 'media'),
+(1, '/media/images/master_secure.jpg', 'media'),
+(1, '/media/images/no_master_secure.jpg', 'media'),
+(1, '/downloads/cybercity-demo.txt', 'game_file'),
+(1, '/media/images/protoss_cross.png', 'media'),
+(1, '/media/images/arming.png', 'media'),
+(1, '/media/images/protoss_12+8.png', 'media'),
 
-(3, '/assets/images/protoss_best_16.png', 'media'),
-(3, '/assets/images/protoss_best_16.png', 'media'),
-(4, '/assets/images/protoss_best_16.png', 'game_file');
+(3, '/media/images/protoss_cross.png', 'media'),
+(3, '/media/images/arming.png', 'media'),
+(4, '/downloads/farm-simulator-demo.txt', 'game_file');
 
 -- ==========================================
 -- 5. 寫入 transactions 與 transaction_items 資料

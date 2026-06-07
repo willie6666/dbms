@@ -1,0 +1,3 @@
+VaporAuror sample game package: CyberCity 2077
+
+This placeholder file is served by the protected download API.

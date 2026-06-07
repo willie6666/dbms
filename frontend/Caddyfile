@@ -1,6 +1,12 @@
 :80 {
 	root * /srv
 	encode zstd gzip
-	try_files {path} {path}.html {path}/index.html
-	file_server
+
+	route {
+		reverse_proxy /api/* backend:8000
+		reverse_proxy /media/* backend:8000
+
+		try_files {path} {path}.html {path}/index.html
+		file_server
+	}
 }

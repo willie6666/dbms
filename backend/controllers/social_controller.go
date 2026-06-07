@@ -151,6 +151,7 @@ func PostReview(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to post review"})
 		return
 	}
+	refreshStoredGameRating(game.GameID)
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Review posted successfully"})
 }

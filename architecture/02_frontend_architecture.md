@@ -78,7 +78,7 @@ frontend/
 4. [初始化] 觸發原生事件 document.addEventListener("DOMContentLoaded")。
 5. [共用渲染] main.js 自動執行 renderHeader()，讀取 Token 判斷身分並畫出導覽列。
 6. [資料請求] 該頁面專屬的腳本被觸發，向 api.js 呼叫函式 (如 apiGetGameDetails(id))。
-7. [等待回覆] api.js 將請求包裝後送往 http://localhost:8000/api/...
+7. [等待回覆] api.js 將請求包裝後送往同源 `/api/...`，由 Caddy 代理到後端。
 8. [動態更新] 收到後端 JSON 回應後，透過 document.getElementById() 將數據 (如價格、評論) 動態寫入畫面。
 9. [等待互動] 頁面渲染完畢，靜待使用者的點擊或表單輸入操作。
 ```

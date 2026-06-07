@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"net/http"
+	"path/filepath"
+	"strings"
 	"vapor_auror_backend/database"
 	"vapor_auror_backend/models"
 
@@ -104,5 +106,20 @@ func DownloadGame(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Download link generated", "download_url": "http://cdn.vaporauror.com/downloads/" + gameID + ".zip"})
+	var gameFile models.GameMedia
+	if err := database.DB.Where("game_id = ? AND media_type = ?", gameID, "game_file").First(&gameFile).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No downloadable game file is available"})
+		return
+	}
+
+	filePath := gameFile.FileURL
+	filePath = strings.TrimPrefix(filePath, "/downloads/")
+	filePath = filepath.Clean(filePath)
+	if strings.Contains(filePath, "..") || strings.HasPrefix(filePath, "/") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid game file path"})
+		return
+	}
+
+	fullPath := filepath.Join("assets", "game-files", filePath)
+	c.FileAttachment(fullPath, filepath.Base(filePath))
 }

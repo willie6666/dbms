@@ -164,8 +164,10 @@ function renderGames(games) {
 
         let coverHtml = `<span style="font-size:13px;color:#8f98a0;">[${escapeHtml(game.title)} 封面]</span>`;
         if (game.media && game.media.length > 0) {
-            const thumb = game.media.find(m => m.media_type === 'thumbnail') || game.media.find(m => m.media_type === 'media') || game.media[0];
-            coverHtml = `<img src="${thumb.file_url}" alt="cover" style="width:100%; height:100%; object-fit:cover; border-radius: 8px;">`;
+            const thumb = game.media.find(m => m.media_type === 'thumbnail') || game.media.find(m => m.media_type === 'media');
+            if (thumb) {
+                coverHtml = `<img src="${thumb.file_url}" alt="cover" style="width:100%; height:100%; object-fit:cover; border-radius: 8px;">`;
+            }
         }
 
         card.innerHTML = `

@@ -211,8 +211,8 @@
                 // Try to find a cover image if available (using placeholder if not)
                 let coverImg = 'https://placehold.co/400x300/1a1a2e/00f0ff?text=No+Cover';
                 if (game.media && game.media.length > 0) {
-                    const thumb = game.media.find(m => m.media_type === 'thumbnail') || game.media.find(m => m.media_type === 'media') || game.media[0];
-                    coverImg = thumb.file_url;
+                    const thumb = game.media.find(m => m.media_type === 'thumbnail') || game.media.find(m => m.media_type === 'media');
+                    if (thumb) coverImg = thumb.file_url;
                 }
 
                 el.innerHTML = `
@@ -256,12 +256,22 @@
             try {
                 // GET /api/protected/library/{game_id}/download
                 const result = await authFetch(`/api/protected/library/${gameId}/download`);
-                const data = await result.json();
-                if (data && data.download_url) {
-                    window.open(data.download_url, '_blank');
-                } else {
-                    showToast('開始下載遊戲...', 'success');
+                if (!result.ok) {
+                    await parseResponse(result);
                 }
+                const blob = await result.blob();
+                const disposition = result.headers.get('content-disposition') || '';
+                const match = disposition.match(/filename="?([^";]+)"?/i);
+                const filename = match ? match[1] : `game-${gameId}.download`;
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
+                showToast('開始下載遊戲...', 'success');
             } catch (err) {
                 showToast(`下載失敗：${err.message}`, 'error');
             }

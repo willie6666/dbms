@@ -1,0 +1,3 @@
+VaporAuror sample game package: Farm Simulator 3
+
+This placeholder file is served by the protected download API.

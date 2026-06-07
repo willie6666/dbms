@@ -247,8 +247,7 @@
                 const devName = game.developer_name || game.game.developer_name || game.game.developer || game.developer || '未知';
                 document.getElementById('detail-developer').textContent = `BY ${devName}`;
                 
-                const rating = game.game.overall_rating || game.overall_rating || 0;
-                document.getElementById('detail-rating').innerHTML = `⭐ ${rating.toFixed(1)} <span style="font-size:12px; font-weight:normal; opacity:0.8; margin-left:4px;">/ 5.0</span>`;
+                updateDetailRating(game.game || game);
                 
                 const price = Number(game.game.price || game.price || 0);
                 document.getElementById('detail-price').textContent =
@@ -479,6 +478,19 @@
             });
         }
 
+        function updateDetailRating(game) {
+            const rating = Number(game.overall_rating || 0);
+            const count = Number(game.rating_count || 0);
+            const fullStars = Math.round(rating);
+            const stars = Array.from({ length: 5 }, (_, idx) => idx < fullStars ? '★' : '☆').join('');
+            const countText = count > 0 ? `${count} 則評價` : '尚無評價';
+            document.getElementById('detail-rating').innerHTML = `
+                <span aria-label="${rating.toFixed(1)} out of 5">${stars}</span>
+                <strong style="margin-left:8px;">${rating.toFixed(1)}</strong>
+                <span style="font-size:12px; font-weight:normal; opacity:0.8; margin-left:4px;">/ 5.0 · ${countText}</span>
+            `;
+        }
+
         async function submitReply(reviewId) {
             const input = document.getElementById(`reply-input-${reviewId}`);
             const content = input.value.trim();
@@ -561,6 +573,9 @@
                 await apiPostReview(currentGameId, sentiment, text);
                 textEl.value = '';
                 showToast('評論已送出！', 'success');
+                const gameResponse = await apiGetGame(currentGameId);
+                const gameData = gameResponse.data || gameResponse;
+                updateDetailRating(gameData.game || gameData);
                 // 重新載入評論
                 const reviews = await apiGetReviews(currentGameId);
                 renderReviews(Array.isArray(reviews) ? reviews : (reviews.data || reviews.reviews || []));
