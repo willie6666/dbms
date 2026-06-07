@@ -222,6 +222,7 @@
   - `game_file` → `assets/game-files/{game_id}/{original_name}`，對外 URL `/downloads/{game_id}/{original_name}`
 - **Responses**:
   - `201 Created`: `{"message": "Media uploaded successfully", "data": {...}, "file_url": "/media/images/..."}`
+  - `400 Bad Request`: `{"error": "Missing file field"}`
   - `403 Forbidden`: `{"error": "Forbidden: You can only upload media for your own games"}`
   - `404 Not Found`: `{"error": "Game not found"}`
 
