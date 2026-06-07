@@ -56,8 +56,16 @@
                 const game     = item.game || item;
                 const gameId   = game.game_id || game.id || item.game_id;
                 const title    = game.title || item.title || '';
-                const playtime = item.playtime || item.play_time || item.hours || '0 小時';
-                const lastPlayed = (item.last_played || item.lastPlayed || '').slice(0, 10) || '—';
+                
+                // Read from true database schema
+                const acquiredDate = (item.acquired_date || '').slice(0, 10) || '未知日期';
+                const status       = item.status || 'UNKNOWN';
+                
+                // Color formatting for status
+                let statusColor = 'var(--text-muted)';
+                if (status === 'ACTIVE') statusColor = 'var(--accent-green)';
+                else if (status === 'REVOKED') statusColor = 'var(--accent-red)';
+                else if (status === 'FROZEN') statusColor = 'var(--accent-yellow)';
 
                 const el = document.createElement('div');
                 el.className = 'lib-game-card';
@@ -72,9 +80,9 @@
                     </a>
                     <div class="lib-game-info">
                         <h3><a href="/pages/store/game_detail?id=${gameId}" style="color:inherit;">${escapeHtml(title)}</a></h3>
-                        <div class="lib-game-meta">
-                            <span>遊玩：${playtime}</span>
-                            <span style="color:var(--accent-cyan);">最後：${lastPlayed}</span>
+                        <div class="lib-game-meta" style="display:flex; justify-content:space-between; width:100%;">
+                            <span>取得：${acquiredDate}</span>
+                            <span style="color:${statusColor}; font-weight: bold;">${status}</span>
                         </div>
                     </div>
                     <div class="lib-game-actions">
