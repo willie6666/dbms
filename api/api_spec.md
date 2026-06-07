@@ -22,7 +22,8 @@
   {
     "username": "PlayerOne",
     "email": "player1@test.com",
-    "password": "password123" // 必填，長度需 >= 6
+    "password": "password123", // 必填，長度需 >= 6
+    "is_developer": false      // 選填，是否註冊為開發者
   }
   ```
 - **Responses**:

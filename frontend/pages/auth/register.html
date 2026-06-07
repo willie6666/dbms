@@ -34,6 +34,12 @@
                     <label class="label" for="reg-confirm">確認密碼</label>
                     <div class="control"><input class="input" type="password" id="reg-confirm" placeholder="再次輸入密碼" required></div>
                 </div>
+                <div class="field form-group" style="margin-top: 15px; margin-bottom: 20px;">
+                    <label class="checkbox" style="color: var(--text-light); font-size: 14px;">
+                        <input type="checkbox" id="reg-developer" style="margin-right: 8px;">
+                        我要註冊為遊戲開發者 (Developer)
+                    </label>
+                </div>
                 <button type="submit" class="button is-primary is-fullwidth" id="register-btn">建立帳號</button>
             </form>
 
@@ -55,6 +61,7 @@
             const email    = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value;
             const confirm  = document.getElementById('reg-confirm').value;
+            const isDev    = document.getElementById('reg-developer').checked;
             const errorEl  = document.getElementById('register-error');
             const btn      = document.getElementById('register-btn');
 
@@ -70,7 +77,7 @@
             errorEl.style.display = 'none';
 
             try {
-                const data = await apiRegister(username, email, password);
+                const data = await apiRegister(username, email, password, isDev);
                 // 後端回傳 { token, user }
                 saveAuthState(data);
                 window.location.href = '/';

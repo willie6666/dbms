@@ -64,11 +64,11 @@ async function apiLogin(email, password) {
 }
 
 // POST /api/auth/register
-async function apiRegister(username, email, password) {
+async function apiRegister(username, email, password, isDeveloper = false) {
     const res = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
+        body: JSON.stringify({ username, email, password, is_developer: isDeveloper })
     });
     return parseResponse(res);
 }

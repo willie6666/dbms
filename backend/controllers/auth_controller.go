@@ -12,9 +12,10 @@ import (
 
 // Input structures for accepting JSON data from the frontend
 type RegisterInput struct {
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required,min=6"`
+	Username    string `json:"username" binding:"required"`
+	Email       string `json:"email" binding:"required"`
+	Password    string `json:"password" binding:"required,min=6"`
+	IsDeveloper bool   `json:"is_developer"`
 }
 
 type LoginInput struct {
@@ -46,12 +47,17 @@ func Register(c *gin.Context) {
 	}
 
 	// 3. Create the User model to save
-	// By default, new users have 'USERS' role and 'ONLINE' status.
+	// Assign role based on IsDeveloper flag
+	role := "USERS"
+	if input.IsDeveloper {
+		role = "DEVELOPER"
+	}
+
 	user := models.User{
 		Username:     input.Username,
 		Email:        input.Email,
 		PasswordHash: hashedPassword,
-		Role:         "USERS",
+		Role:         role,
 		Status:       "ONLINE",
 		Permission:   "ACTIVE",
 	}
