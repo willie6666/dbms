@@ -82,6 +82,12 @@ func GetGames(c *gin.Context) {
 	}
 	for i := range games {
 		attachRatingSummary(&games[i])
+		var dev models.User
+		if err := database.DB.Select("username").First(&dev, games[i].DeveloperID).Error; err == nil {
+			games[i].DeveloperName = dev.Username
+		} else {
+			games[i].DeveloperName = "未知"
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": games})

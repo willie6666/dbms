@@ -151,6 +151,7 @@
           "game_id": 1,
           "title": "Elden Ring",
           "price": 1290,
+          "developer_name": "StudioAurora",
           "overall_rating": 4.8
         }
       ]

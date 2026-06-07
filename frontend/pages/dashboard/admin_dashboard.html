@@ -179,12 +179,13 @@
                 const gameId = game.game_id || game.id;
                 const item = document.createElement('div');
                 item.className = 'library-item';
-                const developer = game.developer || (game.developer_user && game.developer_user.username) || '未知';
+                const developer = game.developer_name || game.developer || (game.developer_user && game.developer_user.username) || '未知';
+                const priceHtml = game.price === 0 ? "免費" : `NT$ ${game.price.toLocaleString()}`;
 
                 item.innerHTML = `
                     <div class="library-item-info">
                         <h3>${escapeHtml(game.title)}</h3>
-                        <p>開發者：${escapeHtml(developer)} &nbsp;|&nbsp;
+                        <p>開發者：${escapeHtml(developer)} &nbsp;|&nbsp; 價格：${priceHtml} &nbsp;|&nbsp;
                            <span class="tag status-badge status-active">正常販售中</span>
                         </p>
                     </div>
