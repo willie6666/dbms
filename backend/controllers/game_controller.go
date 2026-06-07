@@ -3,8 +3,10 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"vapor_auror_backend/database"
 	"vapor_auror_backend/models"
+	"vapor_auror_backend/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -64,6 +66,19 @@ func GetGames(c *gin.Context) {
 	}
 	if maxPrice, err := strconv.ParseFloat(c.Query("max_price"), 64); err == nil {
 		query = query.Where("games.price <= ?", maxPrice)
+	}
+
+	if c.Query("hide_owned") == "true" {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader != "" {
+			parts := strings.Split(authHeader, " ")
+			if len(parts) == 2 && parts[0] == "Bearer" {
+				if claims, err := utils.ParseToken(parts[1]); err == nil {
+					userID := uint(claims["user_id"].(float64))
+					query = query.Where("NOT EXISTS (SELECT 1 FROM game_licenses WHERE game_licenses.game_id = games.game_id AND game_licenses.user_id = ? AND game_licenses.status = 'ACTIVE')", userID)
+				}
+			}
+		}
 	}
 
 	switch sort {

@@ -113,7 +113,12 @@ async function apiGetGames(query = '') {
     }
     const qs = params.toString();
     const url = qs ? `/api/games?${qs}` : '/api/games';
-    const res = await fetch(`${API_BASE}${url}`);
+    const options = {};
+    const token = localStorage.getItem('token');
+    if (token && params.get('hide_owned') === 'true') {
+        options.headers = { 'Authorization': `Bearer ${token}` };
+    }
+    const res = await fetch(`${API_BASE}${url}`, options);
     return parseResponse(res);
 }
 

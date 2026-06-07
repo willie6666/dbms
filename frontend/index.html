@@ -50,10 +50,16 @@
             <div class="store-main">
                 <div class="section-header">
                     <h2 class="section-title">熱門推薦</h2>
-                    <div class="sort-options">
+                    <div class="sort-options" style="display: flex; align-items: center; gap: 1rem;">
+                        <div id="hide-owned-wrapper" style="display: none; align-items: center; gap: 0.6rem;">
+                            <span class="has-text-grey-light is-size-7" style="font-weight: 700;">隱藏已購買</span>
+                            <div class="vp-switch" id="hide-owned-toggle">
+                                <div class="vp-option vp-on"><span>ON</span></div>
+                                <div class="vp-option vp-off"><span>OFF</span></div>
+                            </div>
+                        </div>
                         <div class="select is-rounded">
                             <select id="sort-select" class="store-select">
-
                                 <option value="price_asc">價格由低到高</option>
                                 <option value="price_desc">價格由高到低</option>
                             </select>
@@ -72,6 +78,17 @@
     <script>
         document.addEventListener("DOMContentLoaded", async () => {
             const sortSelect = document.getElementById('sort-select');
+            const hideOwnedWrapper = document.getElementById('hide-owned-wrapper');
+            const hideOwnedToggle = document.getElementById('hide-owned-toggle');
+
+            if (localStorage.getItem('token')) {
+                hideOwnedWrapper.style.display = 'flex';
+            }
+
+            hideOwnedToggle.addEventListener('click', () => {
+                hideOwnedToggle.classList.toggle('is-active');
+                loadHomeGames();
+            });
 
             sortSelect.addEventListener('change', () => loadHomeGames());
 
@@ -82,7 +99,12 @@
 
         async function loadHomeGames() {
             try {
-                const games = await apiGetGames({ sort: document.getElementById('sort-select').value });
+                const query = { sort: document.getElementById('sort-select').value };
+                const hideOwnedToggle = document.getElementById('hide-owned-toggle');
+                if (hideOwnedToggle && hideOwnedToggle.classList.contains('is-active')) {
+                    query.hide_owned = 'true';
+                }
+                const games = await apiGetGames(query);
                 renderGames(Array.isArray(games) ? games : (games.data || games.games || []));
             } catch (err) {
                 document.getElementById('game-list').innerHTML =

@@ -41,6 +41,18 @@
                     <label class="label" for="filter-max-price">最高價</label>
                     <input class="input" type="number" id="filter-max-price" min="0" step="1">
                 </div>
+                <div class="column is-auto" id="hide-owned-wrapper" style="display: none; align-items: flex-end; justify-content: center; padding-bottom: 0.75rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+                        <label class="label" style="margin: 0; color: transparent; user-select: none;">隱藏</label>
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <span class="has-text-grey-light is-size-7" style="font-weight: 700;">隱藏已購買</span>
+                            <div class="vp-switch" id="filter-hide-owned">
+                                <div class="vp-option vp-on"><span>ON</span></div>
+                                <div class="vp-option vp-off"><span>OFF</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="column is-2">
                     <label class="label" for="filter-sort">排序</label>
                     <div class="select is-fullwidth"><select id="filter-sort">
@@ -71,6 +83,18 @@
             document.getElementById('filter-min-price').value = params.get('min_price') || '';
             document.getElementById('filter-max-price').value = params.get('max_price') || '';
             document.getElementById('filter-sort').value = params.get('sort') || 'popular';
+
+            const hideOwnedWrapper = document.getElementById('hide-owned-wrapper');
+            const hideOwnedToggle = document.getElementById('filter-hide-owned');
+            if (localStorage.getItem('token')) {
+                hideOwnedWrapper.style.display = 'flex';
+                if (params.get('hide_owned') === 'true') {
+                    hideOwnedToggle.classList.add('is-active');
+                }
+            }
+            hideOwnedToggle.addEventListener('click', () => {
+                hideOwnedToggle.classList.toggle('is-active');
+            });
 
             document.getElementById('search-form').addEventListener('submit', applySearchFilters, true);
             document.getElementById('apply-filters-btn').addEventListener('click', applySearchFilters);
@@ -145,12 +169,16 @@
             const minPrice = document.getElementById('filter-min-price').value;
             const maxPrice = document.getElementById('filter-max-price').value;
             const sort = document.getElementById('filter-sort').value;
+            const hideOwnedToggle = document.getElementById('filter-hide-owned');
             if (keyword) params.set('q', keyword);
             if (tag) params.set('tag', tag);
             if (developer) params.set('developer', developer);
             if (minPrice !== '') params.set('min_price', minPrice);
             if (maxPrice !== '') params.set('max_price', maxPrice);
             if (sort && sort !== 'popular') params.set('sort', sort);
+            if (hideOwnedToggle && hideOwnedToggle.classList.contains('is-active')) {
+                params.set('hide_owned', 'true');
+            }
             window.location.href = `/pages/store/search.html${params.toString() ? '?' + params.toString() : ''}`;
         }
     </script>
