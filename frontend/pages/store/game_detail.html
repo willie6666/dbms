@@ -293,8 +293,27 @@
                     ? `<span class="review-sentiment sentiment-positive">推薦</span>`
                     : `<span class="review-sentiment sentiment-negative">不推薦</span>`;
                 const author = escapeHtml(r.author_username || r.author || r.username || (r.user && r.user.username) || '玩家');
-                const playtime = r.playtime || r.play_time || '未知';
-                const date = (r.date || r.created_at || '').slice(0, 10);
+                
+                let dateStr = r.date || r.created_at || '';
+                let date = '未知時間';
+                if (dateStr) {
+                    try {
+                        const d = new Date(dateStr);
+                        if (!isNaN(d.getTime())) {
+                            const yyyy = d.getFullYear();
+                            const mm = String(d.getMonth() + 1).padStart(2, '0');
+                            const dd = String(d.getDate()).padStart(2, '0');
+                            const hh = String(d.getHours()).padStart(2, '0');
+                            const min = String(d.getMinutes()).padStart(2, '0');
+                            const ss = String(d.getSeconds()).padStart(2, '0');
+                            date = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+                        } else {
+                            date = dateStr.slice(0, 19).replace('T', ' ');
+                        }
+                    } catch (e) {
+                        date = dateStr.slice(0, 19).replace('T', ' ');
+                    }
+                }
                 const text = escapeHtml(r.text || r.content || r.body || '');
                 const reviewId = r.id || r.review_id || r.ID;
                 const replies = r.replies || [];
@@ -309,13 +328,39 @@
                         const rText = escapeHtml(reply.content || reply.text || '');
                         const replyId = reply.id || reply.review_reply_id;
                         const replyUserId = reply.user_id || (reply.User && reply.User.user_id);
+                        
+                        let rDateStr = reply.created_at || reply.date || '';
+                        let rDate = '';
+                        if (rDateStr) {
+                            try {
+                                const d = new Date(rDateStr);
+                                if (!isNaN(d.getTime())) {
+                                    const yyyy = d.getFullYear();
+                                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                                    const dd = String(d.getDate()).padStart(2, '0');
+                                    const hh = String(d.getHours()).padStart(2, '0');
+                                    const min = String(d.getMinutes()).padStart(2, '0');
+                                    const ss = String(d.getSeconds()).padStart(2, '0');
+                                    rDate = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+                                } else {
+                                    rDate = rDateStr.slice(0, 19).replace('T', ' ');
+                                }
+                            } catch (e) {
+                                rDate = rDateStr.slice(0, 19).replace('T', ' ');
+                            }
+                        }
+
                         const canDelete = currentUserId && (replyUserId == currentUserId);
                         const deleteBtn = canDelete
                             ? `<button class="button is-text is-small" onclick="deleteReply(${replyId})" title="刪除此回覆">刪除</button>`
                             : '';
                         repliesHtml += `
                             <div class="reply-item">
-                                <div class="reply-author">${rAuthor}${deleteBtn}</div>
+                                <div class="reply-author">
+                                    <span style="font-weight: 600;">${rAuthor}</span>
+                                    <span style="color: #8f98a0; font-size: 12px; margin-left: 8px;">${rDate}</span>
+                                    ${deleteBtn}
+                                </div>
                                 <div class="reply-text">${rText}</div>
                             </div>
                         `;
@@ -338,7 +383,7 @@
                     <div class="review-header">
                         <span class="review-author">${author}</span>
                         ${badge}
-                        <span class="review-meta">遊玩時間：${playtime} &nbsp;·&nbsp; ${date}</span>
+                        <span class="review-meta">${date}</span>
                     </div>
                     <p style="color:var(--text-secondary);font-size:14px;line-height:1.7;">${text}</p>
                     ${repliesHtml}
