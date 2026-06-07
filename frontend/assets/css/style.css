@@ -554,7 +554,35 @@ input:focus, textarea:focus, select:focus {
 .reply-author { color: var(--text-primary); font-size: 0.86rem; font-weight: 800; }
 .reply-text { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.55; margin-top: 0.3rem; overflow-wrap: anywhere; }
 .reply-input-area { display: flex; gap: 0.6rem; margin-top: 0.8rem; }
-.reply-input-area input { flex: 1; }
+.reply-input-area input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+.reply-input-area input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    background: rgba(255,255,255,0.08);
+}
+.reply-input-area button {
+    background: transparent;
+    color: var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
+    border-radius: 999px;
+    padding: 0.5rem 1.25rem;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+.reply-input-area button:hover {
+    background: var(--accent-cyan);
+    color: #fff;
+}
 
 .social-container { height: min(72vh, 760px); display: grid !important; grid-template-columns: 320px minmax(0, 1fr); overflow: hidden; }
 .social-sidebar { border-right: 1px solid rgba(255,255,255,0.08) !important; background: #121927 !important; }
