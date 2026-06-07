@@ -71,20 +71,20 @@
 
     <main>
         <div class="dashboard-header">
-            <h1>系統管理員後台</h1>
-            <span class="role-badge admin">ADMIN</span>
+            <h1 class="title">系統管理員後台</h1>
+            <span class="tag role-badge admin">ADMIN</span>
         </div>
 
         <div class="dashboard-grid">
-            <div class="dashboard-panel">
-                <h2>全站帳號與權限管理</h2>
+            <div class="box dashboard-panel">
+                <h2 class="title is-4">全站帳號與權限管理</h2>
                 <div class="library-list" id="users-list">
                     <p style="color:var(--text-muted);">載入中...</p>
                 </div>
             </div>
 
-            <div class="dashboard-panel">
-                <h2>商店遊戲管理（強制下架）</h2>
+            <div class="box dashboard-panel">
+                <h2 class="title is-4">商店遊戲管理（強制下架）</h2>
                 <div class="library-list" id="admin-games-list">
                     <p style="color:var(--text-muted);">載入中...</p>
                 </div>
@@ -132,8 +132,8 @@
 
                 const isBanned     = user.permission === 'DEACTIVE';
                 const statusBadge  = !isBanned
-                    ? `<span class="status-badge status-active">正常</span>`
-                    : `<span class="status-badge status-banned">已停權</span>`;
+                    ? `<span class="tag status-badge status-active">正常</span>`
+                    : `<span class="tag status-badge status-banned">已停權</span>`;
                 const banText      = !isBanned ? "停權" : "解除停權";
                 const banColor     = !isBanned ? "var(--accent-red)" : "var(--accent-yellow)";
 
@@ -143,16 +143,16 @@
                         <p>信箱：${escapeHtml(user.email || '')} &nbsp;|&nbsp; 狀態：${statusBadge}</p>
                     </div>
                     <div class="library-item-actions">
-                        <select class="role-select" onchange="changeRole(${user.id}, this.value)">
+                        <select class="select role-select" onchange="changeRole(${user.id}, this.value)">
                             <option value="USERS"     ${user.role==='USERS'     ? 'selected':''}>玩家 (User)</option>
                             <option value="DEVELOPER" ${user.role==='DEVELOPER' ? 'selected':''}>開發者 (Dev)</option>
                             <option value="CSR"       ${user.role==='CSR'       ? 'selected':''}>客服 (CSR)</option>
                             <option value="ADMIN"     ${user.role==='ADMIN'     ? 'selected':''}>管理員 (Admin)</option>
                         </select>
-                        <button class="btn-secondary"
+                        <button class="button is-light"
                                 style="background-color:${banColor};color:#fff;border-color:${banColor};"
                                 onclick="toggleSuspend(${user.id}, ${isBanned})">${banText}</button>
-                        <button class="btn-secondary" onclick="deleteUser(${user.id})">永久刪除</button>
+                        <button class="button is-danger is-light" onclick="deleteUser(${user.id})">永久刪除</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -227,11 +227,11 @@
                     <div class="library-item-info">
                         <h3>${escapeHtml(game.title)}</h3>
                         <p>開發者：${escapeHtml(developer)} &nbsp;|&nbsp;
-                           <span class="status-badge status-active">正常販售中</span>
+                           <span class="tag status-badge status-active">正常販售中</span>
                         </p>
                     </div>
                     <div class="library-item-actions">
-                        <button class="btn-danger" onclick="adminTakeDown(${gameId})">強制下架</button>
+                        <button class="button is-danger is-light" onclick="adminTakeDown(${gameId})">強制下架</button>
                     </div>
                 `;
                 list.appendChild(item);

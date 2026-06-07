@@ -60,13 +60,13 @@
 
     <main>
         <div class="dashboard-header">
-            <h1>客服處理中心</h1>
-            <span class="role-badge csr">CSR</span>
+            <h1 class="title">客服處理中心</h1>
+            <span class="tag role-badge csr">CSR</span>
         </div>
 
         <div class="dashboard-grid">
-            <div class="dashboard-panel">
-                <h2>待處理退款申請</h2>
+            <div class="box dashboard-panel">
+                <h2 class="title is-4">待處理退款申請</h2>
                 <div class="library-list" id="refund-requests-list">
                     <p style="color:var(--text-muted);">載入中...</p>
                 </div>
@@ -128,8 +128,8 @@
                         <p>申請人：${escapeHtml(username)} &nbsp;|&nbsp; 金額：NT$ ${price.toLocaleString()} &nbsp;|&nbsp; 理由：${escapeHtml(reason)}</p>
                     </div>
                     <div class="library-item-actions">
-                        <button class="btn-success" style="padding:8px 16px; margin:0 5px;" onclick="processRefund(${refundId}, 'APPROVED')">核准退款</button>
-                        <button class="btn-danger" style="padding:8px 16px; margin:0;" onclick="processRefund(${refundId}, 'REJECTED')">駁回</button>
+                        <button class="button is-success is-light" onclick="processRefund(${refundId}, 'APPROVED')">核准退款</button>
+                        <button class="button is-danger is-light" onclick="processRefund(${refundId}, 'REJECTED')">駁回</button>
                     </div>
                 `;
                 listEl.appendChild(item);

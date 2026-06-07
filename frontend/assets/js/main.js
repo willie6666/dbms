@@ -26,6 +26,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+document.addEventListener('click', (event) => {
+    const burger = event.target.closest('.navbar-burger');
+    if (!burger) return;
+    const target = document.getElementById(burger.dataset.target);
+    if (!target) return;
+    burger.classList.toggle('is-active');
+    target.classList.toggle('is-active');
+});
+
 // ============================================================
 // 渲染共用導覽列
 // ============================================================
@@ -36,7 +45,12 @@ function renderHeader() {
     // 登入頁與註冊頁只顯示 Logo
     const path = window.location.pathname;
     if (path.includes('login.html') || path.includes('register.html')) {
-        header.innerHTML = `<a href="/" class="logo">VaporAuror</a>`;
+        header.innerHTML = `
+            <nav class="navbar va-navbar" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    <a href="/" class="navbar-item logo">VaporAuror</a>
+                </div>
+            </nav>`;
         return;
     }
 
@@ -45,51 +59,63 @@ function renderHeader() {
     const userDataStr = localStorage.getItem('currentUser');
     const username = userDataStr ? JSON.parse(userDataStr).username : '玩家';
 
-    // 左側選單
-    let leftHtml = `
-        <div class="nav-left">
-            <a href="/" class="logo">VaporAuror</a>
-            <ul class="main-menu">
-                <li><a href="/">商店首頁</a></li>
-    `;
+    let navItems = `<a class="navbar-item" href="/">商店首頁</a>`;
 
     if (currentRole !== 'GUEST') {
-        leftHtml += `
-                <li><a href="/pages/user/library">遊戲庫</a></li>
-                <li><a href="/pages/user/social">社群</a></li>
+        navItems += `
+            <a class="navbar-item" href="/pages/user/library">遊戲庫</a>
+            <a class="navbar-item" href="/pages/user/social">社群</a>
         `;
         if (currentRole === 'DEVELOPER') {
-            leftHtml += `<li><a href="/pages/dashboard/dev_dashboard" style="color:#e5a93d;">開發者中心</a></li>`;
+            navItems += `<a class="navbar-item has-text-warning" href="/pages/dashboard/dev_dashboard">開發者中心</a>`;
         } else if (currentRole === 'CSR') {
-            leftHtml += `<li><a href="/pages/dashboard/csr_dashboard" style="color:#66c0f4;">客服中心</a></li>`;
+            navItems += `<a class="navbar-item has-text-info" href="/pages/dashboard/csr_dashboard">客服中心</a>`;
         } else if (currentRole === 'ADMIN') {
-            leftHtml += `<li><a href="/pages/dashboard/csr_dashboard" style="color:#66c0f4;">客服中心</a></li>`;
-            leftHtml += `<li><a href="/pages/dashboard/admin_dashboard" style="color:#ff5959;">管理後台</a></li>`;
+            navItems += `<a class="navbar-item has-text-info" href="/pages/dashboard/csr_dashboard">客服中心</a>`;
+            navItems += `<a class="navbar-item has-text-danger" href="/pages/dashboard/admin_dashboard">管理後台</a>`;
         }
     }
-    leftHtml += `</ul></div>`;
 
-    // 右側
-    let rightHtml = `<div class="nav-right">`;
+    let accountHtml = '';
     if (currentRole === 'GUEST') {
-        rightHtml += `<a href="/pages/auth/login" class="btn-primary" style="margin:0;padding:8px 22px;width:auto;font-size:14px;">登入 / 註冊</a>`;
+        accountHtml += `
+            <div class="navbar-item">
+                <div class="buttons">
+                    <a href="/pages/auth/login" class="button is-primary"><strong>登入 / 註冊</strong></a>
+                </div>
+            </div>`;
     } else {
-        rightHtml += `
-            <a href="/pages/user/cart" class="nav-cart">購物車</a>
-            <div class="user-dropdown">
-                <button class="user-btn">${escapeHtml(username)}</button>
-                <div class="dropdown-content">
-                    <a href="/pages/user/profile">基本資料</a>
-                    <a href="/pages/user/history">購買紀錄</a>
-                    <a href="/pages/user/wishlist">願望清單</a>
-                    <a href="#" id="logout-btn">登出</a>
+        accountHtml += `
+            <a href="/pages/user/cart" class="navbar-item">購物車</a>
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">${escapeHtml(username)}</a>
+                <div class="navbar-dropdown is-right">
+                    <a class="navbar-item" href="/pages/user/profile">基本資料</a>
+                    <a class="navbar-item" href="/pages/user/history">購買紀錄</a>
+                    <a class="navbar-item" href="/pages/user/wishlist">願望清單</a>
+                    <hr class="navbar-divider">
+                    <a class="navbar-item" href="#" id="logout-btn">登出</a>
                 </div>
             </div>
         `;
     }
-    rightHtml += `</div>`;
 
-    header.innerHTML = leftHtml + rightHtml;
+    header.innerHTML = `
+        <nav class="navbar va-navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a href="/" class="navbar-item logo">VaporAuror</a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="global-navbar-menu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div id="global-navbar-menu" class="navbar-menu">
+                <div class="navbar-start">${navItems}</div>
+                <div class="navbar-end">${accountHtml}</div>
+            </div>
+        </nav>`;
 
     // 登出事件
     const logoutBtn = document.getElementById('logout-btn');
@@ -121,7 +147,7 @@ function renderGames(games) {
         container.innerHTML = '';
         for (let i = 0; i < 4; i++) {
             const skeleton = document.createElement('div');
-            skeleton.className = 'game-list-card';
+            skeleton.className = 'game-list-card card';
             skeleton.innerHTML = `
                 <div class="game-thumbnail skeleton"></div>
                 <div class="game-list-info">
@@ -142,9 +168,8 @@ function renderGames(games) {
     if (games.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <div class="empty-icon">🎮</div>
                 <p>找不到符合條件的遊戲</p>
-                <a href="/" class="btn-secondary" style="display:inline-block;margin-top:10px;">回首頁</a>
+                <a href="/" class="button is-light" style="margin-top:10px;">回首頁</a>
             </div>`;
         return;
     }
@@ -152,11 +177,11 @@ function renderGames(games) {
     container.innerHTML = '';
     games.forEach(game => {
         const card = document.createElement('div');
-        card.className = 'game-list-card';
+        card.className = 'game-list-card card';
 
         const tagsHtml = (game.tags || []).map(t => {
             const tagName = typeof t === 'string' ? t : (t.tag_name || t.name || t);
-            return `<span class="tag">${escapeHtml(String(tagName))}</span>`;
+            return `<span class="tag is-rounded">${escapeHtml(String(tagName))}</span>`;
         }).join('');
         const priceHtml = game.price === 0
             ? `<span class="game-list-price free">免費</span>`
@@ -171,14 +196,12 @@ function renderGames(games) {
         }
 
         card.innerHTML = `
-            <div class="game-thumbnail">
-                ${coverHtml}
-            </div>
-            <div class="game-list-info">
-                <div class="game-list-title">${escapeHtml(game.title)}</div>
-                <div class="game-list-desc">${escapeHtml(game.desc)}</div>
-                <div class="game-list-tags">${tagsHtml}</div>
-                ${priceHtml}
+            <div class="card-image game-thumbnail">${coverHtml}</div>
+            <div class="card-content game-list-info">
+                <p class="title is-5 game-list-title">${escapeHtml(game.title)}</p>
+                <p class="content game-list-desc">${escapeHtml(game.desc || '')}</p>
+                <div class="game-list-tags tags">${tagsHtml}</div>
+                <p>${priceHtml}</p>
             </div>
         `;
 
@@ -240,12 +263,7 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast-message toast-${type}`;
     
-    // Icon selection
-    let icon = '💬';
-    if (type === 'success') icon = '✅';
-    if (type === 'error') icon = '❌';
-
-    toast.innerHTML = `<span>${icon}</span> <span>${escapeHtml(message)}</span>`;
+    toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
     container.appendChild(toast);
 
     // Animate in

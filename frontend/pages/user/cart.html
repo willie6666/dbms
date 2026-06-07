@@ -70,7 +70,7 @@
 
     <main class="cart-container">
         <div class="cart-header">
-            <h1 class="section-title" style="margin:0;">🛒 購物車</h1>
+            <h1 class="title section-title" style="margin:0;">購物車</h1>
         </div>
         
         <div class="library-list" id="cart-list">
@@ -82,9 +82,9 @@
                 <div>
                     <h3 style="color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; font-size:14px;">結帳總計</h3>
                     <div class="cart-total-price">NT$ <span id="total-price">0</span></div>
-                    <p style="color:var(--accent-green);font-size:13px;margin-top:4px;">💳 錢包餘額：無限</p>
+                    <p style="color:var(--accent-green);font-size:13px;margin-top:4px;">錢包餘額：無限</p>
                 </div>
-                <button class="btn-primary" style="width:200px; height:60px; font-size:18px; box-shadow:var(--glow-cyan);" id="checkout-btn" onclick="checkout()">確認結帳</button>
+                <button class="button is-primary is-medium" style="width:200px; height:60px; font-size:18px;" id="checkout-btn" onclick="checkout()">確認結帳</button>
             </div>
         </div>
     </main>
@@ -120,7 +120,7 @@
                 listEl.innerHTML = `
                     <div class="empty-state">
                         <p>購物車是空的，去商店挑選遊戲吧！</p>
-                        <a href="/" class="btn-secondary" style="display:inline-block;margin-top:12px;">前往商店</a>
+                         <a href="/" class="button is-light" style="margin-top:12px;">前往商店</a>
                     </div>`;
                 summaryEl.style.display = 'none';
                 return;
@@ -134,7 +134,7 @@
                 const price  = Number(game.price || item.price || 0);
                 
                 // If title is missing, it means the game was deleted from the store
-                const displayTitle = title ? title : '🚫 已下架或失效的遊戲';
+                const displayTitle = title ? title : '已下架或失效的遊戲';
                 
                 if (title) {
                     total += price;
@@ -148,7 +148,7 @@
                         <p style="color:var(--accent-pink);font-size:16px;font-weight:700;">NT$ ${price.toLocaleString()}</p>
                     </div>
                     <div class="library-item-actions">
-                        <button class="btn-secondary" style="border-color:rgba(255,0,85,0.3); color:var(--accent-pink);" onclick="removeFromCart(${gameId})">移除</button>
+                         <button class="button is-danger is-light" onclick="removeFromCart(${gameId})">移除</button>
                     </div>
                 `;
                 listEl.appendChild(el);

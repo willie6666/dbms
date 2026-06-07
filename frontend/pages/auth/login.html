@@ -11,29 +11,29 @@
     <header id="global-header"></header>
 
     <main>
-        <div class="auth-container">
-            <h2>歡迎回來</h2>
-            <p class="auth-subtitle">登入你的 VaporAuror 帳號</p>
+        <div class="box auth-container">
+            <h1 class="title is-3 has-text-centered">歡迎回來</h1>
+            <p class="subtitle is-6 auth-subtitle">登入你的 VaporAuror 帳號</p>
 
-            <div id="login-error" class="alert-info" style="display:none;background:rgba(255,89,89,0.1);border-color:rgba(255,89,89,0.3);color:#ff5959;"></div>
+            <div id="login-error" class="notification is-danger is-light alert-info" style="display:none;"></div>
 
             <form id="login-form">
-                <div class="form-group">
-                    <label for="email">電子郵件 (Email)</label>
-                    <input type="email" id="email" placeholder="輸入你的註冊信箱" required>
+                <div class="field form-group">
+                    <label class="label" for="email">電子郵件 (Email)</label>
+                    <div class="control"><input class="input" type="email" id="email" placeholder="輸入你的註冊信箱" required></div>
                 </div>
-                <div class="form-group">
-                    <label for="password">密碼 (Password)</label>
-                    <input type="password" id="password" placeholder="輸入你的密碼" required>
+                <div class="field form-group">
+                    <label class="label" for="password">密碼 (Password)</label>
+                    <div class="control"><input class="input" type="password" id="password" placeholder="輸入你的密碼" required></div>
                 </div>
-                <button type="submit" class="btn-primary" id="login-btn">登入</button>
+                <button type="submit" class="button is-primary is-fullwidth" id="login-btn">登入</button>
             </form>
 
             <div class="form-divider">或</div>
 
             <p style="text-align:center; font-size:14px; color:var(--text-muted);">
                 還沒有帳號？
-                <a href="/pages/auth/register.html" style="color:var(--accent-blue); font-weight:600;">立即免費註冊</a>
+                <a href="/pages/auth/register.html" class="has-text-info has-text-weight-bold">立即免費註冊</a>
             </p>
         </div>
     </main>

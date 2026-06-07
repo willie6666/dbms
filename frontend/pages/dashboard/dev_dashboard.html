@@ -339,8 +339,8 @@
 
     <main>
         <div class="dashboard-header">
-            <h1>開發者中心</h1>
-            <span class="role-badge dev">DEVELOPER</span>
+            <h1 class="title">開發者中心</h1>
+            <span class="tag role-badge dev">DEVELOPER</span>
         </div>
 
         <div class="dashboard-stats" id="sales-stats">
@@ -349,30 +349,30 @@
 
         <div class="dashboard-grid">
             <!-- 上架新遊戲面板 -->
-            <div class="dashboard-panel">
-                <h2>發行新遊戲</h2>
+            <div class="box dashboard-panel">
+                <h2 class="title is-4">發行新遊戲</h2>
                 <form id="upload-game-form" class="dev-form">
-                    <div class="form-group">
-                        <label for="new-game-title">遊戲名稱</label>
-                        <input type="text" id="new-game-title" placeholder="輸入炫酷的標題" required>
+                    <div class="field form-group">
+                        <label class="label" for="new-game-title">遊戲名稱</label>
+                        <div class="control"><input class="input" type="text" id="new-game-title" placeholder="輸入炫酷的標題" required></div>
                     </div>
-                    <div class="form-group">
-                        <label for="new-game-price">定價 (NT$)</label>
-                        <input type="number" id="new-game-price" min="0" placeholder="0 表示免費" required>
+                    <div class="field form-group">
+                        <label class="label" for="new-game-price">定價 (NT$)</label>
+                        <div class="control"><input class="input" type="number" id="new-game-price" min="0" placeholder="0 表示免費" required></div>
                     </div>
-                    <div class="form-group">
-                        <label for="new-game-desc">遊戲介紹</label>
-                        <textarea id="new-game-desc" placeholder="簡短描述你的遊戲亮點..." required style="min-height: 120px;"></textarea>
+                    <div class="field form-group">
+                        <label class="label" for="new-game-desc">遊戲介紹</label>
+                        <div class="control"><textarea class="textarea" id="new-game-desc" placeholder="簡短描述你的遊戲亮點..." required style="min-height: 120px;"></textarea></div>
                     </div>
-                    <button type="submit" class="btn-primary" id="publish-btn" style="width: 100%; box-shadow: var(--glow-cyan);">
-                        🚀 立即上架
+                    <button type="submit" class="button is-primary is-fullwidth" id="publish-btn">
+                        立即上架
                     </button>
                 </form>
             </div>
 
             <!-- 管理遊戲面板 -->
-            <div class="dashboard-panel">
-                <h2>管理我的遊戲</h2>
+            <div class="box dashboard-panel">
+                <h2 class="title is-4">管理我的遊戲</h2>
                 <div class="library-list" id="my-published-games">
                     <p style="color:var(--text-muted);">載入中...</p>
                 </div>
@@ -380,10 +380,10 @@
         </div>
 
         <!-- 素材管理面板（全寬，點素材管理才展開） -->
-        <div class="dashboard-panel" id="media-manager-panel">
+        <div class="box dashboard-panel" id="media-manager-panel">
             <div class="media-manager-title">
-                <h3>🗂 素材管理 — <span id="media-game-title" style="color:white;"></span></h3>
-                <button class="media-manager-close" onclick="closeMediaManager()">✕ 關閉</button>
+                <h3 class="title is-5">素材管理 — <span id="media-game-title" style="color:white;"></span></h3>
+                <button class="button is-light is-small media-manager-close" onclick="closeMediaManager()">關閉</button>
             </div>
 
             <!-- 現有素材 Grid -->
@@ -393,24 +393,24 @@
 
             <!-- 上傳新素材 -->
             <div class="upload-section">
-                <h4>➕ 新增素材</h4>
+                <h4>新增素材</h4>
                 <div class="upload-row">
-                    <select id="mm-media-type" class="upload-type-select">
-                        <option value="media">🖼 遊戲圖片</option>
-                        <option value="game_file">📦 遊戲執行檔</option>
+                    <select id="mm-media-type" class="select upload-type-select">
+                        <option value="media">遊戲圖片</option>
+                        <option value="game_file">遊戲執行檔</option>
                     </select>
                     <div class="file-pick-wrapper">
-                        <div class="file-pick-label" id="mm-file-label">📂 點擊選擇要上傳的檔案…</div>
+                        <div class="file-pick-label" id="mm-file-label">點擊選擇要上傳的檔案…</div>
                         <input type="file" id="mm-file-input" accept="image/*,.zip,.exe,.rar,.7z"
                                onchange="onFileChosen(this)">
                     </div>
-                    <button class="upload-btn" id="mm-upload-btn" onclick="doUpload()">上傳</button>
+                    <button class="button is-primary upload-btn" id="mm-upload-btn" onclick="doUpload()">上傳</button>
                 </div>
                 <div class="upload-hint">
                     圖片將以 <code style="color:var(--accent-cyan);">遊戲ID/SHA256</code> 格式儲存；
                     遊戲執行檔以 <code style="color:#ffc800;">遊戲ID/原始檔名</code> 格式儲存。
                 </div>
-                <div class="upload-progress" id="mm-progress">⏳ 上傳中，請稍候…</div>
+                <div class="upload-progress" id="mm-progress">上傳中，請稍候…</div>
             </div>
         </div>
     </main>
@@ -488,8 +488,8 @@
                 const gameId      = game.game_id || game.id;
                 const isActive    = !game.deleted_at && game.status !== 'TAKEN_DOWN';
                 const statusBadge = isActive
-                    ? `<span class="status-badge status-active">上架中</span>`
-                    : `<span class="status-badge status-taken-down">已下架</span>`;
+                    ? `<span class="tag status-badge status-active">上架中</span>`
+                    : `<span class="tag status-badge status-taken-down">已下架</span>`;
 
                 const item = document.createElement('div');
                 item.className = 'library-item';
@@ -504,13 +504,11 @@
                         </div>
                         <div class="library-item-actions">
                             ${isActive ? `
-                                <button class="btn-primary"
-                                    style="margin:0; padding:6px 14px; font-size:12px; width:auto;"
+                                <button class="button is-primary is-small"
                                     onclick="openMediaManager(${gameId})">
-                                    🗂 素材管理
+                                    素材管理
                                 </button>
-                                <button class="btn-secondary"
-                                    style="margin:0; padding:6px 12px; font-size:12px; width:auto; color:var(--accent-pink); border-color:rgba(255,0,85,0.3);"
+                                <button class="button is-danger is-light is-small"
                                     onclick="takeDownGame(${gameId})">
                                     下架
                                 </button>
@@ -541,7 +539,7 @@
                 alert(`上架失敗：${err.message}`);
             } finally {
                 btn.disabled    = false;
-                btn.textContent = '🚀 立即上架';
+                btn.textContent = '立即上架';
             }
         });
 
@@ -593,15 +591,15 @@
                 const thumb = isImage
                     ? `<img class="media-card-thumb" src="${escapeHtml(m.file_url)}" alt="media" loading="lazy"
                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                       <div class="media-card-file" style="display:none;"><span class="icon">🖼</span><span>載入失敗</span></div>`
-                    : `<div class="media-card-file"><span class="icon">📦</span><span style="word-break:break-all;">${escapeHtml(m.file_url.split('/').pop())}</span></div>`;
+                       <div class="media-card-file" style="display:none;"><span>載入失敗</span></div>`
+                    : `<div class="media-card-file"><span style="word-break:break-all;">${escapeHtml(m.file_url.split('/').pop())}</span></div>`;
 
                 card.innerHTML = `
                     ${thumb}
                     <div class="media-card-info">
                         <span class="badge ${isImage ? 'badge-img' : 'badge-file'}">${isImage ? '圖片' : '遊戲檔'}</span>
                         <button class="media-card-del" title="刪除此素材"
-                            onclick="deleteMedia(${gameId}, ${m.media_id})">🗑</button>
+                            onclick="deleteMedia(${gameId}, ${m.media_id})">刪除</button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -643,7 +641,7 @@
         function onFileChosen(input) {
             const label = document.getElementById('mm-file-label');
             if (input.files && input.files[0]) {
-                label.textContent = `📄 ${input.files[0].name}`;
+                label.textContent = input.files[0].name;
                 label.classList.add('has-file');
             } else {
                 resetUploadForm();
@@ -655,7 +653,7 @@
             const label = document.getElementById('mm-file-label');
             if (input) input.value = '';
             if (label) {
-                label.textContent = '📂 點擊選擇要上傳的檔案…';
+                label.textContent = '點擊選擇要上傳的檔案…';
                 label.classList.remove('has-file');
             }
             const progress = document.getElementById('mm-progress');

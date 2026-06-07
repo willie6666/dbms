@@ -11,17 +11,21 @@
     <header id="global-header"></header>
 
     <main>
-        <section class="store-hero" style="margin-bottom: 30px; padding: 40px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--bg-hover);">
-            <form class="search-bar" id="search-form">
-                <input type="text" id="search-input" placeholder="搜尋遊戲名稱、類型、開發者...">
-                <button type="submit" class="btn-primary">搜尋</button>
+        <section class="section store-hero" style="margin-bottom: 30px; padding: 40px;">
+            <form class="search-bar field has-addons" id="search-form">
+                <div class="control is-expanded">
+                    <input class="input is-medium" type="text" id="search-input" placeholder="搜尋遊戲名稱、類型、開發者...">
+                </div>
+                <div class="control">
+                    <button type="submit" class="button is-primary is-medium">搜尋</button>
+                </div>
             </form>
         </section>
 
-        <div class="search-results-header" id="search-results-header"></div>
-        <h2 class="section-title" id="search-section-title">搜尋結果</h2>
+        <div class="notification is-info is-light search-results-header" id="search-results-header"></div>
+        <h1 class="title section-title" id="search-section-title">搜尋結果</h1>
         <div class="game-list-container" id="game-list">
-            <p style="color:var(--text-muted);text-align:center;padding:40px;">載入中...</p>
+            <p class="has-text-centered p-6">載入中...</p>
         </div>
     </main>
 

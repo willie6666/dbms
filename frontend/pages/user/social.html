@@ -177,8 +177,8 @@
 
     <main>
         <div class="dashboard-header" style="margin-bottom:20px;">
-            <h1 style="font-size:22px;">社群中心</h1>
-            <button class="btn-primary" style="width:auto;padding:9px 20px;margin-top:0;" onclick="addFriendPrompt()">新增好友</button>
+            <h1 class="title">社群中心</h1>
+            <button class="button is-primary" onclick="addFriendPrompt()">新增好友</button>
         </div>
 
         <div class="social-container">
@@ -197,8 +197,8 @@
                 <div class="chat-messages" id="chat-messages">
                     </div>
                 <form class="chat-input-area" id="chat-form" style="display: none;">
-                    <input type="text" id="chat-input" placeholder="輸入訊息..." autocomplete="off" required>
-                    <button type="submit" class="btn-primary" style="margin: 0; width: 80px;">發送</button>
+                    <input class="input" type="text" id="chat-input" placeholder="輸入訊息..." autocomplete="off" required>
+                    <button type="submit" class="button is-primary" style="width: 80px;">發送</button>
                 </form>
             </div>
         </div>
@@ -271,7 +271,8 @@
             let targetArray = socialData[currentActiveTab] || [];
 
             if (targetArray.length === 0) {
-                listContainer.innerHTML = '<p style="color:#8f98a0; text-align:center; margin-top:20px;">列表為空</p>';
+                const labels = { friends: '目前沒有好友', requests: '目前沒有好友邀請', blocked: '黑名單是空的' };
+                listContainer.innerHTML = `<div class="social-empty">${labels[currentActiveTab] || '列表為空'}</div>`;
                 return;
             }
 
@@ -287,26 +288,26 @@
                 let contentHtml = `
                     <div style="display:flex; align-items:center;">
                         <div class="list-item-avatar">${avatarChar}</div>
-                        <span style="color: white; font-weight: 500;">${escapeHtml(username)}</span>
+                        <span style="color: var(--text-primary); font-weight: 600;">${escapeHtml(username)}</span>
                     </div>
                 `;
                 let actionHtml = '';
 
                 if (currentActiveTab === 'friends') {
                     div.onclick = () => openChat(userId, username);
-                    actionHtml = `<button class="btn-secondary" style="padding: 4px 8px; font-size:12px; background-color:#ff5959; color:white; width:auto; margin:0;" onclick="event.stopPropagation(); blockUser(${userId}, '${escapeHtml(username)}')">封鎖</button>`;
+                    actionHtml = `<button class="button is-danger is-light is-small" onclick="event.stopPropagation(); blockUser(${userId}, '${escapeHtml(username)}')">封鎖</button>`;
                 } 
                 else if (currentActiveTab === 'requests') {
                     const requestId = item.friendship_id || item.id || userId;
                     actionHtml = `
                         <div style="display:flex; gap:6px;">
-                            <button class="btn-primary" style="padding: 4px 8px; font-size:12px; width:auto; margin:0;" onclick="event.stopPropagation(); handleRequest(${requestId}, true)">接受</button>
-                            <button class="btn-secondary" style="padding: 4px 8px; font-size:12px; width:auto; margin:0;" onclick="event.stopPropagation(); handleRequest(${requestId}, false)">拒絕</button>
+                            <button class="button is-success is-light is-small" onclick="event.stopPropagation(); handleRequest(${requestId}, true)">接受</button>
+                            <button class="button is-danger is-light is-small" onclick="event.stopPropagation(); handleRequest(${requestId}, false)">拒絕</button>
                         </div>
                     `;
                 } 
                 else if (currentActiveTab === 'blocked') {
-                    actionHtml = `<button class="btn-secondary" style="padding: 4px 8px; font-size:12px; width:auto; margin:0;" onclick="event.stopPropagation(); unblockUser(${userId})">解除封鎖</button>`;
+                    actionHtml = `<button class="button is-light is-small" onclick="event.stopPropagation(); unblockUser(${userId})">解除封鎖</button>`;
                 }
 
                 div.innerHTML = contentHtml + actionHtml;
