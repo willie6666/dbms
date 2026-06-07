@@ -10,7 +10,26 @@ import (
 
 type UploadGameInput struct {
 	Title string  `json:"title" binding:"required"`
-	Price float64 `json:"price" binding:"required,min=0"`
+	Price float64 `json:"price" binding:"min=0"`
+}
+
+// GetDeveloperGames handles GET /api/developer/games
+func GetDeveloperGames(c *gin.Context) {
+	userIDFloat, _ := c.Get("user_id")
+	developerID := uint(userIDFloat.(float64))
+
+	var games []models.Game
+	query := database.DB.Preload("Media")
+	if role, _ := c.Get("role"); role != "ADMIN" {
+		query = query.Where("developer_id = ?", developerID)
+	}
+
+	if err := query.Find(&games).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch developer games"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": games})
 }
 
 // UploadGame handles POST /api/developer/games

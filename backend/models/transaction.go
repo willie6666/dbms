@@ -18,7 +18,8 @@ type TransactionItem struct {
 	TransactionID uint    `gorm:"not null" json:"transaction_id"`
 	GameID        uint    `gorm:"not null" json:"game_id"`
 	PurchasePrice float64 `gorm:"not null;default:0.00" json:"purchase_price"`
-	
+	RefundStatus  string  `gorm:"-" json:"refund_status,omitempty"`
+
 	// Preload relationship to fetch the actual Game details
 	Game Game `gorm:"foreignKey:GameID" json:"game"`
 }

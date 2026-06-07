@@ -68,6 +68,7 @@ func Register(c *gin.Context) {
 		"user": gin.H{
 			"id":       user.UserID,
 			"username": user.Username,
+			"email":    user.Email,
 			"role":     user.Role,
 		},
 	})

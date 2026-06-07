@@ -218,6 +218,7 @@
             list.innerHTML = '';
 
             games.forEach(game => {
+                const gameId = game.game_id || game.id;
                 const item = document.createElement('div');
                 item.className = 'library-item';
                 const developer = game.developer || (game.developer_user && game.developer_user.username) || '未知';
@@ -230,7 +231,7 @@
                         </p>
                     </div>
                     <div class="library-item-actions">
-                        <button class="btn-danger" onclick="adminTakeDown(${game.id})">強制下架</button>
+                        <button class="btn-danger" onclick="adminTakeDown(${gameId})">強制下架</button>
                     </div>
                 `;
                 list.appendChild(item);

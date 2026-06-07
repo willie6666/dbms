@@ -73,6 +73,7 @@ func SetupRouter() *gin.Engine {
 		// ==========================================
 		developer := api.Group("/developer").Use(middleware.RequireAuth(), middleware.RequireRole("DEVELOPER"))
 		{
+			developer.GET("/games", controllers.GetDeveloperGames)
 			developer.POST("/games", controllers.UploadGame)
 			developer.DELETE("/games/:id", controllers.DeleteGame)
 			developer.POST("/games/:id/media", controllers.UploadMedia)

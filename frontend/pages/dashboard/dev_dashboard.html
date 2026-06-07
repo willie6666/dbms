@@ -186,8 +186,7 @@
 
         async function loadDashboard() {
             try {
-                // GET /api/games — 取得自己的遊戲（後端應過濾為該開發者的遊戲）
-                const result = await apiGetGames();
+                const result = await apiGetDeveloperGames();
                 let myGames  = Array.isArray(result) ? result : (result.data || result.games || []);
 
                 // 統計卡片（若後端有 stats 端點則逐一呼叫，否則從遊戲列表加總）
@@ -195,8 +194,8 @@
                 let totalSales   = 0;
                 const statsPromises = myGames.map(async g => {
                     try {
-                        // GET /api/games/{id}/stats
-                        const stats = await apiGetGameStats(g.id);
+                        const gameId = g.game_id || g.id;
+                        const stats = await apiGetGameStats(gameId);
                         totalRevenue += Number(stats.revenue || stats.total_revenue || 0);
                         totalSales   += Number(stats.sales   || stats.total_sales   || 0);
                     } catch (_) {}
@@ -237,6 +236,7 @@
             }
 
             games.forEach(game => {
+                const gameId = game.game_id || game.id;
                 const item     = document.createElement('div');
                 item.className = 'library-item';
 
@@ -245,8 +245,8 @@
                     ? `<span class="status-badge status-active">上架中</span>`
                     : `<span class="status-badge status-taken-down">已下架</span>`;
                 const actionBtn = isActive
-                    ? `<button class="btn-primary" style="margin:0 5px; padding:6px 12px; font-size:12px; width:auto;" onclick="toggleMediaUpload(${game.id})">素材管理</button>
-                       <button class="btn-secondary" style="margin:0; padding:6px 12px; font-size:12px; width:auto; color:var(--accent-pink); border-color:rgba(255,0,85,0.3);" onclick="takeDownGame(${game.id})">下架</button>`
+                    ? `<button class="btn-primary" style="margin:0 5px; padding:6px 12px; font-size:12px; width:auto;" onclick="toggleMediaUpload(${gameId})">素材管理</button>
+                       <button class="btn-secondary" style="margin:0; padding:6px 12px; font-size:12px; width:auto; color:var(--accent-pink); border-color:rgba(255,0,85,0.3);" onclick="takeDownGame(${gameId})">下架</button>`
                     : `<span style="color:var(--text-muted);font-size:13px;">已停止販售</span>`;
 
                 item.innerHTML = `
@@ -257,15 +257,15 @@
                         </div>
                         <div class="library-item-actions" style="display:flex;">${actionBtn}</div>
                     </div>
-                    <div id="media-upload-${game.id}" class="media-upload-area dev-form">
+                    <div id="media-upload-${gameId}" class="media-upload-area dev-form">
                         <h4 style="color:white; margin-bottom:10px; font-size:14px;">上傳展示圖片或遊戲檔 (路徑)</h4>
                         <div style="display:flex; gap:10px;">
-                            <select id="media-type-${game.id}" style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:4px; padding:5px 10px;">
+                            <select id="media-type-${gameId}" style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:4px; padding:5px 10px;">
                                 <option value="media">遊戲圖片</option>
                                 <option value="game_file">遊戲執行檔</option>
                             </select>
-                            <input type="text" id="media-url-${game.id}" placeholder="如：/assets/images/cover.jpg" style="flex:1;">
-                            <button class="btn-primary" style="margin:0; width:auto; padding:8px 15px;" onclick="uploadMedia(${game.id})">新增</button>
+                            <input type="text" id="media-url-${gameId}" placeholder="如：/assets/images/cover.jpg" style="flex:1;">
+                            <button class="btn-primary" style="margin:0; width:auto; padding:8px 15px;" onclick="uploadMedia(${gameId})">新增</button>
                         </div>
                         <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">* 圖片將顯示於商店頁面輪播圖中。</p>
                     </div>

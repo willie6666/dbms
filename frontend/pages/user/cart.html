@@ -129,7 +129,7 @@
             let total = 0;
             cartData.forEach(item => {
                 const game  = item.game || item;
-                const gameId = game.id || item.game_id;
+                const gameId = game.game_id || game.id || item.game_id;
                 const title  = game.title || item.title || '';
                 const price  = Number(game.price || item.price || 0);
                 

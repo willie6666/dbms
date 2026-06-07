@@ -101,8 +101,8 @@
                     const game    = itemInfo.Game || itemInfo.game || {};
                     const title   = game.title || '未知遊戲';
                     const price   = Number(itemInfo.purchase_price || itemInfo.price || 0);
-                    // 為了簡單起見，如果全單都有退款狀態我們假定每個 item 都有。實際應由後端關聯 refund_requests
-                    const status  = itemInfo.status || tx.status || 'COMPLETED';
+                    const refundStatus = itemInfo.refund_status || itemInfo.refundStatus;
+                    const status  = refundStatus === 'APPROVED' ? 'REFUNDED' : (refundStatus || itemInfo.status || tx.status || 'COMPLETED');
 
                     let statusBadge, actionHtml;
 

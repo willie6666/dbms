@@ -8,7 +8,8 @@
 
 ## Commands
 - Start frontend/database/Adminer from repo root: `docker compose up -d`; Caddy serves the frontend at `http://localhost:3000`.
-- Run backend from `backend`: `go run .`; it listens on `:8000` and expects Postgres at `localhost:5432` with `admin/admin`, database `vapor_auror`.
+- Start the full stack from repo root: `docker compose up -d --build`; frontend is `:3000`, backend is `:8000`, Adminer is `:8080`, Postgres is `:5432`.
+- Run backend locally from `backend`: `go run .`; it reads `DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME` and defaults to `localhost:5432`, `admin/admin`, database `vapor_auror`.
 - Verify backend compile/tests from `backend`: `go test ./...`.
 - Frontend has no Node build step or npm scripts; use the Caddy service in Compose instead of `npm start`.
 

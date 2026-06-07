@@ -17,7 +17,7 @@ func Checkout(c *gin.Context) {
 	userID := uint(userIDFloat.(float64))
 
 	// 1. Start a database transaction
-	// This ensures that if anything fails (e.g., deducting money, giving license), 
+	// This ensures that if anything fails (e.g., deducting money, giving license),
 	// everything is rolled back, preventing half-finished transactions.
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// 1. Fetch user's cart items with Game prices
@@ -97,6 +97,16 @@ func GetTransactions(c *gin.Context) {
 	if err := database.DB.Preload("Items").Preload("Items.Game").Preload("Items.Game.Media").Where("user_id = ?", userID).Find(&transactions).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch transactions"})
 		return
+	}
+
+	for ti := range transactions {
+		for ii := range transactions[ti].Items {
+			var refund models.RefundRequest
+			itemID := transactions[ti].Items[ii].ItemID
+			if err := database.DB.Where("transaction_item_id = ?", itemID).First(&refund).Error; err == nil {
+				transactions[ti].Items[ii].RefundStatus = refund.Status
+			}
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": transactions})

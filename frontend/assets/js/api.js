@@ -91,7 +91,8 @@ async function apiUpdateProfile(data) {
         method: 'PUT',
         body: JSON.stringify(data)
     });
-    return parseResponse(res);
+    const result = await parseResponse(res);
+    return result.user || result;
 }
 
 // ============================================================
@@ -136,6 +137,11 @@ async function apiPostReply(reviewId, content) {
 }
 
 // POST /api/developer/games  [DEVELOPER]
+async function apiGetDeveloperGames() {
+    const res = await authFetch('/api/developer/games');
+    return parseResponse(res);
+}
+
 async function apiCreateGame(title, price, desc) {
     const res = await authFetch('/api/developer/games', {
         method: 'POST',
@@ -159,7 +165,8 @@ async function apiAdminDeleteGame(id) {
 // GET /api/developer/games/{id}/stats  [DEVELOPER]
 async function apiGetGameStats(id) {
     const res = await authFetch(`/api/developer/games/${id}/stats`);
-    return parseResponse(res);
+    const result = await parseResponse(res);
+    return result.stats || result;
 }
 
 // ============================================================
@@ -311,7 +318,7 @@ async function apiFriendCancelRequest(requestId) {
 async function apiAddBlacklist(userId) {
     const res = await authFetch('/api/social/blacklist', {
         method: 'POST',
-        body: JSON.stringify({ user_id: userId })
+        body: JSON.stringify({ blocked_id: userId })
     });
     return parseResponse(res);
 }

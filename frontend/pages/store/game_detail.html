@@ -295,7 +295,11 @@
                     try {
                         const lib = await apiGetLibrary();
                         const libArr = Array.isArray(lib) ? lib : (lib.data || lib.games || []);
-                        isOwned = libArr.some(g => (g.id || g.game_id) === currentGameId && (g.status === 'ACTIVE' || !g.status));
+                        isOwned = libArr.some(item => {
+                            const game = item.game || item;
+                            const gameId = game.game_id || game.id || item.game_id;
+                            return Number(gameId) === Number(currentGameId) && (item.status === 'ACTIVE' || !item.status);
+                        });
                     } catch (_) { }
                 }
 
@@ -362,12 +366,6 @@
 
             if (role === 'GUEST') {
                 reasonMsg = `<p style="color:var(--text-muted);font-size:14px;">請 <a href="/pages/auth/login.html">登入</a> 後才能發表評論。</p>`;
-            } else if (role === 'CSR') {
-                canReview = true;
-            } else if (role === 'DEVELOPER') {
-                // Developer 可評論自己的遊戲或已擁有的遊戲
-                // 是否為自己的遊戲由後端 POST 時驗證，前端皆顯示框
-                canReview = true;
             } else {
                 canReview = isOwned;
                 if (!canReview) reasonMsg = `<p style="color:var(--text-muted);font-size:14px;">購買此遊戲後即可發表評論。</p>`;
@@ -421,12 +419,12 @@
             container.innerHTML = '';
             reviews.forEach(r => {
                 const div = document.createElement('div');
-                const sentiment = r.sentiment || r.rating || 'positive';
+                const sentiment = (r.attitude || r.sentiment || r.rating || 'positive').toLowerCase();
                 div.className = `review-item ${sentiment}`;
                 const badge = sentiment === 'positive'
                     ? `<span class="review-sentiment sentiment-positive">推薦</span>`
                     : `<span class="review-sentiment sentiment-negative">不推薦</span>`;
-                const author = escapeHtml(r.author || r.username || '玩家');
+                const author = escapeHtml(r.author || r.username || (r.user && r.user.username) || '玩家');
                 const playtime = r.playtime || r.play_time || '未知';
                 const date = (r.date || r.created_at || '').slice(0, 10);
                 const text = escapeHtml(r.text || r.content || r.body || '');
@@ -439,7 +437,7 @@
                     const currentUser = getCurrentUser();
                     const currentUserId = currentUser ? (currentUser.user_id || currentUser.id) : null;
                     replies.forEach(reply => {
-                        const rAuthor = escapeHtml(reply.author || reply.username || reply.User?.username || '玩家');
+                        const rAuthor = escapeHtml(reply.author || reply.username || (reply.user && reply.user.username) || '玩家');
                         const rText = escapeHtml(reply.content || reply.text || '');
                         const replyId = reply.id || reply.review_reply_id;
                         const replyUserId = reply.user_id || (reply.User && reply.User.user_id);

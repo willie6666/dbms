@@ -234,7 +234,7 @@
                     socialData.requests = res.requests || [];
                     socialData.blocked = res.blocked || [];
                 } else {
-                    socialData.friends = Array.isArray(res) ? res : [];
+                    socialData.friends = Array.isArray(res) ? res : (res.data || []);
                     
                     // Fallback 取得邀請列表
                     try {
@@ -277,7 +277,7 @@
 
             targetArray.forEach(item => {
                 const user = item.sender || item.receiver || item.user || item;
-                const userId = user.id || item.id || item.user_id || item.friend_id;
+                const userId = user.id || item.blocked_id || item.user_id || item.friend_id || item.id;
                 const username = user.username || item.username || `玩家 #${userId}`;
 
                 const div = document.createElement('div');
@@ -297,7 +297,7 @@
                     actionHtml = `<button class="btn-secondary" style="padding: 4px 8px; font-size:12px; background-color:#ff5959; color:white; width:auto; margin:0;" onclick="event.stopPropagation(); blockUser(${userId}, '${escapeHtml(username)}')">封鎖</button>`;
                 } 
                 else if (currentActiveTab === 'requests') {
-                    const requestId = item.id || userId;
+                    const requestId = item.friendship_id || item.id || userId;
                     actionHtml = `
                         <div style="display:flex; gap:6px;">
                             <button class="btn-primary" style="padding: 4px 8px; font-size:12px; width:auto; margin:0;" onclick="event.stopPropagation(); handleRequest(${requestId}, true)">接受</button>

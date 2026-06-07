@@ -8,6 +8,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type socialUserDTO struct {
+	ID       uint   `json:"id"`
+	Username string `json:"username"`
+}
+
+func getSocialUser(id uint) socialUserDTO {
+	var user models.User
+	if err := database.DB.First(&user, id).Error; err != nil {
+		return socialUserDTO{ID: id, Username: ""}
+	}
+	return socialUserDTO{ID: user.UserID, Username: user.Username}
+}
+
 // GetReviews handles GET /api/games/:id/reviews
 func GetReviews(c *gin.Context) {
 	gameID := c.Param("id")
@@ -124,9 +137,26 @@ func GetFriends(c *gin.Context) {
 	userID := uint(userIDFloat.(float64))
 
 	var friends []models.Friendship
-	database.DB.Where("(sender_id = ? OR receiver_id = ?) AND status = ?", userID, userID, "ACCEPTED").Find(&friends)
+	database.DB.Where("(sender_id = ? OR receiver_id = ?) AND status = ?", userID, userID, "ACCEPTED").Order("created_at desc").Find(&friends)
 
-	c.JSON(http.StatusOK, gin.H{"data": friends})
+	type FriendDTO struct {
+		FriendshipID uint          `json:"friendship_id"`
+		ID           uint          `json:"id"`
+		Username     string        `json:"username"`
+		User         socialUserDTO `json:"user"`
+	}
+
+	result := make([]FriendDTO, 0, len(friends))
+	for _, friend := range friends {
+		friendID := friend.SenderID
+		if friendID == userID {
+			friendID = friend.ReceiverID
+		}
+		friendUser := getSocialUser(friendID)
+		result = append(result, FriendDTO{FriendshipID: friend.FriendshipID, ID: friendID, Username: friendUser.Username, User: friendUser})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": result})
 }
 
 // SendFriendRequest handles POST /api/social/friends/request
@@ -135,10 +165,34 @@ func SendFriendRequest(c *gin.Context) {
 	userID := uint(userIDFloat.(float64))
 
 	var input struct {
-		ReceiverID uint `json:"receiver_id" binding:"required"`
+		ReceiverID uint   `json:"receiver_id"`
+		Username   string `json:"username"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if input.ReceiverID == 0 && input.Username != "" {
+		var receiver models.User
+		if err := database.DB.Where("username = ?", input.Username).First(&receiver).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+		input.ReceiverID = receiver.UserID
+	}
+	if input.ReceiverID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "receiver_id or username is required"})
+		return
+	}
+	if input.ReceiverID == userID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send a friend request to yourself"})
+		return
+	}
+
+	var existing models.Friendship
+	if err := database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", userID, input.ReceiverID, input.ReceiverID, userID).First(&existing).Error; err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Friend request already exists"})
 		return
 	}
 
@@ -148,7 +202,10 @@ func SendFriendRequest(c *gin.Context) {
 		Status:     "PENDING",
 	}
 
-	database.DB.Create(&friend)
+	if err := database.DB.Create(&friend).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send friend request"})
+		return
+	}
 	c.JSON(http.StatusCreated, gin.H{"message": "Friend request sent"})
 }
 
@@ -319,10 +376,22 @@ func AddBlacklist(c *gin.Context) {
 	userID := uint(userIDFloat.(float64))
 
 	var input struct {
-		BlockedID uint `json:"blocked_id" binding:"required"`
+		BlockedID uint `json:"blocked_id"`
+		UserID    uint `json:"user_id"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if input.BlockedID == 0 {
+		input.BlockedID = input.UserID
+	}
+	if input.BlockedID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "blocked_id is required"})
+		return
+	}
+	if input.BlockedID == userID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot blacklist yourself"})
 		return
 	}
 
@@ -331,7 +400,10 @@ func AddBlacklist(c *gin.Context) {
 		BlockedID: input.BlockedID,
 	}
 
-	database.DB.Create(&blacklist)
+	if err := database.DB.Create(&blacklist).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add user to blacklist"})
+		return
+	}
 	c.JSON(http.StatusCreated, gin.H{"message": "User added to blacklist"})
 }
 
@@ -355,9 +427,30 @@ func GetFriendRequests(c *gin.Context) {
 	userID := uint(userIDFloat.(float64))
 
 	var requests []models.Friendship
-	database.DB.Where("receiver_id = ? AND status = ?", userID, "PENDING").Find(&requests)
+	database.DB.Where("receiver_id = ? AND status = ?", userID, "PENDING").Order("created_at desc").Find(&requests)
 
-	c.JSON(http.StatusOK, gin.H{"data": requests})
+	type RequestDTO struct {
+		ID           uint          `json:"id"`
+		FriendshipID uint          `json:"friendship_id"`
+		SenderID     uint          `json:"sender_id"`
+		ReceiverID   uint          `json:"receiver_id"`
+		Sender       socialUserDTO `json:"sender"`
+		Status       string        `json:"status"`
+	}
+
+	result := make([]RequestDTO, 0, len(requests))
+	for _, req := range requests {
+		result = append(result, RequestDTO{
+			ID:           req.FriendshipID,
+			FriendshipID: req.FriendshipID,
+			SenderID:     req.SenderID,
+			ReceiverID:   req.ReceiverID,
+			Sender:       getSocialUser(req.SenderID),
+			Status:       req.Status,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": result})
 }
 
 // GetBlacklist handles GET /api/social/blacklist
@@ -366,7 +459,21 @@ func GetBlacklist(c *gin.Context) {
 	userID := uint(userIDFloat.(float64))
 
 	var blacklisted []models.Blacklist
-	database.DB.Where("blocker_id = ?", userID).Find(&blacklisted)
+	database.DB.Where("blocker_id = ?", userID).Order("created_at desc").Find(&blacklisted)
 
-	c.JSON(http.StatusOK, gin.H{"data": blacklisted})
+	type BlacklistDTO struct {
+		ID          uint          `json:"id"`
+		BlacklistID uint          `json:"blacklist_id"`
+		BlockedID   uint          `json:"blocked_id"`
+		Username    string        `json:"username"`
+		User        socialUserDTO `json:"user"`
+	}
+
+	result := make([]BlacklistDTO, 0, len(blacklisted))
+	for _, item := range blacklisted {
+		blockedUser := getSocialUser(item.BlockedID)
+		result = append(result, BlacklistDTO{ID: item.BlockedID, BlacklistID: item.BlacklistID, BlockedID: item.BlockedID, Username: blockedUser.Username, User: blockedUser})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": result})
 }

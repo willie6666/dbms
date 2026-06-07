@@ -11,6 +11,23 @@ services:
       - ./frontend/assets:/srv/assets:ro
       - ./frontend/pages:/srv/pages:ro
 
+  backend:
+    build:
+      context: ./backend
+    container_name: vapor_backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: admin
+      DB_NAME: vapor_auror
+    ports:
+      - 8000:8000
+
   db:
     image: postgres
     restart: always
@@ -26,6 +43,12 @@ services:
 
     volumes:
       - ./db:/docker-entrypoint-initdb.d/
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d vapor_auror"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
   
   adminer:
     image: adminer

@@ -201,7 +201,7 @@
 
             activeGames.forEach(item => {
                 const game     = item.game || item;
-                const gameId   = game.id   || item.game_id;
+                const gameId   = game.game_id || game.id || item.game_id;
                 const title    = game.title || item.title || '';
                 const playtime = item.playtime || item.play_time || item.hours || '0 小時';
                 const lastPlayed = (item.last_played || item.lastPlayed || '').slice(0, 10) || '—';
