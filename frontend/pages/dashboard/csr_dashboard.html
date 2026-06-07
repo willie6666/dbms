@@ -42,7 +42,7 @@
         // ─── 退款列表 ──────────────────────────────────────────
         async function loadRefunds() {
             try {
-                // GET /api/admin/refunds
+                // GET /api/csr/refunds
                 const result  = await apiGetRefunds();
                 const refunds = Array.isArray(result) ? result : (result.data || result.refunds || []);
                 renderRefunds(refunds.filter(r => r.status === 'PENDING' || r.status === 'pending'));

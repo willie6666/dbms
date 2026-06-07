@@ -386,6 +386,49 @@ async function apiChangeRole(userId, role) {
 // ============================================================
 // 工具函式：存入登入狀態
 // ============================================================
+
+// DELETE /api/developer/games/{id}/media/{media_id}  [DEVELOPER]
+async function apiDeleteGameMedia(gameId, mediaId) {
+    const res = await authFetch(`/api/developer/games/${gameId}/media/${mediaId}`, { method: 'DELETE' });
+    return parseResponse(res);
+}
+
+// POST /api/developer/games/{id}/media  [DEVELOPER]
+async function apiUploadGameMedia(gameId, formData) {
+    // Note: Do not let authFetch override Content-Type to application/json for multipart/form-data
+    const token = localStorage.getItem('token');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
+    const res = await fetch(`${API_BASE}/api/developer/games/${gameId}/media`, {
+        method: 'POST',
+        headers: headers,
+        body: formData
+    });
+    return parseResponse(res);
+}
+
+// GET /api/protected/library/{game_id}/play
+async function apiPlayGame(gameId) {
+    const res = await authFetch(`/api/protected/library/${gameId}/play`);
+    return parseResponse(res);
+}
+
+// GET /api/protected/library/{game_id}/download
+async function apiDownloadGame(gameId) {
+    const res = await authFetch(`/api/protected/library/${gameId}/download`);
+    if (!res.ok) {
+        await parseResponse(res);
+    }
+    return res;
+}
+
+// DELETE /api/social/reviews/replies/{reply_id}
+async function apiDeleteReviewReply(replyId) {
+    const res = await authFetch(`/api/social/reviews/replies/${replyId}`, { method: 'DELETE' });
+    return parseResponse(res);
+}
+
 function saveAuthState(data) {
     // 後端預期回傳: { token, user: { id, username, email, role, ... } }
     localStorage.setItem('token', data.token);

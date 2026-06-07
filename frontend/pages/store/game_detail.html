@@ -339,7 +339,7 @@
             if (!confirm('確定要刪除此回覆嗎？')) return;
             try {
                 // DELETE /api/social/reviews/replies/{id}
-                await authFetch(`/api/social/reviews/replies/${replyId}`, { method: 'DELETE' });
+                await apiDeleteReviewReply(replyId);
                 showToast('回覆已刪除！', 'success');
                 // Reload reviews
                 const reviews = await apiGetReviews(currentGameId);

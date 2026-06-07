@@ -234,12 +234,7 @@
         async function deleteMedia(mediaId) {
             if (!confirm('確定要刪除此素材？此操作無法復原。')) return;
             try {
-                const token = localStorage.getItem('token');
-                const res = await fetch(`/api/developer/games/${currentGameId}/media/${mediaId}`, {
-                    method: 'DELETE',
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                });
-                await parseResponse(res);
+                await apiDeleteGameMedia(currentGameId, mediaId);
                 await refreshGameForEdit();
             } catch (err) {
                 alert(`刪除失敗：${err.message}`);
@@ -276,13 +271,7 @@
             btn.disabled = true;
             progress.style.display = 'block';
             try {
-                const token = localStorage.getItem('token');
-                const res = await fetch(`/api/developer/games/${currentGameId}/media`, {
-                    method: 'POST',
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-                    body: formData
-                });
-                await parseResponse(res);
+                await apiUploadGameMedia(currentGameId, formData);
                 resetUploadForm();
                 await refreshGameForEdit();
             } catch (err) {
