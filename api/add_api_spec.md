@@ -175,9 +175,9 @@
 - **Request Body**:
   ```json
   {
-    "title": "My Indie Game",
-    "price": 350.00,
-    "desc": "遊戲描述 (選填，支援 Markdown)" // 選填
+    "title": "My Indie Game",    // 必填
+    "price": 350.00,             // 必填，最小值 0
+    "desc": "遊戲描述 (選填，支援 Markdown)"  // 選填
   }
   ```
 - **Responses**:
@@ -192,11 +192,11 @@
     "desc": "更新的遊戲描述"
   }
   ```
+  > **注意**: `title` 無法透過此 API 修改；`price` 若傳 `0` 仍會被視為有效值並寫入。ADMIN 可編輯任何遊戲。
 - **Responses**:
   - `200 OK`: `{"message": "Game updated successfully", "game": {...}}`
   - `403 Forbidden`: `{"error": "Forbidden: You can only edit your own games"}`
   - `404 Not Found`: `{"error": "Game not found"}`
-  - **說明**: ADMIN 可編輯任何遊戲。
 
 ### `[DELETE] /api/developer/games/{id}` (下架自己的遊戲)
 - **Headers**: `Authorization: Bearer <developer_token>`
@@ -440,7 +440,7 @@
   ```
 - **Responses**:
   - `201 Created`: `{"message": "Friend request sent"}`
-  - `400 Bad Request`: `{"error": "Friend request already exists"}` 或 `{"error": "Cannot send a friend request to yourself"}`
+  - `400 Bad Request`: `{"error": "Friend request already exists"}` 或 `{"error": "Cannot send a friend request to yourself"}` 或 `{"error": "receiver_id or username is required"}`
   - `404 Not Found`: `{"error": "User not found"}` (使用 username 查找時)
 
 ### `[PUT] /api/social/friends/request/{id}/accept` (接受好友邀請)
