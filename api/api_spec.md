@@ -425,13 +425,15 @@
 
 ### `[GET] /api/social/friends` (查看好友列表)
 - **Headers**: `Authorization: Bearer <token>`
+- **Description**: 回傳所有已接受的好友（注意：即使好友已被加入黑名單，依然會出現在此列表中，屬於軟封鎖機制）。
 - **Responses**:
   - `200 OK`: `{"data": [ { "friendship_id": 1, "status": "ACCEPTED" } ]}`
 
 ### `[GET] /api/social/friends/requests` (查看待審核邀請)
 - **Headers**: `Authorization: Bearer <token>`
+- **Description**: 同時回傳「你收到的」以及「你送出的」待審核邀請。
 - **Responses**:
-  - `200 OK`: `{"data": [ { "friendship_id": 2, "status": "PENDING" } ]}`
+  - `200 OK`: `{"data": [ { "friendship_id": 2, "sender_id": 1, "receiver_id": 2, "sender": {}, "receiver": {}, "status": "PENDING" } ]}`
 
 ### `[POST] /api/social/friends/request` (發送好友邀請)
 - **Headers**: `Authorization: Bearer <token>`
@@ -508,6 +510,7 @@
 
 ### `[POST] /api/social/blacklist` (加入黑名單)
 - **Headers**: `Authorization: Bearer <token>`
+- **Description**: 將使用者加入黑名單。此為「軟封鎖 (Soft Block)」機制，不會刪除雙方的好友關係。
 - **Request Body**: `{"blocked_id": 5}` (也可使用 `{"user_id": 5}` 作為替代欄位名稱)
 - **Responses**:
   - `201 Created`: `{"message": "User added to blacklist"}`
