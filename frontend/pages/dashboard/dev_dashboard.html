@@ -6,7 +6,7 @@
     <title>開發者中心 — VaporAuror</title>
     <link rel="stylesheet" href="/assets/css/style.css">
     <style>
-        /* Cyber Aurora Dashboard Styles */
+        /* ── Layout ── */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 2fr;
@@ -28,13 +28,12 @@
             color: var(--text-primary);
             margin-bottom: 25px;
             font-size: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             padding-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
         .dashboard-panel h2::before {
             content: '';
             display: block;
@@ -45,6 +44,7 @@
             box-shadow: var(--glow-cyan);
         }
 
+        /* ── Stats ── */
         .stat-card {
             background: rgba(0,0,0,0.4);
             border: 1px solid rgba(255,255,255,0.05);
@@ -53,13 +53,11 @@
             text-align: center;
             transition: transform 0.3s, border-color 0.3s;
         }
-
         .stat-card:hover {
             transform: translateY(-5px);
             border-color: rgba(0, 240, 255, 0.3);
             box-shadow: 0 10px 20px rgba(0, 240, 255, 0.1);
         }
-
         .stat-value {
             font-size: 2.5rem;
             font-weight: 800;
@@ -67,7 +65,6 @@
             font-family: 'Space Mono', monospace;
             text-shadow: 0 0 20px currentColor;
         }
-
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -75,7 +72,7 @@
             margin-bottom: 30px;
         }
 
-        /* Form Styles */
+        /* ── Publish Form ── */
         .dev-form .form-group label {
             color: var(--text-secondary);
             font-size: 0.9rem;
@@ -83,7 +80,6 @@
             letter-spacing: 1px;
             margin-bottom: 8px;
         }
-
         .dev-form input, .dev-form textarea {
             background: rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.1);
@@ -91,37 +87,250 @@
             transition: all 0.3s;
             border-radius: 8px;
             padding: 12px 15px;
+            width: 100%;
+            box-sizing: border-box;
         }
-
         .dev-form input:focus, .dev-form textarea:focus {
             border-color: var(--accent-cyan);
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
             outline: none;
         }
 
-        /* Library List Overrides */
+        /* ── Game List ── */
         .library-item {
             background: rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.05);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             transition: all 0.3s;
             border-radius: 12px;
+            padding: 16px 20px;
         }
         .library-item:hover {
-            background: rgba(0, 240, 255, 0.05);
+            background: rgba(0, 240, 255, 0.04);
             border-color: rgba(0, 240, 255, 0.2);
-            transform: scale(1.01);
+        }
+        .library-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .library-item-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
-        .media-upload-area {
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 8px;
-            border: 1px dashed rgba(255,255,255,0.2);
+        /* ── Media Manager Panel (full-width, below game list) ── */
+        #media-manager-panel {
             display: none;
+            margin-top: 24px;
+            grid-column: 1 / -1;
         }
-        .media-upload-area.active { display: block; }
+        #media-manager-panel.active { display: block; }
+
+        .media-manager-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .media-manager-title h3 {
+            color: var(--accent-cyan);
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .media-manager-close {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.15);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            padding: 5px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .media-manager-close:hover {
+            border-color: rgba(255,0,85,0.5);
+            color: var(--accent-pink);
+        }
+
+        /* ── Media Grid ── */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .media-card {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.25s;
+            position: relative;
+        }
+        .media-card:hover {
+            border-color: rgba(0, 240, 255, 0.35);
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        .media-card-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+            background: rgba(0,0,0,0.5);
+        }
+        .media-card-file {
+            width: 100%;
+            aspect-ratio: 16/9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.5);
+            color: var(--text-muted);
+            font-size: 11px;
+            text-align: center;
+            padding: 8px;
+            gap: 6px;
+        }
+        .media-card-file span.icon { font-size: 28px; }
+        .media-card-info {
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+        .media-card-info .badge {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+        .badge-img  { background: rgba(0,240,255,0.15); color: var(--accent-cyan); }
+        .badge-file { background: rgba(255,200,0,0.15); color: #ffc800; }
+        .media-card-del {
+            background: none;
+            border: none;
+            color: rgba(255,80,80,0.5);
+            cursor: pointer;
+            font-size: 15px;
+            padding: 0;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+        .media-card-del:hover { color: #ff5050; }
+
+        /* ── Upload Section ── */
+        .upload-section {
+            border-top: 1px solid rgba(255,255,255,0.07);
+            padding-top: 20px;
+        }
+        .upload-section h4 {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 14px;
+        }
+        .upload-row {
+            display: flex;
+            gap: 12px;
+            align-items: stretch;
+            flex-wrap: wrap;
+        }
+        .upload-type-select {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            border-radius: 8px;
+            padding: 0 14px;
+            font-size: 13px;
+            flex-shrink: 0;
+            min-width: 120px;
+            cursor: pointer;
+        }
+        .upload-type-select:focus { outline: none; border-color: var(--accent-cyan); }
+
+        /* custom file button */
+        .file-pick-wrapper {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        .file-pick-wrapper input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        .file-pick-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: rgba(0,0,0,0.3);
+            border: 1px dashed rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: border-color 0.25s, color 0.25s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .file-pick-label:hover, .file-pick-label.has-file {
+            border-color: var(--accent-cyan);
+            color: white;
+        }
+        .upload-btn {
+            background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(0,180,255,0.1));
+            border: 1px solid rgba(0,240,255,0.4);
+            color: var(--accent-cyan);
+            border-radius: 8px;
+            padding: 10px 22px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .upload-btn:hover {
+            background: rgba(0,240,255,0.2);
+            box-shadow: 0 0 15px rgba(0,240,255,0.2);
+        }
+        .upload-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .upload-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        .upload-progress {
+            display: none;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(0,240,255,0.08);
+            border-radius: 6px;
+            color: var(--accent-cyan);
+            font-size: 13px;
+        }
+        .upload-progress.active { display: block; }
     </style>
 </head>
 <body>
@@ -169,11 +378,50 @@
                 </div>
             </div>
         </div>
+
+        <!-- 素材管理面板（全寬，點素材管理才展開） -->
+        <div class="dashboard-panel" id="media-manager-panel">
+            <div class="media-manager-title">
+                <h3>🗂 素材管理 — <span id="media-game-title" style="color:white;"></span></h3>
+                <button class="media-manager-close" onclick="closeMediaManager()">✕ 關閉</button>
+            </div>
+
+            <!-- 現有素材 Grid -->
+            <div id="media-grid-container" class="media-grid">
+                <p style="color:var(--text-muted);">載入中...</p>
+            </div>
+
+            <!-- 上傳新素材 -->
+            <div class="upload-section">
+                <h4>➕ 新增素材</h4>
+                <div class="upload-row">
+                    <select id="mm-media-type" class="upload-type-select">
+                        <option value="media">🖼 遊戲圖片</option>
+                        <option value="game_file">📦 遊戲執行檔</option>
+                    </select>
+                    <div class="file-pick-wrapper">
+                        <div class="file-pick-label" id="mm-file-label">📂 點擊選擇要上傳的檔案…</div>
+                        <input type="file" id="mm-file-input" accept="image/*,.zip,.exe,.rar,.7z"
+                               onchange="onFileChosen(this)">
+                    </div>
+                    <button class="upload-btn" id="mm-upload-btn" onclick="doUpload()">上傳</button>
+                </div>
+                <div class="upload-hint">
+                    圖片將以 <code style="color:var(--accent-cyan);">遊戲ID/SHA256</code> 格式儲存；
+                    遊戲執行檔以 <code style="color:#ffc800;">遊戲ID/原始檔名</code> 格式儲存。
+                </div>
+                <div class="upload-progress" id="mm-progress">⏳ 上傳中，請稍候…</div>
+            </div>
+        </div>
     </main>
 
     <script src="/assets/js/api.js"></script>
     <script src="/assets/js/main.js"></script>
     <script>
+        let activeMediaGameId = null;
+        const gamesCache = new Map(); // gameId → game object
+
+        // ── Init ──────────────────────────────────────────
         document.addEventListener("DOMContentLoaded", async () => {
             const role = getCurrentRole();
             if (role !== 'DEVELOPER' && role !== 'ADMIN') {
@@ -184,23 +432,20 @@
             await loadDashboard();
         });
 
+        // ── Load dashboard ─────────────────────────────────
         async function loadDashboard() {
             try {
-                const result = await apiGetDeveloperGames();
-                let myGames  = Array.isArray(result) ? result : (result.data || result.games || []);
+                const result  = await apiGetDeveloperGames();
+                let myGames   = Array.isArray(result) ? result : (result.data || result.games || []);
 
-                // 統計卡片（若後端有 stats 端點則逐一呼叫，否則從遊戲列表加總）
-                let totalRevenue = 0;
-                let totalSales   = 0;
-                const statsPromises = myGames.map(async g => {
+                let totalRevenue = 0, totalSales = 0;
+                await Promise.all(myGames.map(async g => {
                     try {
-                        const gameId = g.game_id || g.id;
-                        const stats = await apiGetGameStats(gameId);
-                        totalRevenue += Number(stats.revenue || stats.total_revenue || 0);
-                        totalSales   += Number(stats.sales   || stats.total_sales   || 0);
+                        const s = await apiGetGameStats(g.game_id || g.id);
+                        totalRevenue += Number(s.total_revenue || s.revenue || 0);
+                        totalSales   += Number(s.total_sales   || s.sales   || 0);
                     } catch (_) {}
-                });
-                await Promise.all(statsPromises);
+                }));
 
                 const activeCount = myGames.filter(g => !g.deleted_at && g.status !== 'TAKEN_DOWN').length;
 
@@ -219,6 +464,9 @@
                     </div>
                 `;
 
+                // Cache all games by id for quick lookup
+                gamesCache.clear();
+                myGames.forEach(g => gamesCache.set(g.game_id || g.id, g));
                 renderMyGames(myGames);
             } catch (err) {
                 document.getElementById('sales-stats').innerHTML =
@@ -226,6 +474,7 @@
             }
         }
 
+        // ── Render game list ───────────────────────────────
         function renderMyGames(games) {
             const listEl = document.getElementById('my-published-games');
             listEl.innerHTML = '';
@@ -236,56 +485,54 @@
             }
 
             games.forEach(game => {
-                const gameId = game.game_id || game.id;
-                const item     = document.createElement('div');
-                item.className = 'library-item';
-
-                const isActive   = !game.deleted_at && game.status !== 'TAKEN_DOWN';
+                const gameId      = game.game_id || game.id;
+                const isActive    = !game.deleted_at && game.status !== 'TAKEN_DOWN';
                 const statusBadge = isActive
                     ? `<span class="status-badge status-active">上架中</span>`
                     : `<span class="status-badge status-taken-down">已下架</span>`;
-                const actionBtn = isActive
-                    ? `<button class="btn-primary" style="margin:0 5px; padding:6px 12px; font-size:12px; width:auto;" onclick="toggleMediaUpload(${gameId})">素材管理</button>
-                       <button class="btn-secondary" style="margin:0; padding:6px 12px; font-size:12px; width:auto; color:var(--accent-pink); border-color:rgba(255,0,85,0.3);" onclick="takeDownGame(${gameId})">下架</button>`
-                    : `<span style="color:var(--text-muted);font-size:13px;">已停止販售</span>`;
 
+                const item = document.createElement('div');
+                item.className = 'library-item';
                 item.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="library-item-header">
                         <div class="library-item-info">
                             <h3 style="color:var(--accent-cyan);">${escapeHtml(game.title)}</h3>
-                            <p style="color:var(--text-secondary); margin-top:5px;">定價：NT$ ${Number(game.price).toLocaleString()} &nbsp;|&nbsp; ${statusBadge}</p>
+                            <p style="color:var(--text-secondary); margin-top:5px;">
+                                定價：NT$ ${Number(game.price).toLocaleString()}
+                                &nbsp;|&nbsp; ${statusBadge}
+                            </p>
                         </div>
-                        <div class="library-item-actions" style="display:flex;">${actionBtn}</div>
-                    </div>
-                    <div id="media-upload-${gameId}" class="media-upload-area dev-form">
-                        <h4 style="color:white; margin-bottom:10px; font-size:14px;">上傳展示圖片或遊戲檔 (路徑)</h4>
-                        <div style="display:flex; gap:10px;">
-                            <select id="media-type-${gameId}" style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:4px; padding:5px 10px;">
-                                <option value="media">遊戲圖片</option>
-                                <option value="game_file">遊戲執行檔</option>
-                            </select>
-                            <input type="text" id="media-url-${gameId}" placeholder="如：/media/images/cover.jpg" style="flex:1;">
-                            <button class="btn-primary" style="margin:0; width:auto; padding:8px 15px;" onclick="uploadMedia(${gameId})">新增</button>
+                        <div class="library-item-actions">
+                            ${isActive ? `
+                                <button class="btn-primary"
+                                    style="margin:0; padding:6px 14px; font-size:12px; width:auto;"
+                                    onclick="openMediaManager(${gameId})">
+                                    🗂 素材管理
+                                </button>
+                                <button class="btn-secondary"
+                                    style="margin:0; padding:6px 12px; font-size:12px; width:auto; color:var(--accent-pink); border-color:rgba(255,0,85,0.3);"
+                                    onclick="takeDownGame(${gameId})">
+                                    下架
+                                </button>
+                            ` : `<span style="color:var(--text-muted);font-size:13px;">已停止販售</span>`}
                         </div>
-                        <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">* 圖片將顯示於商店頁面輪播圖中。</p>
                     </div>
                 `;
                 listEl.appendChild(item);
             });
         }
 
+        // ── Publish form ───────────────────────────────────
         document.getElementById('upload-game-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const title  = document.getElementById('new-game-title').value.trim();
-            const price  = parseInt(document.getElementById('new-game-price').value) || 0;
-            const desc   = document.getElementById('new-game-desc').value.trim();
-            const btn    = document.getElementById('publish-btn');
+            const title = document.getElementById('new-game-title').value.trim();
+            const price = parseInt(document.getElementById('new-game-price').value) || 0;
+            const desc  = document.getElementById('new-game-desc').value.trim();
+            const btn   = document.getElementById('publish-btn');
 
-            btn.disabled = true;
+            btn.disabled    = true;
             btn.textContent = '上架中...';
-
             try {
-                // POST /api/games
                 await apiCreateGame(title, price, desc);
                 alert(`《${title}》上架成功！`);
                 document.getElementById('upload-game-form').reset();
@@ -293,46 +540,162 @@
             } catch (err) {
                 alert(`上架失敗：${err.message}`);
             } finally {
-                btn.disabled = false;
-                btn.textContent = '確認上架';
+                btn.disabled    = false;
+                btn.textContent = '🚀 立即上架';
             }
         });
 
-        function toggleMediaUpload(gameId) {
-            document.getElementById(`media-upload-${gameId}`).classList.toggle('active');
-        }
-
-        async function uploadMedia(gameId) {
-            const urlInput = document.getElementById(`media-url-${gameId}`);
-            const typeInput = document.getElementById(`media-type-${gameId}`);
-            const file_url = urlInput.value.trim();
-            const media_type = typeInput.value;
-
-            if (!file_url) return;
-
-            try {
-                // api.js doesn't have apiUploadMedia yet, so doing fetch manually or using authFetch
-                const res = await authFetch(`/api/developer/games/${gameId}/media`, {
-                    method: 'POST',
-                    body: JSON.stringify({ file_url, media_type })
-                });
-                const data = await parseResponse(res);
-                alert('素材上傳成功！');
-                urlInput.value = '';
-            } catch (err) {
-                alert(`上傳失敗：${err.message}`);
-            }
-        }
-
+        // ── Take down ──────────────────────────────────────
         async function takeDownGame(gameId) {
             if (!confirm("確定要下架此遊戲嗎？\n已購買的玩家仍可遊玩，但商店頁面將隱藏。")) return;
             try {
-                // DELETE /api/developer/games/{id}
                 await apiDeleteGame(gameId);
                 alert('遊戲已下架！');
+                if (activeMediaGameId === gameId) closeMediaManager();
                 await loadDashboard();
             } catch (err) {
                 alert(`下架失敗：${err.message}`);
+            }
+        }
+
+        // ── Media Manager ──────────────────────────────────
+        async function openMediaManager(gameId) {
+            activeMediaGameId = gameId;
+            const game = gamesCache.get(gameId);
+            document.getElementById('media-game-title').textContent = game ? game.title : `#${gameId}`;
+            document.getElementById('media-manager-panel').classList.add('active');
+            document.getElementById('media-manager-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            resetUploadForm();
+            renderMediaGrid(game ? (game.media || []) : []);
+        }
+
+        function closeMediaManager() {
+            activeMediaGameId = null;
+            document.getElementById('media-manager-panel').classList.remove('active');
+            resetUploadForm();
+        }
+
+        // Render media from a given array directly (no extra fetch needed)
+        function renderMediaGrid(mediaList) {
+            const gameId    = activeMediaGameId;
+            const container = document.getElementById('media-grid-container');
+
+            if (!mediaList || mediaList.length === 0) {
+                container.innerHTML = `<p style="color:var(--text-muted); grid-column:1/-1;">尚無任何素材，請在下方上傳。</p>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            mediaList.forEach(m => {
+                const isImage = m.media_type === 'media';
+                const card = document.createElement('div');
+                card.className = 'media-card';
+                const thumb = isImage
+                    ? `<img class="media-card-thumb" src="${escapeHtml(m.file_url)}" alt="media" loading="lazy"
+                           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                       <div class="media-card-file" style="display:none;"><span class="icon">🖼</span><span>載入失敗</span></div>`
+                    : `<div class="media-card-file"><span class="icon">📦</span><span style="word-break:break-all;">${escapeHtml(m.file_url.split('/').pop())}</span></div>`;
+
+                card.innerHTML = `
+                    ${thumb}
+                    <div class="media-card-info">
+                        <span class="badge ${isImage ? 'badge-img' : 'badge-file'}">${isImage ? '圖片' : '遊戲檔'}</span>
+                        <button class="media-card-del" title="刪除此素材"
+                            onclick="deleteMedia(${gameId}, ${m.media_id})">🗑</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // After upload/delete, re-fetch just this game from the API and refresh grid
+        async function refreshMediaGrid() {
+            const gameId    = activeMediaGameId;
+            const container = document.getElementById('media-grid-container');
+            container.innerHTML = `<p style="color:var(--text-muted); grid-column:1/-1;">重新載入中...</p>`;
+            try {
+                const result = await apiGetDeveloperGames();
+                const games  = Array.isArray(result) ? result : (result.data || []);
+                const game   = games.find(g => (g.game_id || g.id) == gameId);
+                if (game) gamesCache.set(gameId, game);
+                renderMediaGrid(game ? (game.media || []) : []);
+            } catch (err) {
+                container.innerHTML = `<p style="color:var(--accent-red); grid-column:1/-1;">載入失敗：${err.message}</p>`;
+            }
+        }
+
+        async function deleteMedia(gameId, mediaId) {
+            if (!confirm("確定要刪除此素材？此操作無法復原。")) return;
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/developer/games/${gameId}/media/${mediaId}`, {
+                    method: 'DELETE',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                await parseResponse(res);
+                await refreshMediaGrid();
+            } catch (err) {
+                alert(`刪除失敗：${err.message}`);
+            }
+        }
+
+        // ── Upload ─────────────────────────────────────────
+        function onFileChosen(input) {
+            const label = document.getElementById('mm-file-label');
+            if (input.files && input.files[0]) {
+                label.textContent = `📄 ${input.files[0].name}`;
+                label.classList.add('has-file');
+            } else {
+                resetUploadForm();
+            }
+        }
+
+        function resetUploadForm() {
+            const input = document.getElementById('mm-file-input');
+            const label = document.getElementById('mm-file-label');
+            if (input) input.value = '';
+            if (label) {
+                label.textContent = '📂 點擊選擇要上傳的檔案…';
+                label.classList.remove('has-file');
+            }
+            const progress = document.getElementById('mm-progress');
+            if (progress) progress.classList.remove('active');
+        }
+
+        async function doUpload() {
+            if (!activeMediaGameId) return;
+            const fileInput  = document.getElementById('mm-file-input');
+            const typeSelect = document.getElementById('mm-media-type');
+            const btn        = document.getElementById('mm-upload-btn');
+            const progress   = document.getElementById('mm-progress');
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('請先選擇要上傳的檔案！');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('media_type', typeSelect.value);
+
+            btn.disabled = true;
+            progress.classList.add('active');
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/developer/games/${activeMediaGameId}/media`, {
+                    method: 'POST',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    body: formData
+                });
+                const data = await parseResponse(res);
+                resetUploadForm();
+                await refreshMediaGrid();
+            } catch (err) {
+                alert(`上傳失敗：${err.message}`);
+            } finally {
+                btn.disabled = false;
+                progress.classList.remove('active');
             }
         }
     </script>

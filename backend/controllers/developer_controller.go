@@ -1,7 +1,13 @@
 package controllers
 
 import (
+	"crypto/sha256"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 	"vapor_auror_backend/database"
 	"vapor_auror_backend/models"
 
@@ -89,7 +95,15 @@ func DeleteGame(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Game deleted successfully"})
 }
 
-// UploadMedia handles POST /api/protected/developer/games/:id/media
+// UploadMedia handles POST /api/developer/games/:id/media
+// Accepts multipart/form-data with fields:
+//   - file       : the file to upload
+//   - media_type : "media" (image, default) or "game_file"
+//
+// Storage paths:
+//
+//	media     → assets/images/{game_id}/{sha256}.{ext}      served at /media/images/{game_id}/{sha256}.{ext}
+//	game_file → assets/game-files/{game_id}/{original_name} served at /downloads/{game_id}/{original_name}
 func UploadMedia(c *gin.Context) {
 	userIDFloat, _ := c.Get("user_id")
 	developerID := uint(userIDFloat.(float64))
@@ -106,30 +120,87 @@ func UploadMedia(c *gin.Context) {
 		return
 	}
 
-	var input struct {
-		FileURL   string `json:"file_url" binding:"required"`
-		MediaType string `json:"media_type" binding:"required"` // 'media' or 'game_file'
+	// Parse the uploaded file
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing file field"})
+		return
 	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
+	mediaType := c.DefaultPostForm("media_type", "media")
+
+	// Open and read file bytes
+	src, err := fileHeader.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open uploaded file"})
+		return
+	}
+	defer src.Close()
+
+	fileBytes, err := io.ReadAll(src)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read uploaded file"})
+		return
+	}
+
+	var dirPath, fileName, fileURL string
+
+	if mediaType == "game_file" {
+		// game_file: store under assets/game-files/{game_id}/{original_filename}
+		// Sanitize the original filename (strip any directory components)
+		originalName := filepath.Base(fileHeader.Filename)
+		if originalName == "." || originalName == "" {
+			originalName = "game_file.bin"
+		}
+		dirPath = filepath.Join("assets", "game-files", gameID)
+		fileName = originalName
+		fileURL = fmt.Sprintf("/downloads/%s/%s", gameID, fileName)
+	} else {
+		// media (image): store under assets/images/{game_id}/{sha256}.{ext}
+		sum := sha256.Sum256(fileBytes)
+		hashHex := fmt.Sprintf("%x", sum)
+		ext := strings.ToLower(filepath.Ext(fileHeader.Filename))
+		if ext == "" {
+			ext = ".bin"
+		}
+		dirPath = filepath.Join("assets", "images", gameID)
+		fileName = hashHex + ext
+		fileURL = fmt.Sprintf("/media/images/%s/%s", gameID, fileName)
+	}
+
+	// Ensure directory exists
+	if err := os.MkdirAll(dirPath, 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create directory"})
+		return
+	}
+
+	// Write file to disk
+	destPath := filepath.Join(dirPath, fileName)
+	if err := os.WriteFile(destPath, fileBytes, 0644); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
 		return
 	}
 
 	media := models.GameMedia{
 		GameID:    game.GameID,
-		FileURL:   input.FileURL,
-		MediaType: input.MediaType,
+		FileURL:   fileURL,
+		MediaType: mediaType,
 	}
 
 	if err := database.DB.Create(&media).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload media"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save media record"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Media uploaded successfully", "data": media})
+	c.JSON(http.StatusCreated, gin.H{
+		"message":  "Media uploaded successfully",
+		"data":     media,
+		"file_url": fileURL,
+	})
 }
 
-// DeleteMedia handles DELETE /api/protected/developer/games/:id/media/:media_id
+// DeleteMedia handles DELETE /api/developer/games/:id/media/:media_id
+// Also removes the physical file from disk.
 func DeleteMedia(c *gin.Context) {
 	userIDFloat, _ := c.Get("user_id")
 	developerID := uint(userIDFloat.(float64))
@@ -147,9 +218,35 @@ func DeleteMedia(c *gin.Context) {
 		return
 	}
 
-	if err := database.DB.Where("media_id = ? AND game_id = ?", mediaID, game.GameID).Delete(&models.GameMedia{}).Error; err != nil {
+	// Fetch the media record first so we can remove the file
+	var media models.GameMedia
+	if err := database.DB.Where("media_id = ? AND game_id = ?", mediaID, game.GameID).First(&media).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Media not found"})
+		return
+	}
+
+	// Resolve the physical file path from the stored URL
+	physicalPath := ""
+	switch {
+	case strings.HasPrefix(media.FileURL, "/media/images/"):
+		// /media/images/{game_id}/{file} → assets/images/{game_id}/{file}
+		rel := strings.TrimPrefix(media.FileURL, "/media/images/")
+		physicalPath = filepath.Join("assets", "images", rel)
+	case strings.HasPrefix(media.FileURL, "/downloads/"):
+		// /downloads/{game_id}/{file} → assets/game-files/{game_id}/{file}
+		rel := strings.TrimPrefix(media.FileURL, "/downloads/")
+		physicalPath = filepath.Join("assets", "game-files", rel)
+	}
+
+	// Delete DB record
+	if err := database.DB.Delete(&media).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete media"})
 		return
+	}
+
+	// Best-effort physical file removal (ignore error — file may already be gone)
+	if physicalPath != "" {
+		_ = os.Remove(physicalPath)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Media deleted successfully"})

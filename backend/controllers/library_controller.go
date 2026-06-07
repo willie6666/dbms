@@ -112,14 +112,22 @@ func DownloadGame(c *gin.Context) {
 		return
 	}
 
-	filePath := gameFile.FileURL
-	filePath = strings.TrimPrefix(filePath, "/downloads/")
-	filePath = filepath.Clean(filePath)
-	if strings.Contains(filePath, "..") || strings.HasPrefix(filePath, "/") {
+	// Support both new path format (/downloads/{game_id}/{file}) and legacy (/downloads/{file})
+	var fullPath string
+	fileURL := gameFile.FileURL
+	if strings.HasPrefix(fileURL, "/downloads/") {
+		rel := strings.TrimPrefix(fileURL, "/downloads/")
+		rel = filepath.Clean(rel)
+		if strings.Contains(rel, "..") || strings.HasPrefix(rel, "/") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid game file path"})
+			return
+		}
+		fullPath = filepath.Join("assets", "game-files", rel)
+	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid game file path"})
 		return
 	}
 
-	fullPath := filepath.Join("assets", "game-files", filePath)
-	c.FileAttachment(fullPath, filepath.Base(filePath))
+	c.FileAttachment(fullPath, filepath.Base(fullPath))
 }
+
