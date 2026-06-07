@@ -214,7 +214,7 @@ function renderDiagram(parsed) {
         });
     });
 
-    const totalRelCount = relationships.length + specializations.reduce((sum, spec) => sum + spec.children.length, 0);
+    const totalRelCount = relationships.length + specializations.length;
 
     document.getElementById('statEntities').textContent = entities.length;
     document.getElementById('statRelations').textContent = totalRelCount;
@@ -475,7 +475,7 @@ function doRender() {
         if (parsed.entities.length === 0) { setStatus('err', '未偵測到任何實體，請確認語法正確'); return; }
         renderDiagram(parsed);
         const weakCount = parsed.entities.filter(e => e.isWeak).length;
-        const specCount = (parsed.specializations || []).reduce((sum, spec) => sum + spec.children.length, 0);
+        const specCount = parsed.specializations ? parsed.specializations.length : 0;
         setStatus('ok', `成功渲染 ${parsed.entities.length} 個實體（${weakCount} 弱）、${parsed.relationships.length + specCount} 條關係`);
     } catch(e) {
         setStatus('err', '解析錯誤：' + e.message);
