@@ -100,20 +100,6 @@
             renderGames(null);
 
             try {
-<<<<<<< HEAD
-                // GET /api/games?q=keyword&tag=tag — 公開端點
-                const result = await apiGetGames(keyword, tag);
-                const games  = Array.isArray(result) ? result : (result.data || result.games || []);
-
-                const headerEl = document.getElementById('search-results-header');
-                if (keyword) {
-                    headerEl.innerHTML = `找到 <strong>${games.length}</strong> 個符合「<strong>${escapeHtml(keyword)}</strong>」的結果`;
-                    document.getElementById('search-section-title').textContent = `搜尋結果 (${games.length})`;
-                } else if (tag) {
-                    headerEl.innerHTML = `找到 <strong>${games.length}</strong> 個符合標籤「<strong>${escapeHtml(tag)}</strong>」的結果`;
-                    document.getElementById('search-section-title').textContent = `分類瀏覽 (${games.length})`;
-                }
-=======
                 const result = await apiGetGames(Object.fromEntries(params.entries()));
                 const games  = Array.isArray(result) ? result : (result.data || result.games || []);
 
@@ -125,7 +111,6 @@
                 if (params.get('min_price') || params.get('max_price')) filters.push(`價格 ${escapeHtml(params.get('min_price') || '0')} - ${escapeHtml(params.get('max_price') || '不限')}`);
                 headerEl.innerHTML = filters.length ? `找到 <strong>${games.length}</strong> 個符合 ${filters.join('、')} 的結果` : '';
                 document.getElementById('search-section-title').textContent = filters.length ? `搜尋結果 (${games.length})` : '瀏覽所有遊戲';
->>>>>>> 594ff86b8035d53e60b973377185979db1f59beb
 
                 renderGames(games);
             } catch (err) {

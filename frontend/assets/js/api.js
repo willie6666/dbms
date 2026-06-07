@@ -99,13 +99,6 @@ async function apiUpdateProfile(data) {
 // 2. 商店與遊戲 (Games)
 // ============================================================
 
-<<<<<<< HEAD
-// GET /api/games?q=keyword&tag=tag
-async function apiGetGames(query = '', tag = '') {
-    const params = new URLSearchParams();
-    if (query) params.append('q', query);
-    if (tag) params.append('tag', tag);
-=======
 // GET /api/games?q=keyword&tag=tag&developer=name&min_price=0&max_price=1000&sort=popular
 async function apiGetGames(query = '') {
     const params = new URLSearchParams();
@@ -118,7 +111,6 @@ async function apiGetGames(query = '') {
             }
         });
     }
->>>>>>> 594ff86b8035d53e60b973377185979db1f59beb
     const qs = params.toString();
     const url = qs ? `/api/games?${qs}` : '/api/games';
     const res = await fetch(`${API_BASE}${url}`);
