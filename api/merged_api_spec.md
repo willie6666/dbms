@@ -212,7 +212,8 @@
   - `200 OK`: `{"message": "Game deleted successfully by Admin"}`
 
 ### `[POST] /api/developer/games/{id}/media` (上傳遊戲素材)
-- **Headers**: `Authorization: Bearer <developer_token>`, `Content-Type: multipart/form-data`
+- **Headers**: `Authorization: Bearer <developer_token>`
+  > **注意**：使用 `fetch` 傳送 `FormData` 時，請**不要**手動設定 `Content-Type` 標頭，瀏覽器會自動補上帶有正確 `boundary` 的 `multipart/form-data` 標頭。
 - **Request Body** (`multipart/form-data`):
   | 欄位名稱 | 類型 | 必填 | 說明 |
   |----------|------|------|------|
@@ -377,7 +378,7 @@
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: 直接回傳檔案串流 (binary)，附帶 `Content-Disposition: attachment; filename="{filename}"` 標頭。
-    > 前端應直接觸發瀏覽器下載 (例如 `window.location.href = url` 或 `<a>` 標籤)，而非當作 JSON 處理。
+    > **注意**：由於此端點需要 JWT Token 認證，前端**不能**直接使用 `window.location.href = url` 或單純的 `<a>` 標籤。前端必須使用帶有 `Authorization` 標頭的 `fetch` 取得回應，將其轉換為 `Blob`，再透過 `URL.createObjectURL(blob)` 建立臨時網址供 `<a>` 標籤觸發下載。
   - `403 Forbidden`: `{"error": "You do not own this game or the license is inactive"}`
   - `404 Not Found`: `{"error": "No downloadable game file is available"}`
 
