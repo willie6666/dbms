@@ -483,8 +483,23 @@
 
 ### `[GET] /api/social/messages/{user_id}` (讀取對話紀錄)
 - **Headers**: `Authorization: Bearer <token>`
+- **Description**: 獲取與指定使用者的歷史對話紀錄。此操作會自動將「對方傳送給自己且尚未讀取」的訊息標記為「已讀」(`is_read=true`)。
 - **Responses**:
-  - `200 OK`: `{"data": [ { ...message_history... } ]}`
+  - `200 OK`: 
+    ```json
+    {
+      "data": [
+        {
+          "message_id": 1,
+          "sender_id": 2,
+          "receiver_id": 1,
+          "content": "今晚一起打副本嗎？",
+          "sent_at": "2023-11-20T10:00:00Z",
+          "is_read": true
+        }
+      ]
+    }
+    ```
 
 ### `[GET] /api/social/blacklist` (查看黑名單列表)
 - **Headers**: `Authorization: Bearer <token>`

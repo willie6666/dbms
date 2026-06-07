@@ -77,4 +77,4 @@
 [POST]   /api/social/blacklist                - [JWT] 將玩家加入黑名單 (UC-34)
 [DELETE] /api/social/blacklist/{user_id}      - [JWT] 將玩家移除黑名單 (UC-35)
 [POST]   /api/social/messages                 - [JWT] 傳輸文字通訊給對方 (UC-36)
-[GET]    /api/social/messages/{user_id}       - [JWT] 顯示與某使用者的對話紀錄 (UC-37)
+[GET]    /api/social/messages/{user_id}       - [JWT] 顯示與某使用者的對話紀錄 (並自動標記已讀) (UC-37)
