@@ -273,17 +273,34 @@
 
                 chatBox.innerHTML = '';
                 messages.forEach(msg => {
-                    const div = document.createElement('div');
-                    
                     const isMe = msg.sender === 'me' || 
                                  msg.sender_id === currentUserId || 
                                  (msg.sender && msg.sender.id === currentUserId);
                     
                     const text = msg.text || msg.content || '';
                     
+                    const container = document.createElement('div');
+                    container.style.display = 'flex';
+                    container.style.flexDirection = 'column';
+                    container.style.alignSelf = isMe ? 'flex-end' : 'flex-start';
+
+                    const div = document.createElement('div');
                     div.className = `message ${isMe ? 'msg-me' : 'msg-them'}`;
                     div.innerText = text;
-                    chatBox.appendChild(div);
+                    container.appendChild(div);
+
+                    if (isMe && msg.is_read) {
+                        const readMark = document.createElement('div');
+                        readMark.innerText = '已讀';
+                        readMark.style.fontSize = '0.75rem';
+                        readMark.style.color = 'var(--text-subtle)';
+                        readMark.style.alignSelf = 'flex-end';
+                        readMark.style.marginTop = '4px';
+                        readMark.style.marginRight = '8px';
+                        container.appendChild(readMark);
+                    }
+
+                    chatBox.appendChild(container);
                 });
 
                 if (!isSilent || isAtBottom) {

@@ -304,6 +304,11 @@ func GetMessages(c *gin.Context) {
 	myID := uint(userIDFloat.(float64))
 	otherID := c.Param("user_id")
 
+	// Mark all unread messages sent by the other user to me as read
+	database.DB.Model(&models.Message{}).
+		Where("sender_id = ? AND receiver_id = ? AND is_read = ?", otherID, myID, false).
+		Update("is_read", true)
+
 	var messages []models.Message
 	database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", myID, otherID, otherID, myID).Order("sent_at asc").Find(&messages)
 
