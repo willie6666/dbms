@@ -48,6 +48,22 @@
                         </div>
                     </div>
 
+                    <div class="field form-group">
+                        <label class="label">遊戲 Tags</label>
+                        <div class="tags" id="current-tags"><span class="tag">載入中...</span></div>
+                        <div class="field has-addons" style="flex-wrap:wrap; gap:8px;">
+                            <div class="control">
+                                <div class="select">
+                                    <select id="tag-select"><option value="">選擇既有 tag</option></select>
+                                </div>
+                            </div>
+                            <div class="control"><button class="button is-light" type="button" id="add-existing-tag-btn">加入</button></div>
+                            <div class="control is-expanded" style="min-width:220px;"><input class="input" type="text" id="new-tag-input" placeholder="新增 tag 名稱"></div>
+                            <div class="control"><button class="button is-primary" type="button" id="create-tag-btn">建立並加入</button></div>
+                        </div>
+                        <p class="help">Tags 會用於首頁瀏覽與搜尋篩選。</p>
+                    </div>
+
                     <div id="edit-error" class="notification is-danger is-light" style="display:none;"></div>
                     <div id="edit-success" class="notification is-success is-light" style="display:none;"></div>
 
@@ -108,6 +124,7 @@
     <script>
         let currentGameId = null;
         let currentGame = null;
+        let allTags = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             const role = getCurrentRole();
@@ -127,6 +144,8 @@
             await loadGameForEdit();
             document.getElementById('edit-game-form').addEventListener('submit', saveGame);
             document.getElementById('edit-desc').addEventListener('input', updatePreview);
+            document.getElementById('add-existing-tag-btn').addEventListener('click', addExistingTag);
+            document.getElementById('create-tag-btn').addEventListener('click', createAndAddTag);
         });
 
         async function loadGameForEdit() {
@@ -151,9 +170,78 @@
                 document.getElementById('edit-desc').value = desc;
 
                 updatePreview();
+                await loadTagsForEdit();
+                renderCurrentTags();
                 renderMediaGrid(currentGame.media || []);
             } catch (err) {
                 showError(`載入失敗：${err.message}`);
+            }
+        }
+
+        async function loadTagsForEdit() {
+            const result = await apiGetTags();
+            allTags = Array.isArray(result) ? result : (result.data || []);
+            const select = document.getElementById('tag-select');
+            select.innerHTML = '<option value="">選擇既有 tag</option>';
+            allTags.forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag.tag_id;
+                option.textContent = tag.tag_name;
+                select.appendChild(option);
+            });
+        }
+
+        function renderCurrentTags() {
+            const container = document.getElementById('current-tags');
+            const tags = currentGame.tags || currentGame.Tags || [];
+            if (!tags.length) {
+                container.innerHTML = '<span class="tag">尚未設定 tag</span>';
+                return;
+            }
+            container.innerHTML = tags.map(tag => `
+                <span class="tag is-info is-light is-medium">
+                    ${escapeHtml(tag.tag_name || tag.name || '')}
+                    <button class="delete is-small" type="button" aria-label="remove" onclick="removeGameTag(${Number(tag.tag_id)})"></button>
+                </span>
+            `).join('');
+        }
+
+        async function addExistingTag() {
+            const tagId = Number(document.getElementById('tag-select').value);
+            if (!tagId) return;
+            try {
+                await apiAddTagToGame(currentGameId, tagId);
+                await refreshGameForEdit();
+                renderCurrentTags();
+            } catch (err) {
+                showError(`加入 tag 失敗：${err.message}`);
+            }
+        }
+
+        async function createAndAddTag() {
+            const input = document.getElementById('new-tag-input');
+            const tagName = input.value.trim();
+            if (!tagName) return;
+            try {
+                const created = await apiCreateTag(tagName);
+                const tag = created.data || created.tag || created;
+                await loadTagsForEdit();
+                await apiAddTagToGame(currentGameId, tag.tag_id);
+                input.value = '';
+                await refreshGameForEdit();
+                renderCurrentTags();
+            } catch (err) {
+                showError(`建立 tag 失敗：${err.message}`);
+            }
+        }
+
+        async function removeGameTag(tagId) {
+            try {
+                await apiRemoveTagFromGame(currentGameId, tagId);
+                await refreshGameForEdit();
+                renderCurrentTags();
+            } catch (err) {
+                showError(`移除 tag 失敗：${err.message}`);
             }
         }
 

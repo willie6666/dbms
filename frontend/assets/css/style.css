@@ -2,39 +2,109 @@
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
 
 :root {
+    /* Background */
     --bg-primary: #0d1117;
+    --bg-page-top: #0d1117;
+    --bg-page-mid: #101722;
+    --bg-page-bottom: #0d1117;
+
+    /* Surfaces */
     --bg-secondary: #111827;
     --bg-card: #161d2a;
-    --bg-hover: #202938;
     --bg-panel: #141b27;
-    --accent-cyan: #66c7e8;
-    --accent-pink: #e77a9a;
-    --accent-green: #8dd6a5;
-    --accent-yellow: #e6c36a;
-    --accent-purple: #a99ee6;
-    --accent-red: #e86f80;
-    --accent-blue: #66c7e8;
+    --bg-hover: #202938;
+    --surface-raised: #182131;
+    --surface-muted: #121925;
     --bg-lighter: rgba(255,255,255,0.1);
+
+    /* Text */
     --text-primary: #f6f8ff;
     --text-secondary: #bac4d8;
     --text-muted: #7f8ba3;
-    --border-cyan: rgba(55, 216, 255, 0.24);
+    --text-subtle: #647083;
+
+    /* Accent — cyan, used sparingly */
+    --accent-cyan: #66c7e8;
+    --accent-cyan-soft: rgba(102, 199, 232, 0.16);
+    --accent-cyan-line: rgba(102, 199, 232, 0.32);
+
+    /* Status colors — semantic use only */
+    --accent-green: #8dd6a5;
+    --accent-yellow: #e6c36a;
+    --accent-red: #e86f80;
+    --accent-purple: #a99ee6;
+    --accent-pink: #e77a9a;
+    --accent-blue: #66c7e8;
+
+    --border-cyan: rgba(102, 199, 232, 0.24);
     --shadow-card: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
 html {
-    background: var(--bg-primary);
+    background: #0d1117;
 }
 
 body {
     min-height: 100vh;
     color: var(--text-secondary);
     font-family: 'Noto Sans TC', sans-serif;
-    background: var(--bg-primary);
+    position: relative;
+    overflow-x: hidden;
+    isolation: isolate;
+    background:
+        linear-gradient(
+            180deg,
+            #0d1117 0%,
+            #101722 42%,
+            #0d1117 100%
+        );
 }
 
+/* Quiet shelf structure */
 body::before {
-    display: none;
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -2;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.035) 0 1px,
+            transparent 1px 112px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.018) 0 1px,
+            transparent 1px 100%
+        );
+    background-size: 100% 112px, 320px 100%;
+    opacity: 0.55;
+}
+
+/* Matte lighting and vignette */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+        radial-gradient(
+            circle at 50% -10%,
+            rgba(255,255,255,0.055),
+            transparent 34rem
+        ),
+        radial-gradient(
+            circle at 20% 30%,
+            rgba(0,0,0,0.18),
+            transparent 30rem
+        ),
+        radial-gradient(
+            circle at 90% 80%,
+            rgba(0,0,0,0.24),
+            transparent 34rem
+        );
 }
 
 main {
@@ -52,8 +122,8 @@ a:hover { color: #8cecff; }
 }
 
 .navbar.va-navbar {
-    background: var(--bg-secondary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(17, 24, 39, 0.96);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
     backdrop-filter: none;
     min-height: 4.25rem;
@@ -116,10 +186,10 @@ a:hover { color: #8cecff; }
     justify-content: center;
     min-height: 2.55rem;
     padding: 0.65rem 1.15rem;
-    border: 1px solid rgba(55,216,255,0.55) !important;
+    border: 1px solid rgba(102,199,232,0.55) !important;
     background: var(--accent-cyan) !important;
     color: #06111f !important;
-    box-shadow: none;
+    box-shadow: none !important;
     cursor: pointer;
 }
 
@@ -160,13 +230,13 @@ a:hover { color: #8cecff; }
 }
 
 .button:hover, .btn-play:hover, .btn-download:hover, .btn-review:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2) !important;
 }
 
 .input, .textarea, .select select,
 input:not([type="radio"]):not([type="checkbox"]):not([type="file"]), textarea, select {
-    background-color: rgba(7, 11, 21, 0.84) !important;
+    background-color: rgba(7, 11, 21, 0.88) !important;
     border-color: rgba(255,255,255,0.12) !important;
     color: var(--text-primary) !important;
     border-radius: 14px !important;
@@ -176,8 +246,8 @@ input:not([type="radio"]):not([type="checkbox"]):not([type="file"]), textarea, s
 
 .input:focus, .textarea:focus, .select select:focus,
 input:focus, textarea:focus, select:focus {
-    border-color: var(--accent-cyan) !important;
-    box-shadow: 0 0 0 0.125em rgba(102, 199, 232, 0.18) !important;
+    border-color: rgba(102,199,232,0.72) !important;
+    box-shadow: 0 0 0 0.125em rgba(102,199,232,0.14) !important;
     outline: none;
 }
 
@@ -190,12 +260,12 @@ input:focus, textarea:focus, select:focus {
 .form-group { margin-bottom: 1rem; }
 
 .box, .notification,
-.store-hero, .auth-container, .profile-container, .dashboard-panel, .cart-summary, .review-write-box,
+.auth-container, .profile-container, .dashboard-panel, .cart-summary, .review-write-box,
 .game-info-right, .social-container, .empty-state, .alert-info {
     background: var(--bg-card) !important;
-    border: 1px solid rgba(255,255,255,0.09) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
     border-radius: 14px !important;
-    box-shadow: var(--shadow-card) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18) !important;
     backdrop-filter: none;
 }
 
@@ -209,9 +279,38 @@ input:focus, textarea:focus, select:focus {
     overflow: hidden;
     padding: clamp(1.5rem, 4vw, 3.2rem);
     margin-bottom: 2rem;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.055),
+            rgba(255,255,255,0.025)
+        ),
+        #161d2a !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 14px !important;
+    box-shadow:
+        0 18px 40px rgba(0,0,0,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.04) !important;
 }
 
+/* One restrained accent line at the bottom */
 .store-hero::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 1px;
+    display: block;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(102,199,232,0.38),
+        transparent
+    );
+    opacity: 0.6;
+}
+
+/* No decorative glow overlay */
+.store-hero::before {
     display: none;
 }
 
@@ -275,17 +374,17 @@ input:focus, textarea:focus, select:focus {
 
 .game-list-card, .lib-game-card, .library-item, .stat-card, .review-item, .media-card {
     background: var(--bg-card) !important;
-    border: 1px solid rgba(255,255,255,0.09) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
     border-radius: 14px !important;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.16);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
     overflow: hidden;
     transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
 }
 
 .game-list-card:hover, .lib-game-card:hover, .library-item:hover, .stat-card:hover, .media-card:hover {
     transform: translateY(-2px) !important;
-    border-color: var(--border-cyan) !important;
-    box-shadow: var(--shadow-card) !important;
+    border-color: rgba(102,199,232,0.28) !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.24) !important;
 }
 
 .game-list-card { cursor: pointer; height: auto !important; min-height: 0 !important; align-self: start; }
@@ -456,9 +555,9 @@ input:focus, textarea:focus, select:focus {
 .list-item:hover, .list-item.active { background: rgba(255,255,255,0.055) !important; border-color: rgba(255,255,255,0.08) !important; }
 .list-item-avatar { width: 2.25rem !important; height: 2.25rem !important; border-radius: 999px; background: #243244 !important; display: grid; place-items: center; color: var(--text-primary) !important; font-weight: 800; box-shadow: none !important; }
 .social-empty { color: var(--text-muted); text-align: center; padding: 2.5rem 1rem; }
-.social-chat { display: flex; flex-direction: column; min-width: 0; }
+.social-chat { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
 .chat-header { padding: 1rem 1.25rem !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; color: var(--text-primary); font-weight: 800; background: transparent !important; }
-.chat-messages { flex: 1; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.8rem; }
+.chat-messages { flex: 1; min-height: 0; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.8rem; overflow-y: auto; }
 .message {
     max-width: min(70%, 560px);
     padding: 0.8rem 1rem;
@@ -506,7 +605,7 @@ input:focus, textarea:focus, select:focus {
 .btn-play:hover, .btn-download:hover, .btn-review:hover,
 .library-item:hover, .lib-game-card:hover, .stat-card:hover {
     transform: translateY(-2px) !important;
-    box-shadow: var(--shadow-card) !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.24) !important;
 }
 
 .media-card-file {
@@ -559,7 +658,7 @@ input:focus, textarea:focus, select:focus {
     .search-bar, .chat-input-area, .reply-input-area { flex-direction: column; }
     .social-container { height: auto; }
     .social-sidebar { border-right: 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .chat-messages { min-height: 360px; }
+    .chat-messages { min-height: 360px; max-height: 60vh; }
     .edit-game-layout { grid-template-columns: 1fr; }
 }
 

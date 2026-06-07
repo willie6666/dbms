@@ -31,7 +31,7 @@ func GetDeveloperGames(c *gin.Context) {
 	developerID := uint(userIDFloat.(float64))
 
 	var games []models.Game
-	query := database.DB.Preload("Media")
+	query := database.DB.Preload("Media").Preload("Tags")
 	if role, _ := c.Get("role"); role != "ADMIN" {
 		query = query.Where("developer_id = ?", developerID)
 	}
@@ -345,7 +345,19 @@ func CreateTag(c *gin.Context) {
 		return
 	}
 
-	tag := models.Tag{TagName: input.TagName}
+	tagName := strings.TrimSpace(input.TagName)
+	if tagName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Tag name is required"})
+		return
+	}
+
+	var existing models.Tag
+	if err := database.DB.Where("LOWER(tag_name) = LOWER(?)", tagName).First(&existing).Error; err == nil {
+		c.JSON(http.StatusOK, gin.H{"message": "Tag already exists", "data": existing})
+		return
+	}
+
+	tag := models.Tag{TagName: tagName}
 	if err := database.DB.Create(&tag).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create tag (might already exist)"})
 		return
@@ -366,7 +378,7 @@ func AddTagToGame(c *gin.Context) {
 		return
 	}
 
-	if game.DeveloperID != developerID {
+	if role, _ := c.Get("role"); role != "ADMIN" && game.DeveloperID != developerID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden: Not your game"})
 		return
 	}
@@ -380,7 +392,7 @@ func AddTagToGame(c *gin.Context) {
 	}
 
 	gameTag := models.GameTag{GameID: game.GameID, TagID: input.TagID}
-	if err := database.DB.Create(&gameTag).Error; err != nil {
+	if err := database.DB.Where("game_id = ? AND tag_id = ?", game.GameID, input.TagID).FirstOrCreate(&gameTag).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add tag to game"})
 		return
 	}
@@ -401,7 +413,7 @@ func RemoveTagFromGame(c *gin.Context) {
 		return
 	}
 
-	if game.DeveloperID != developerID {
+	if role, _ := c.Get("role"); role != "ADMIN" && game.DeveloperID != developerID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}

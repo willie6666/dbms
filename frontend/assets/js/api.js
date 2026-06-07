@@ -99,10 +99,26 @@ async function apiUpdateProfile(data) {
 // 2. 商店與遊戲 (Games)
 // ============================================================
 
-// GET /api/games?q=keyword
+// GET /api/games?q=keyword&tag=tag&developer=name&min_price=0&max_price=1000&sort=popular
 async function apiGetGames(query = '') {
-    const url = query ? `/api/games?q=${encodeURIComponent(query)}` : '/api/games';
+    const params = new URLSearchParams();
+    if (typeof query === 'string') {
+        if (query) params.set('q', query);
+    } else if (query && typeof query === 'object') {
+        Object.entries(query).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && String(value).trim() !== '') {
+                params.set(key, value);
+            }
+        });
+    }
+    const qs = params.toString();
+    const url = qs ? `/api/games?${qs}` : '/api/games';
     const res = await fetch(`${API_BASE}${url}`);
+    return parseResponse(res);
+}
+
+async function apiGetTags() {
+    const res = await fetch(`${API_BASE}/api/tags`);
     return parseResponse(res);
 }
 
@@ -155,6 +171,27 @@ async function apiUpdateGame(id, price, desc) {
         method: 'PUT',
         body: JSON.stringify({ price, desc })
     });
+    return parseResponse(res);
+}
+
+async function apiCreateTag(tagName) {
+    const res = await authFetch('/api/developer/tags', {
+        method: 'POST',
+        body: JSON.stringify({ tag_name: tagName })
+    });
+    return parseResponse(res);
+}
+
+async function apiAddTagToGame(gameId, tagId) {
+    const res = await authFetch(`/api/developer/games/${gameId}/tags`, {
+        method: 'POST',
+        body: JSON.stringify({ tag_id: tagId })
+    });
+    return parseResponse(res);
+}
+
+async function apiRemoveTagFromGame(gameId, tagId) {
+    const res = await authFetch(`/api/developer/games/${gameId}/tags/${tagId}`, { method: 'DELETE' });
     return parseResponse(res);
 }
 
