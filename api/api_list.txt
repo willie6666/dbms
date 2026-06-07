@@ -15,7 +15,7 @@
 [POST]   /api/auth/login                      - 使用者登入 (UC-05)
 [POST]   /api/auth/logout                     - [JWT] 使用者登出 (回傳成功訊息，無狀態) (UC-04)
 [PUT]    /api/users/profile                   - [JWT] 修改個人資料 (username, email, password) (UC-07~09)
-[GET]    /api/admin/users                     - [JWT + ADMIN] 查看所有使用者清單
+[GET]    /api/admin/users                     - [JWT + ADMIN] 查看所有使用者清單 (系統管理輔助)
 [PUT]    /api/admin/users/{id}/suspend        - [JWT + ADMIN] 切換帳號停權狀態 (toggle ACTIVE/DEACTIVE) (UC-10)
 [DELETE] /api/admin/users/{id}                - [JWT + ADMIN] 移除帳號 (UC-11)
 [PUT]    /api/admin/users/{id}/role           - [JWT + ADMIN] 更改帳號權限 (UC-12, UC-13)
@@ -25,30 +25,31 @@
 =========================================
 [GET]    /api/games                           - 取得所有遊戲 (支援搜尋 q, 標籤 tag, 開發者 developer, 價格 min_price/max_price 與排序 sort) (UC-01, UC-02)
 [GET]    /api/games/{id}                      - 取得單一遊戲詳情 (UC-03)
-[GET]    /api/games/{id}/reviews              - 取得遊戲評論
-[GET]    /api/developer/games                 - [JWT + DEVELOPER] 查看自己的遊戲列表 (ADMIN 可查看全部)
+[GET]    /api/games/{id}/reviews              - 取得遊戲評論 (UC-03 延伸)
+[GET]    /api/developer/games                 - [JWT + DEVELOPER] 查看自己的遊戲列表 (ADMIN 可查看全部) (系統管理輔助)
 [POST]   /api/developer/games                 - [JWT + DEVELOPER] 上架新遊戲 (UC-24)
-[PUT]    /api/developer/games/{id}            - [JWT + DEVELOPER] 編輯遊戲資訊 (price, desc)
+[PUT]    /api/developer/games/{id}            - [JWT + DEVELOPER] 編輯遊戲資訊 (price, desc) (系統管理輔助)
 [DELETE] /api/developer/games/{id}            - [JWT + DEVELOPER] 下架自己的遊戲 (UC-25)
 [DELETE] /api/admin/games/{id}                - [JWT + ADMIN] 強制下架遊戲 (UC-25)
 [POST]   /api/developer/games/{id}/media      - [JWT + DEVELOPER] 上傳遊戲圖片或檔案素材 (multipart/form-data) (UC-26)
-[DELETE] /api/developer/games/{id}/media/{media_id} - [JWT + DEVELOPER] 刪除遊戲素材
+[DELETE] /api/developer/games/{id}/media/{media_id} - [JWT + DEVELOPER] 刪除遊戲素材 (系統管理輔助)
 [GET]    /api/developer/games/{id}/stats      - [JWT + DEVELOPER] 查看遊戲銷售量與收入數據 (UC-27)
-[GET]    /api/tags                            - 查看標籤列表
-[POST]   /api/developer/tags                  - [JWT + DEVELOPER] 建立標籤
-[POST]   /api/developer/games/{id}/tags       - [JWT + DEVELOPER] 貼上標籤
-[DELETE] /api/developer/games/{id}/tags/{tag_id}  - [JWT + DEVELOPER] 移除標籤
+[GET]    /api/tags                            - 查看標籤列表 (系統分類輔助)
+[POST]   /api/developer/tags                  - [JWT + DEVELOPER] 建立標籤 (系統管理輔助)
+[POST]   /api/developer/games/{id}/tags       - [JWT + DEVELOPER] 貼上標籤 (系統管理輔助)
+[DELETE] /api/developer/games/{id}/tags/{tag_id}  - [JWT + DEVELOPER] 移除標籤 (系統管理輔助)
 
 =========================================
 3. 訂單、購物車與客服 (Transactions & Carts)
 =========================================
-[GET]    /api/protected/cart                  - [JWT] 查看購物車內容
+[GET]    /api/protected/cart                  - [JWT] 查看購物車內容 (UC-17 延伸)
 [POST]   /api/protected/cart                  - [JWT] 將遊戲加入購物車 (UC-17)
-[DELETE] /api/protected/cart/{game_id}        - [JWT] 移除購物車項目
+[DELETE] /api/protected/cart/{game_id}        - [JWT] 移除購物車項目 (UC-17 延伸)
 [POST]   /api/protected/checkout              - [JWT] 結帳購買 (UC-18)
 [GET]    /api/protected/transactions          - [JWT] 查看購買紀錄 (UC-16)
+[GET]    /api/protected/refunds               - [JWT] 取得個人退款歷史紀錄 (UC-19 延伸)
 [POST]   /api/social/refunds                  - [JWT] 申請遊戲退款 (UC-19)
-[GET]    /api/csr/refunds                     - [JWT + CSR] 取得所有退款申請
+[GET]    /api/csr/refunds                     - [JWT + CSR] 取得所有退款申請 (退款管理輔助)
 [PUT]    /api/csr/refunds/{id}                - [JWT + CSR] 同意/拒絕玩家退款申請 (UC-28, UC-29)
 
 =========================================
@@ -57,7 +58,7 @@
 [GET]    /api/protected/library               - [JWT] 顯示個人遊戲庫 (UC-21)
 [GET]    /api/protected/library/{game_id}/play     - [JWT] 玩遊戲 (驗證授權) (UC-14)
 [GET]    /api/protected/library/{game_id}/download - [JWT] 下載遊戲 (直接串流檔案) (UC-15)
-[GET]    /api/protected/wishlist              - [JWT] 查看願望清單
+[GET]    /api/protected/wishlist              - [JWT] 查看願望清單 (UC-22 延伸)
 [POST]   /api/protected/wishlist              - [JWT] 加入願望清單 (UC-22)
 [DELETE] /api/protected/wishlist/{game_id}    - [JWT] 移除願望清單 (UC-23)
 
@@ -65,15 +66,15 @@
 5. 社交、評論與通訊 (Social & Reviews)
 =========================================
 [POST]   /api/social/games/{id}/reviews       - [JWT] 對遊戲發表評價 (UC-20)
-[POST]   /api/social/reviews/{review_id}/replies     - [JWT] 樓中樓回覆評論
-[DELETE] /api/social/reviews/replies/{reply_id}     - [JWT] 刪除樓中樓回覆
-[GET]    /api/social/friends                  - [JWT] 查看好友列表
-[GET]    /api/social/friends/requests         - [JWT] 查看待審核的好友邀請
+[POST]   /api/social/reviews/{review_id}/replies     - [JWT] 樓中樓回覆評論 (社交輔助)
+[DELETE] /api/social/reviews/replies/{reply_id}     - [JWT] 刪除樓中樓回覆 (社交輔助)
+[GET]    /api/social/friends                  - [JWT] 查看好友列表 (社交管理輔助)
+[GET]    /api/social/friends/requests         - [JWT] 查看待審核的好友邀請 (社交管理輔助)
 [POST]   /api/social/friends/request          - [JWT] 發送好友邀請 (可用 receiver_id 或 username) (UC-30)
 [DELETE] /api/social/friends/request/{id}     - [JWT] 收回好友邀請 / 解除好友 (UC-31)
 [PUT]    /api/social/friends/request/{id}/accept  - [JWT] 接受好友邀請 (UC-32)
 [PUT]    /api/social/friends/request/{id}/decline - [JWT] 拒絕好友邀請 (UC-33)
-[GET]    /api/social/blacklist                - [JWT] 查看黑名單列表
+[GET]    /api/social/blacklist                - [JWT] 查看黑名單列表 (社交管理輔助)
 [POST]   /api/social/blacklist                - [JWT] 將玩家加入黑名單 (UC-34)
 [DELETE] /api/social/blacklist/{user_id}      - [JWT] 將玩家移除黑名單 (UC-35)
 [POST]   /api/social/messages                 - [JWT] 傳輸文字通訊給對方 (UC-36)
