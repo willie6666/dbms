@@ -136,7 +136,12 @@
 
 ### `[GET] /api/games` (瀏覽/搜尋遊戲)
 - **Headers**: 無
-- **Query Params** (可選): `?q=elden` (關鍵字搜尋), `?tag=RPG` (標籤篩選)
+- **Query Params** (可選): 
+  - `?q=elden` (關鍵字搜尋：比對標題、介紹、標籤與開發者名稱)
+  - `?tag=Action` (標籤精準篩選)
+  - `?developer=StudioAurora` (開發者名稱篩選)
+  - `?min_price=100&max_price=500` (價格區間篩選)
+  - `?sort=popular` (排序方式：`new` 最新, `price_asc` 便宜到貴, `price_desc` 貴到便宜, `popular` 預設人氣)
 - **Responses**:
   - `200 OK`:
     ```json
