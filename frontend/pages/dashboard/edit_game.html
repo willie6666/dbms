@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>編輯遊戲 — VaporAuror</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header id="global-header"></header>
+
+    <main>
+        <div class="dashboard-header">
+            <div>
+                <h1 class="title">編輯遊戲</h1>
+                <p class="subtitle is-6" id="edit-subtitle">載入中...</p>
+            </div>
+            <a class="button is-light" href="/pages/dashboard/dev_dashboard">回開發者中心</a>
+        </div>
+
+        <div class="edit-game-layout">
+            <section class="box dashboard-panel">
+                <h2 class="title is-4">商店資訊</h2>
+                <form id="edit-game-form">
+                    <div class="field form-group">
+                        <label class="label" for="edit-title">遊戲名稱</label>
+                        <div class="control">
+                            <input class="input" type="text" id="edit-title" disabled>
+                        </div>
+                        <p class="help">遊戲名稱目前不可在此修改。</p>
+                    </div>
+
+                    <div class="field form-group">
+                        <label class="label" for="edit-price">定價 (NT$)</label>
+                        <div class="control">
+                            <input class="input" type="number" id="edit-price" min="0" step="1" required>
+                        </div>
+                    </div>
+
+                    <div class="field form-group">
+                        <label class="label" for="edit-desc">遊戲介紹</label>
+                        <div class="control">
+                            <textarea class="textarea" id="edit-desc" rows="7" placeholder="輸入商店頁會顯示的遊戲介紹"></textarea>
+                        </div>
+                        <div class="box markdown-preview-box mt-3">
+                            <h3 class="title is-6">介紹預覽</h3>
+                            <div class="markdown-content" id="preview-desc">—</div>
+                        </div>
+                    </div>
+
+                    <div id="edit-error" class="notification is-danger is-light" style="display:none;"></div>
+                    <div id="edit-success" class="notification is-success is-light" style="display:none;"></div>
+
+                    <div class="field is-grouped is-grouped-right">
+                        <p class="control"><a class="button is-light" href="/pages/dashboard/dev_dashboard">取消</a></p>
+                        <p class="control"><button class="button is-primary" type="submit" id="save-game-btn">保存</button></p>
+                    </div>
+                </form>
+            </section>
+
+            <section class="box dashboard-panel">
+                <h2 class="title is-4">編輯說明</h2>
+                <div class="content has-text-grey-light">
+                    <p>定價與介紹會在上方預覽即時更新。</p>
+                    <p>圖片與遊戲本體可在下方素材區即時上傳或刪除。</p>
+                    <p>修改定價與介紹後，請按保存才會生效。</p>
+                </div>
+            </section>
+        </div>
+
+        <section class="box dashboard-panel mt-5">
+            <div class="media-manager-title">
+                <h2 class="title is-4">圖片與遊戲本體</h2>
+            </div>
+
+            <div id="media-grid-container" class="edit-media-grid">
+                <p style="color:var(--text-muted); grid-column:1/-1;">載入中...</p>
+            </div>
+
+            <div class="upload-section mt-5">
+                <h3 class="title is-5">新增素材</h3>
+                <div class="edit-upload-row">
+                    <div class="select">
+                        <select id="mm-media-type">
+                            <option value="media">遊戲圖片</option>
+                            <option value="game_file">遊戲本體</option>
+                        </select>
+                    </div>
+                    <div class="file has-name is-fullwidth" style="flex:1; min-width:220px;">
+                        <label class="file-label">
+                            <input class="file-input" type="file" id="mm-file-input" accept="image/*,.zip,.exe,.rar,.7z" onchange="onFileChosen(this)">
+                            <span class="file-cta"><span class="file-label">選擇檔案</span></span>
+                            <span class="file-name" id="mm-file-label">尚未選擇檔案</span>
+                        </label>
+                    </div>
+                    <button class="button is-primary" id="mm-upload-btn" onclick="doUpload()">上傳</button>
+                </div>
+                <p class="help">圖片會顯示在商店頁；遊戲本體會在玩家擁有授權後才能下載。</p>
+                <div class="notification is-info is-light mt-3" id="mm-progress" style="display:none;">上傳中，請稍候…</div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script>
+        let currentGameId = null;
+        let currentGame = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const role = getCurrentRole();
+            if (role !== 'DEVELOPER' && role !== 'ADMIN') {
+                alert('存取被拒：您沒有開發者權限');
+                window.location.href = '/';
+                return;
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            currentGameId = Number(params.get('id'));
+            if (!currentGameId) {
+                showError('缺少遊戲 ID');
+                return;
+            }
+
+            await loadGameForEdit();
+            document.getElementById('edit-game-form').addEventListener('submit', saveGame);
+            document.getElementById('edit-desc').addEventListener('input', updatePreview);
+        });
+
+        async function loadGameForEdit() {
+            try {
+                const result = await apiGetDeveloperGames();
+                const games = Array.isArray(result) ? result : (result.data || result.games || []);
+                currentGame = games.find(g => Number(g.game_id || g.id) === currentGameId);
+
+                if (!currentGame) {
+                    showError('找不到可編輯的遊戲');
+                    return;
+                }
+
+                const title = currentGame.title || '';
+                const desc = currentGame.desc || currentGame.description || '';
+                const price = Number(currentGame.price || 0);
+
+                document.title = `編輯 ${title} — VaporAuror`;
+                document.getElementById('edit-subtitle').textContent = title;
+                document.getElementById('edit-title').value = title;
+                document.getElementById('edit-price').value = price;
+                document.getElementById('edit-desc').value = desc;
+
+                updatePreview();
+                renderMediaGrid(currentGame.media || []);
+            } catch (err) {
+                showError(`載入失敗：${err.message}`);
+            }
+        }
+
+        function updatePreview() {
+            const desc = document.getElementById('edit-desc').value.trim() || '尚未填寫介紹';
+            document.getElementById('preview-desc').innerHTML = renderMarkdown(desc);
+        }
+
+        async function saveGame(e) {
+            e.preventDefault();
+            const btn = document.getElementById('save-game-btn');
+            const errorEl = document.getElementById('edit-error');
+            const successEl = document.getElementById('edit-success');
+            const price = Number(document.getElementById('edit-price').value || 0);
+            const desc = document.getElementById('edit-desc').value.trim();
+
+            errorEl.style.display = 'none';
+            successEl.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = '保存中...';
+
+            try {
+                await apiUpdateGame(currentGameId, price, desc);
+                successEl.textContent = '已保存變更。';
+                successEl.style.display = 'block';
+                setTimeout(() => window.location.href = '/pages/dashboard/dev_dashboard', 700);
+            } catch (err) {
+                showError(`保存失敗：${err.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '保存';
+            }
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('edit-error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        function renderMediaGrid(mediaList) {
+            const container = document.getElementById('media-grid-container');
+            if (!mediaList || mediaList.length === 0) {
+                container.innerHTML = `<p style="color:var(--text-muted); grid-column:1/-1;">尚無任何素材，請在下方上傳。</p>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            mediaList.forEach(m => {
+                const isImage = m.media_type === 'media';
+                const card = document.createElement('div');
+                card.className = 'media-card';
+                const thumb = isImage
+                    ? `<img class="media-card-thumb" src="${escapeHtml(m.file_url)}" alt="media" loading="lazy"
+                           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                       <div class="media-card-file" style="display:none;"><span>載入失敗</span></div>`
+                    : `<div class="media-card-file"><span style="word-break:break-all;">${escapeHtml(m.file_url.split('/').pop())}</span></div>`;
+
+                card.innerHTML = `
+                    ${thumb}
+                    <div class="media-card-info">
+                        <span class="badge ${isImage ? 'badge-img' : 'badge-file'}">${isImage ? '圖片' : '遊戲本體'}</span>
+                        <button class="button is-text is-small media-card-del" title="刪除此素材"
+                            onclick="deleteMedia(${m.media_id})">刪除</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function refreshGameForEdit() {
+            const result = await apiGetDeveloperGames();
+            const games = Array.isArray(result) ? result : (result.data || result.games || []);
+            currentGame = games.find(g => Number(g.game_id || g.id) === currentGameId);
+            renderMediaGrid(currentGame ? (currentGame.media || []) : []);
+        }
+
+        async function deleteMedia(mediaId) {
+            if (!confirm('確定要刪除此素材？此操作無法復原。')) return;
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/developer/games/${currentGameId}/media/${mediaId}`, {
+                    method: 'DELETE',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                await parseResponse(res);
+                await refreshGameForEdit();
+            } catch (err) {
+                alert(`刪除失敗：${err.message}`);
+            }
+        }
+
+        function onFileChosen(input) {
+            const label = document.getElementById('mm-file-label');
+            label.textContent = input.files && input.files[0] ? input.files[0].name : '尚未選擇檔案';
+        }
+
+        function resetUploadForm() {
+            const input = document.getElementById('mm-file-input');
+            if (input) input.value = '';
+            document.getElementById('mm-file-label').textContent = '尚未選擇檔案';
+            document.getElementById('mm-progress').style.display = 'none';
+        }
+
+        async function doUpload() {
+            const fileInput = document.getElementById('mm-file-input');
+            const typeSelect = document.getElementById('mm-media-type');
+            const btn = document.getElementById('mm-upload-btn');
+            const progress = document.getElementById('mm-progress');
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('請先選擇要上傳的檔案');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('media_type', typeSelect.value);
+
+            btn.disabled = true;
+            progress.style.display = 'block';
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/developer/games/${currentGameId}/media`, {
+                    method: 'POST',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    body: formData
+                });
+                await parseResponse(res);
+                resetUploadForm();
+                await refreshGameForEdit();
+            } catch (err) {
+                alert(`上傳失敗：${err.message}`);
+            } finally {
+                btn.disabled = false;
+                progress.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

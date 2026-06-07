@@ -150,6 +150,14 @@ async function apiCreateGame(title, price, desc) {
     return parseResponse(res);
 }
 
+async function apiUpdateGame(id, price, desc) {
+    const res = await authFetch(`/api/developer/games/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ price, desc })
+    });
+    return parseResponse(res);
+}
+
 // DELETE /api/developer/games/{id}  [DEVELOPER]
 async function apiDeleteGame(id) {
     const res = await authFetch(`/api/developer/games/${id}`, { method: 'DELETE' });

@@ -210,17 +210,15 @@
                 el.className = 'lib-game-card';
                 // Try to find a cover image if available (using placeholder if not)
                 let coverImg = 'https://placehold.co/400x300/1a1a2e/00f0ff?text=No+Cover';
-                if (game.media && game.media.length > 0) {
-                    const thumb = game.media.find(m => m.media_type === 'thumbnail') || game.media.find(m => m.media_type === 'media');
-                    if (thumb) coverImg = thumb.file_url;
-                }
+                const apiCover = getGameCoverUrl(game);
+                if (apiCover) coverImg = apiCover;
 
                 el.innerHTML = `
-                    <div class="lib-game-cover">
+                    <a class="lib-game-cover" href="/pages/store/game_detail?id=${gameId}" aria-label="查看 ${escapeHtml(title)}">
                         <img src="${coverImg}" alt="${escapeHtml(title)}" onerror="this.onerror=null; this.src='https://placehold.co/400x300/1a1a2e/00f0ff?text=No+Cover'">
-                    </div>
+                    </a>
                     <div class="lib-game-info">
-                        <h3>${escapeHtml(title)}</h3>
+                        <h3><a href="/pages/store/game_detail?id=${gameId}" style="color:inherit;">${escapeHtml(title)}</a></h3>
                         <div class="lib-game-meta">
                             <span>遊玩：${playtime}</span>
                             <span style="color:var(--accent-cyan);">最後：${lastPlayed}</span>

@@ -239,6 +239,21 @@ function getCurrentRole() {
     return localStorage.getItem('userRole') || 'GUEST';
 }
 
+function getGameCoverUrl(game) {
+    const media = (game && game.media) || (game && game.Media) || [];
+    const image = media.find(m => m.media_type === 'thumbnail') || media.find(m => m.media_type === 'media');
+    return image ? image.file_url : '';
+}
+
+function renderMarkdown(markdown) {
+    const source = String(markdown || '').trim();
+    if (!source) return '<p class="has-text-grey">尚未填寫介紹</p>';
+    if (!window.marked || !window.DOMPurify) {
+        return `<p>${escapeHtml(source).replace(/\n/g, '<br>')}</p>`;
+    }
+    return DOMPurify.sanitize(marked.parse(source));
+}
+
 function requireLogin(redirectTo = '/pages/auth/login.html') {
     if (!localStorage.getItem('token')) {
         alert('請先登入！');

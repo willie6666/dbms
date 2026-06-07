@@ -16,11 +16,11 @@ INSERT INTO users (username, email, password_hash, last_visit_ip, role, status, 
 -- ==========================================
 -- 2. 寫入 games 資料 (4筆)
 -- ==========================================
-INSERT INTO games (developer_id, title, price, overall_rating) VALUES
-(1, 'CyberCity 2077', 1200.00, 4.5),
-(1, 'Magic Tower', 150.00, 4.8),
-(2, 'Speed Racing V', 850.50, 3.9),
-(2, 'Farm Simulator 3', 300.00, 4.2);
+INSERT INTO games (developer_id, title, description, price, overall_rating) VALUES
+(1, 'CyberCity 2077', '霓虹城市中的開放世界動作 RPG。', 1200.00, 4.5),
+(1, 'Magic Tower', '探索高塔、解謎並收集稀有裝備。', 150.00, 4.8),
+(2, 'Speed Racing V', '節奏快速的街頭競速遊戲。', 850.50, 3.9),
+(2, 'Farm Simulator 3', '輕鬆經營農場，擴張你的田園生活。', 300.00, 4.2);
 
 -- ==========================================
 -- 3. 寫入 tags 與 game_tags 資料

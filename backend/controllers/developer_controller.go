@@ -17,6 +17,12 @@ import (
 type UploadGameInput struct {
 	Title string  `json:"title" binding:"required"`
 	Price float64 `json:"price" binding:"min=0"`
+	Desc  string  `json:"desc"`
+}
+
+type UpdateGameInput struct {
+	Price float64 `json:"price" binding:"min=0"`
+	Desc  string  `json:"desc"`
 }
 
 // GetDeveloperGames handles GET /api/developer/games
@@ -52,6 +58,7 @@ func UploadGame(c *gin.Context) {
 	game := models.Game{
 		DeveloperID: developerID,
 		Title:       input.Title,
+		Description: input.Desc,
 		Price:       input.Price,
 	}
 
@@ -65,6 +72,41 @@ func UploadGame(c *gin.Context) {
 		"message": "Game uploaded successfully",
 		"game":    game,
 	})
+}
+
+// UpdateGame handles PUT /api/developer/games/:id
+func UpdateGame(c *gin.Context) {
+	userIDFloat, _ := c.Get("user_id")
+	developerID := uint(userIDFloat.(float64))
+	gameID := c.Param("id")
+
+	var input UpdateGameInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var game models.Game
+	if err := database.DB.First(&game, gameID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
+		return
+	}
+
+	if role, _ := c.Get("role"); role != "ADMIN" && game.DeveloperID != developerID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden: You can only edit your own games"})
+		return
+	}
+
+	if err := database.DB.Model(&game).Updates(map[string]interface{}{
+		"price":       input.Price,
+		"description": input.Desc,
+	}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update game"})
+		return
+	}
+
+	database.DB.Preload("Media").First(&game, game.GameID)
+	c.JSON(http.StatusOK, gin.H{"message": "Game updated successfully", "game": game})
 }
 
 // DeleteGame handles DELETE /api/developer/games/:id

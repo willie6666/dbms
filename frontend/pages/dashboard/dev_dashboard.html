@@ -505,8 +505,8 @@
                         <div class="library-item-actions">
                             ${isActive ? `
                                 <button class="button is-primary is-small"
-                                    onclick="openMediaManager(${gameId})">
-                                    素材管理
+                                    onclick="window.location.href='/pages/dashboard/edit_game?id=${gameId}'">
+                                    編輯
                                 </button>
                                 <button class="button is-danger is-light is-small"
                                     onclick="takeDownGame(${gameId})">

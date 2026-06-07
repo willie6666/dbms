@@ -138,21 +138,27 @@
                     <span class="rating-badge" id="detail-rating">--</span>
                 </div>
                 <div class="game-price-tag" id="detail-price"></div>
-                <p class="game-desc" id="detail-desc"></p>
                 <div id="detail-tags" class="game-list-tags"></div>
                 <div id="action-area" style="margin-top: auto; padding-top: 10px; position:relative; z-index:1;"></div>
             </div>
         </div>
 
+        <section class="box game-description-section">
+            <h2 class="title is-4">遊戲介紹</h2>
+            <div class="markdown-content" id="detail-desc"></div>
+        </section>
+
         <div class="review-section">
-            <div id="review-write-area"></div>
             <h2 class="title section-title">玩家評論</h2>
+            <div id="review-write-area"></div>
             <div id="reviews-container">
                 <p style="color:var(--text-muted);padding:20px 0;">載入中...</p>
             </div>
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
     <script src="/assets/js/api.js"></script>
     <script src="/assets/js/main.js"></script>
     <script>
@@ -177,7 +183,7 @@
 
                 document.title = `${game.game.title || game.title} — VaporAuror`;
                 document.getElementById('detail-title').textContent = game.game.title || game.title;
-                document.getElementById('detail-desc').textContent = game.game.description || game.game.desc || game.desc || '';
+                document.getElementById('detail-desc').innerHTML = renderMarkdown(game.game.description || game.game.desc || game.desc || '');
                 
                 const devName = game.developer_name || game.game.developer_name || game.game.developer || game.developer || '未知';
                 document.getElementById('detail-developer').textContent = `BY ${devName}`;

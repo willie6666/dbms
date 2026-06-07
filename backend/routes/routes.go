@@ -61,6 +61,7 @@ func SetupRouter() *gin.Engine {
 		{
 			developer.GET("/games", controllers.GetDeveloperGames)
 			developer.POST("/games", controllers.UploadGame)
+			developer.PUT("/games/:id", controllers.UpdateGame)
 			developer.DELETE("/games/:id", controllers.DeleteGame)
 			developer.POST("/games/:id/media", controllers.UploadMedia)
 			developer.DELETE("/games/:id/media/:media_id", controllers.DeleteMedia)
