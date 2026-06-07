@@ -26,7 +26,9 @@
 [GET]    /api/games                           - 取得所有遊戲 (含搜尋 q=keyword) (UC-01, UC-02)
 [GET]    /api/games/{id}                      - 取得單一遊戲詳情 (UC-03)
 [GET]    /api/games/{id}/reviews              - 取得遊戲評論
+[GET]    /api/developer/games                 - [JWT + DEVELOPER] 取得自己開發的遊戲清單
 [POST]   /api/developer/games                 - [JWT + DEVELOPER] 上架新遊戲 (UC-24)
+[PUT]    /api/developer/games/{id}            - [JWT + DEVELOPER] 更新自己的遊戲資訊 (包含描述編輯)
 [DELETE] /api/developer/games/{id}            - [JWT + DEVELOPER] 下架自己的遊戲 (UC-25)
 [DELETE] /api/admin/games/{id}                - [JWT + ADMIN] 強制下架遊戲 (UC-25)
 [POST]   /api/developer/games/{id}/media      - [JWT + DEVELOPER] 上傳遊戲圖片或檔案素材 (UC-26)

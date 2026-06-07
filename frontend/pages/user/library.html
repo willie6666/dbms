@@ -90,7 +90,8 @@
         async function playGame(gameId) {
             try {
                 // GET /api/protected/library/{game_id}/play
-                const data = await apiPlayGame(gameId);
+                const result = await apiPlayGame(gameId);
+                const data   = await result.json();
                 // 後端可回傳遊戲啟動 URL 或 token
                 if (data && data.launch_url) {
                     window.open(data.launch_url, '_blank');
@@ -106,6 +107,9 @@
             try {
                 // GET /api/protected/library/{game_id}/download
                 const result = await apiDownloadGame(gameId);
+                if (!result.ok) {
+                    await parseResponse(result);
+                }
                 const blob = await result.blob();
                 const disposition = result.headers.get('content-disposition') || '';
                 const match = disposition.match(/filename="?([^";]+)"?/i);
