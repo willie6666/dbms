@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 	"vapor_auror_backend/database"
 	"vapor_auror_backend/models"
 
@@ -35,6 +36,7 @@ func GetGames(c *gin.Context) {
 	var games []models.Game
 	q := c.Query("q")
 	tag := c.Query("tag")
+<<<<<<< HEAD
 
 	query := database.DB.Model(&models.Game{})
 	if q != "" {
@@ -45,10 +47,53 @@ func GetGames(c *gin.Context) {
 		query = query.Joins("JOIN game_tags ON game_tags.game_id = games.game_id").
 			Joins("JOIN tags ON tags.tag_id = game_tags.tag_id").
 			Where("tags.tag_name ILIKE ?", tag)
+=======
+	developer := c.Query("developer")
+	sort := c.DefaultQuery("sort", "popular")
+
+	query := database.DB.Model(&models.Game{}).Group("games.game_id")
+	if q != "" {
+		keyword := "%" + q + "%"
+		query = query.
+			Joins("LEFT JOIN game_tags q_game_tags ON q_game_tags.game_id = games.game_id").
+			Joins("LEFT JOIN tags q_tags ON q_tags.tag_id = q_game_tags.tag_id").
+			Joins("LEFT JOIN users q_developers ON q_developers.user_id = games.developer_id").
+			Where("games.title ILIKE ? OR games.description ILIKE ? OR q_tags.tag_name ILIKE ? OR q_developers.username ILIKE ?", keyword, keyword, keyword, keyword)
+	}
+	if tag != "" {
+		query = query.
+			Joins("JOIN game_tags filter_game_tags ON filter_game_tags.game_id = games.game_id").
+			Joins("JOIN tags filter_tags ON filter_tags.tag_id = filter_game_tags.tag_id").
+			Where("filter_tags.tag_name ILIKE ?", tag)
+	}
+	if developer != "" {
+		query = query.
+			Joins("JOIN users filter_developers ON filter_developers.user_id = games.developer_id").
+			Where("filter_developers.username ILIKE ?", "%"+developer+"%")
+	}
+	if minPrice, err := strconv.ParseFloat(c.Query("min_price"), 64); err == nil {
+		query = query.Where("games.price >= ?", minPrice)
+	}
+	if maxPrice, err := strconv.ParseFloat(c.Query("max_price"), 64); err == nil {
+		query = query.Where("games.price <= ?", maxPrice)
+	}
+
+	switch sort {
+	case "new":
+		query = query.Order("games.game_id DESC")
+	case "price_asc":
+		query = query.Order("games.price ASC, games.game_id DESC")
+	case "price_desc":
+		query = query.Order("games.price DESC, games.game_id DESC")
+	default:
+		query = query.
+			Joins("LEFT JOIN transaction_items popularity_items ON popularity_items.game_id = games.game_id").
+			Order("COUNT(popularity_items.item_id) DESC, games.overall_rating DESC, games.game_id DESC")
+>>>>>>> 594ff86b8035d53e60b973377185979db1f59beb
 	}
 
 	// Retrieve games from the database with their media
-	if err := query.Preload("Media").Find(&games).Error; err != nil {
+	if err := query.Preload("Media").Preload("Tags").Find(&games).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch games"})
 		return
 	}
@@ -64,7 +109,7 @@ func GetGameByID(c *gin.Context) {
 	var game models.Game
 	gameID := c.Param("id")
 
-	if err := database.DB.First(&game, gameID).Error; err != nil {
+	if err := database.DB.Preload("Tags").First(&game, gameID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
 		return
 	}
@@ -72,16 +117,6 @@ func GetGameByID(c *gin.Context) {
 
 	var media []models.GameMedia
 	database.DB.Where("game_id = ?", gameID).Find(&media)
-
-	var gameTags []models.GameTag
-	database.DB.Where("game_id = ?", gameID).Find(&gameTags)
-	var tags []models.Tag
-	for _, gt := range gameTags {
-		var tag models.Tag
-		if err := database.DB.First(&tag, gt.TagID).Error; err == nil {
-			tags = append(tags, tag)
-		}
-	}
 
 	var reviews []models.Review
 	database.DB.Where("game_id = ?", gameID).Find(&reviews)
@@ -109,7 +144,7 @@ func GetGameByID(c *gin.Context) {
 			"game":           game,
 			"developer_name": developerName,
 			"media":          media,
-			"tags":           tags,
+			"tags":           game.Tags,
 			"reviews":        fullReviews,
 		},
 	})

@@ -33,6 +33,7 @@
         <section class="store-layout">
             <aside class="store-sidebar">
                 <div class="box sidebar-block">
+<<<<<<< HEAD
                     <h2 class="title is-6">分類瀏覽</h2>
                     <ul class="category-list">
                         <li><a href="/pages/store/search.html">所有遊戲</a></li>
@@ -40,13 +41,19 @@
                         <li><a href="/pages/store/search.html?tag=RPG">角色扮演</a></li>
                         <li><a href="/pages/store/search.html?tag=Simulation">模擬經營</a></li>
                         <li><a href="/pages/store/search.html?tag=Racing">競速</a></li>
+=======
+                    <h2 class="title is-6">Tag 瀏覽</h2>
+                    <ul class="category-list" id="tag-list">
+                        <li><a href="/pages/store/search.html">所有遊戲</a></li>
+>>>>>>> 594ff86b8035d53e60b973377185979db1f59beb
                     </ul>
                 </div>
                 <div class="box sidebar-block">
                     <h2 class="title is-6">價格篩選</h2>
                     <ul class="filter-list">
-                        <li><a href="/pages/store/search.html?q=免費">免費遊玩</a></li>
-                        <li><a href="/pages/store/search.html?q=特賣">特賣中</a></li>
+                        <li><a href="/pages/store/search.html?min_price=0&max_price=0">免費遊玩</a></li>
+                        <li><a href="/pages/store/search.html?max_price=300">NT$ 300 以下</a></li>
+                        <li><a href="/pages/store/search.html?min_price=301&max_price=900">NT$ 301 - 900</a></li>
                     </ul>
                 </div>
             </aside>
@@ -75,18 +82,39 @@
     <script src="/assets/js/main.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", async () => {
-            // 顯示骨架屏
+            const sortSelect = document.getElementById('sort-select');
+
+            sortSelect.addEventListener('change', () => loadHomeGames());
+
+            loadHomeTags();
             renderGames(null);
-            
+            await loadHomeGames();
+        });
+
+        async function loadHomeGames() {
             try {
-                // GET /api/games — 公開端點，訪客也可取得
-                const games = await apiGetGames();
+                const games = await apiGetGames({ sort: document.getElementById('sort-select').value });
                 renderGames(Array.isArray(games) ? games : (games.data || games.games || []));
             } catch (err) {
                 document.getElementById('game-list').innerHTML =
                     `<p style="color:var(--accent-red);text-align:center;padding:40px;">無法載入遊戲列表：${err.message}</p>`;
             }
-        });
+        }
+
+        async function loadHomeTags() {
+            try {
+                const result = await apiGetTags();
+                const tags = Array.isArray(result) ? result : (result.data || []);
+                const list = document.getElementById('tag-list');
+                tags.forEach(tag => {
+                    const name = tag.tag_name || tag.name;
+                    if (!name) return;
+                    const item = document.createElement('li');
+                    item.innerHTML = `<a href="/pages/store/search.html?tag=${encodeURIComponent(name)}">${escapeHtml(name)}</a>`;
+                    list.appendChild(item);
+                });
+            } catch (_) {}
+        }
     </script>
 </body>
 </html>

@@ -10,4 +10,5 @@ type Game struct {
 	OverallRating float64     `gorm:"default:0.00" json:"overall_rating"`
 	RatingCount   int64       `gorm:"-" json:"rating_count"`
 	Media         []GameMedia `gorm:"foreignKey:GameID" json:"media,omitempty"`
+	Tags          []Tag       `gorm:"many2many:game_tags;foreignKey:GameID;joinForeignKey:GameID;References:TagID;joinReferences:TagID" json:"tags,omitempty"`
 }
