@@ -91,12 +91,14 @@
                     actionHtml = `<button class="button is-light" disabled style="opacity: 0.5;">已永久刪除</button>`;
                 } else {
                     actionHtml = `
-                        <select class="select role-select" onchange="changeRole(${user.id}, this.value)">
-                            <option value="USERS"     ${user.role==='USERS'     ? 'selected':''}>玩家 (User)</option>
-                            <option value="DEVELOPER" ${user.role==='DEVELOPER' ? 'selected':''}>開發者 (Dev)</option>
-                            <option value="CSR"       ${user.role==='CSR'       ? 'selected':''}>客服 (CSR)</option>
-                            <option value="ADMIN"     ${user.role==='ADMIN'     ? 'selected':''}>管理員 (Admin)</option>
-                        </select>
+                        <div class="select">
+                            <select class="role-select" onchange="changeRole(${user.id}, this.value)">
+                                <option value="USERS"     ${user.role==='USERS'     ? 'selected':''}>玩家 (User)</option>
+                                <option value="DEVELOPER" ${user.role==='DEVELOPER' ? 'selected':''}>開發者 (Dev)</option>
+                                <option value="CSR"       ${user.role==='CSR'       ? 'selected':''}>客服 (CSR)</option>
+                                <option value="ADMIN"     ${user.role==='ADMIN'     ? 'selected':''}>管理員 (Admin)</option>
+                            </select>
+                        </div>
                         <button class="button is-light"
                                 style="background-color:${banColor};color:#fff;border-color:${banColor};"
                                 onclick="toggleSuspend(${user.id}, ${isBanned})">${banText}</button>
