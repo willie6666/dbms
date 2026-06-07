@@ -20,13 +20,13 @@
         </div>
 
         <div class="cart-summary" id="cart-summary" style="display:none;">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
-                <div>
-                    <h3 style="color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; font-size:14px;">結帳總計</h3>
+            <div class="cart-summary-content">
+                <div class="cart-summary-meta">
+                    <h3 class="cart-summary-title">結帳總計</h3>
                     <div class="cart-total-price">NT$ <span id="total-price">0</span></div>
-                    <p style="color:var(--accent-green);font-size:13px;margin-top:4px;">錢包餘額：無限</p>
+                    <p class="cart-wallet-balance">錢包餘額：無限</p>
                 </div>
-                <button class="button is-primary is-medium" style="width:200px; height:60px; font-size:18px;" id="checkout-btn" onclick="checkout()">確認結帳</button>
+                <button class="button is-primary is-medium cart-checkout-btn" id="checkout-btn" onclick="checkout()">確認結帳</button>
             </div>
         </div>
     </main>

@@ -58,18 +58,26 @@
                 const title   = game.title || item.title || '';
                 const price   = Number(game.price || item.price || 0);
                 const releaseDate = game.release_date || game.releaseDate || item.release_date || '未定';
+                const coverUrl = getGameCoverUrl(game);
+                const coverHtml = coverUrl
+                    ? `<img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(title)} 封面" style="width:120px;height:68px;object-fit:cover;border-radius:8px;">`
+                    : `<div style="width:120px;height:68px;border-radius:8px;background:var(--bg-lighter);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px;">無圖片</div>`;
 
                 const el = document.createElement('div');
                 el.className = 'library-item';
                 el.innerHTML = `
+                    <a href="/pages/store/game_detail?id=${gameId}" style="display:block;flex:0 0 auto;">${coverHtml}</a>
                     <div class="library-item-info">
-                        <h3 style="color:white; font-size:1.3rem; margin-bottom:8px;">${escapeHtml(title)}</h3>
+                        <a href="/pages/store/game_detail?id=${gameId}" style="color:white;text-decoration:none;">
+                            <h3 style="color:white; font-size:1.3rem; margin-bottom:8px;">${escapeHtml(title || '未命名遊戲')}</h3>
+                        </a>
                         <p style="color:var(--text-secondary);font-size:14px;">
                             定價：<strong style="color:var(--accent-cyan);font-size:1.1rem;">NT$ ${price.toLocaleString()}</strong> &nbsp;|&nbsp; 
                             發售日：${releaseDate}
                         </p>
                     </div>
                     <div class="library-item-actions">
+                        <a class="button is-light" href="/pages/store/game_detail?id=${gameId}">查看商店頁</a>
                         <button class="button is-primary"
                                 onclick="moveToCart(${gameId})">加入購物車</button>
                         <button class="button is-light" onclick="removeWishlist(${gameId})">移除</button>

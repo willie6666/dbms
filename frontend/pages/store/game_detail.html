@@ -117,8 +117,9 @@
                     tagsEl.appendChild(span);
                 });
 
-                // 判斷是否已擁有（需登入才呼叫 GET /api/library）
+                // 判斷是否已擁有、是否已在願望清單（需登入才呼叫）
                 let isOwned = false;
+                let isWishlisted = false;
                 if (role !== 'GUEST') {
                     try {
                         const lib = await apiGetLibrary();
@@ -129,9 +130,19 @@
                             return Number(gameId) === Number(currentGameId) && (item.status === 'ACTIVE' || !item.status);
                         });
                     } catch (_) { }
+
+                    try {
+                        const wishlist = await apiGetWishlist();
+                        const wishlistArr = Array.isArray(wishlist) ? wishlist : (wishlist.data || wishlist.games || []);
+                        isWishlisted = wishlistArr.some(item => {
+                            const game = item.game || item;
+                            const gameId = game.game_id || game.id || item.game_id;
+                            return Number(gameId) === Number(currentGameId);
+                        });
+                    } catch (_) { }
                 }
 
-                renderActionArea(game, role, isOwned);
+                renderActionArea(game, role, isOwned, isWishlisted);
                 renderReviewWriteArea(game, role, user, isOwned);
 
                 // GET /api/games/{id}/reviews
@@ -156,7 +167,7 @@
         };
 
         // ─── 動作按鈕區 ────────────────────────────────────────
-        function renderActionArea(game, role, isOwned) {
+        function renderActionArea(game, role, isOwned, isWishlisted) {
             const area = document.getElementById('action-area');
             let html = '';
 
@@ -171,9 +182,12 @@
                 html += `<button class="button is-light" onclick="showToast('請先登入！', 'error')">加入願望清單</button>`;
             } else if (isOwned) {
                 html += `<button class="button is-primary" onclick="showToast('正在啟動遊戲...', 'success')">開始遊戲</button>`;
+            } else if (isWishlisted) {
+                html += `<button class="button is-primary" onclick="addToCart(this)">加入購物車</button>`;
+                html += `<button class="button is-light" disabled>已在願望清單內</button>`;
             } else {
                 html += `<button class="button is-primary" onclick="addToCart(this)">加入購物車</button>`;
-                html += `<button class="button is-light" onclick="addToWishlist()">加入願望清單</button>`;
+                html += `<button class="button is-light" onclick="addToWishlist(this)">加入願望清單</button>`;
             }
 
             if (role === 'ADMIN') {
@@ -366,10 +380,14 @@
             }
         }
 
-        async function addToWishlist() {
+        async function addToWishlist(btnElement) {
             try {
-                await apiAddWishlist(currentGameId);
-                showToast('已加入願望清單！', 'success');
+                const result = await apiAddWishlist(currentGameId);
+                if (btnElement) {
+                    btnElement.disabled = true;
+                    btnElement.textContent = '已在願望清單內';
+                }
+                showToast(result.already_exists ? '已在願望清單內。' : '已加入願望清單！', 'success');
             } catch (err) {
                 showToast(`加入願望清單失敗：${err.message}`, 'error');
             }

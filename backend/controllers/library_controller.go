@@ -52,6 +52,12 @@ func AddToWishlist(c *gin.Context) {
 		return
 	}
 
+	var existing models.WishList
+	if err := database.DB.Where("user_id = ? AND game_id = ?", userID, input.GameID).First(&existing).Error; err == nil {
+		c.JSON(http.StatusOK, gin.H{"message": "Already in wishlist", "already_exists": true})
+		return
+	}
+
 	wishItem := models.WishList{
 		UserID: userID,
 		GameID: input.GameID,
@@ -130,4 +136,3 @@ func DownloadGame(c *gin.Context) {
 
 	c.FileAttachment(fullPath, filepath.Base(fullPath))
 }
-

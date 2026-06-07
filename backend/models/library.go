@@ -23,5 +23,5 @@ type WishList struct {
 	AddedAt    time.Time `gorm:"autoCreateTime" json:"added_at"`
 
 	// Preload relationship to fetch the actual Game details
-	Game Game `gorm:"foreignKey:GameID" json:"game"`
+	Game Game `gorm:"foreignKey:GameID;references:GameID" json:"game"`
 }
