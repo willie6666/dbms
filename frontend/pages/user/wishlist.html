@@ -32,14 +32,21 @@
                 // GET /api/wishlist
                 const result = await apiGetWishlist();
                 const games  = Array.isArray(result) ? result : (result.data || result.games || []);
-                renderWishlist(games);
+                
+                let cartItems = [];
+                try {
+                    const cart = await apiGetCart();
+                    cartItems = Array.isArray(cart) ? cart : (cart.data || cart.items || []);
+                } catch (_) {}
+
+                renderWishlist(games, cartItems);
             } catch (err) {
                 document.getElementById('wishlist-container').innerHTML =
                     `<p style="color:var(--accent-red);text-align:center;padding:40px;">載入失敗：${err.message}</p>`;
             }
         }
 
-        function renderWishlist(games) {
+        function renderWishlist(games, cartItems) {
             const listEl = document.getElementById('wishlist-container');
             listEl.innerHTML = '';
 
@@ -63,6 +70,19 @@
                     ? `<img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(title)} 封面" style="width:120px;height:68px;object-fit:cover;border-radius:8px;">`
                     : `<div style="width:120px;height:68px;border-radius:8px;background:var(--bg-lighter);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px;">無圖片</div>`;
 
+                const isCarted = cartItems.some(c => {
+                    const cg = c.game || c;
+                    const cId = cg.game_id || cg.id || c.game_id;
+                    return Number(cId) === Number(gameId);
+                });
+
+                let cartBtnHtml = '';
+                if (isCarted) {
+                    cartBtnHtml = `<button class="button is-primary" disabled style="background-color: var(--bg-darker); color: var(--text-muted); border: 1px solid var(--border-color);">已在購物車</button>`;
+                } else {
+                    cartBtnHtml = `<button class="button is-primary" onclick="moveToCart(${gameId})">加入購物車</button>`;
+                }
+
                 const el = document.createElement('div');
                 el.className = 'library-item';
                 el.innerHTML = `
@@ -78,8 +98,7 @@
                     </div>
                     <div class="library-item-actions">
                         <a class="button is-light" href="/pages/store/game_detail?id=${gameId}">查看商店頁</a>
-                        <button class="button is-primary"
-                                onclick="moveToCart(${gameId})">加入購物車</button>
+                        ${cartBtnHtml}
                         <button class="button is-light" onclick="removeWishlist(${gameId})">移除</button>
                     </div>
                 `;

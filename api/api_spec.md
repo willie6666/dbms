@@ -100,6 +100,7 @@
       }
     }
     ```
+  - `400 Bad Request`: `{"error": "Username already taken"}` 或 `{"error": "Email already taken"}` 或 `{"error": "Password must be at least 6 characters"}`
   - `404 Not Found`: `{"error": "User not found"}`
 
 ### `[GET] /api/admin/users` (查看所有使用者清單)

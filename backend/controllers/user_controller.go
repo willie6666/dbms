@@ -36,16 +36,31 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
+	if input.Password != "" && len(input.Password) < 6 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Password must be at least 6 characters"})
+		return
+	}
+
 	var user models.User
 	if err := database.DB.First(&user, userID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
-	if input.Username != "" {
+	if input.Username != "" && input.Username != user.Username {
+		var existing models.User
+		if err := database.DB.Where("username = ?", input.Username).First(&existing).Error; err == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Username already taken"})
+			return
+		}
 		user.Username = input.Username
 	}
-	if input.Email != "" {
+	if input.Email != "" && input.Email != user.Email {
+		var existing models.User
+		if err := database.DB.Where("email = ?", input.Email).First(&existing).Error; err == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Email already taken"})
+			return
+		}
 		user.Email = input.Email
 	}
 	if input.Password != "" {
