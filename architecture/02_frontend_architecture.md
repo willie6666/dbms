@@ -6,9 +6,9 @@
 
 ## 1. 前端技術棧與整體架構概述
 - **架構類型**: 多頁面應用程式 (MPA, Multi-Page Application)
-- **核心語言**: HTML5, CSS3, Vanilla JavaScript (原生 JS，無使用 React / Vue 等框架)
+- **核心語言**: HTML5, CSS3 (搭配 Bulma CSS 框架), Vanilla JavaScript (原生 JS，無使用 React / Vue 等框架)
 - **狀態管理**: 依賴瀏覽器的 `localStorage` (儲存 JWT Token 與 User Info)
-- **畫面渲染機制**: 後端伺服器 (Live-Server) 提供靜態 HTML 骨架，前端 JS 載入後發起 AJAX (Fetch) 請求，取得 JSON 資料後，透過 DOM API 動態寫入內容。
+- **畫面渲染機制**: Caddy Web Server 提供靜態 HTML 骨架，前端 JS 載入後發起 AJAX (Fetch) 請求，取得 JSON 資料後，透過 DOM API 動態寫入內容。
 
 ---
 
@@ -19,7 +19,7 @@ frontend/
 ├── index.html                  # 系統總入口 (商店首頁：顯示熱門與所有遊戲)
 ├── assets/                     # 靜態資源共用區 (前端的核心引擎)
 │   ├── css/
-│   │   └── style.css           # 全域樣式表 (定義 CSS 色票變數、版面配置、按鈕與表單 UI)
+│   │   └── style.css           # 全域樣式表 (載入 Bulma CSS 框架並定義額外色票、版面與 UI)
 │   ├── js/
 │   │   ├── api.js              # [API 溝通層] 集中封裝所有與後端的 RESTful API 呼叫
 │   │   └── main.js             # [共用邏輯層] 全域導覽列渲染、身分權限驗證、Toast 提示組件
@@ -34,11 +34,15 @@ frontend/
     ├── user/                   # [玩家專屬模組]
     │   ├── library.html        # 個人遊戲庫 (遊玩、下載)
     │   ├── cart.html           # 購物車結帳頁面
-    │   └── profile.html        # 個人資料修改、好友與黑名單管理
+    │   ├── profile.html        # 個人資料修改
+    │   ├── history.html        # 交易歷史紀錄
+    │   ├── wishlist.html       # 願望清單
+    │   └── social.html         # 好友、訊息與黑名單管理
     └── dashboard/              # [後台管理模組 (嚴格依角色隔離)]
         ├── admin_dashboard.html # 系統管理員後台 (管理所有帳號權限與強制下架遊戲)
         ├── csr_dashboard.html   # 客服人員後台 (審核玩家退款申請)
-        └── dev_dashboard.html   # 開發者後台 (上架新遊戲、上傳圖片素材、查看銷售數據)
+        ├── dev_dashboard.html   # 開發者後台 (上架新遊戲、查看銷售數據)
+        └── edit_game.html       # 開發者專屬：遊戲內容與素材編輯器
 ```
 
 ---
@@ -50,6 +54,7 @@ frontend/
 - **核心機制**:
   - **自動授權 `authFetch()`**: 封裝了原生的 `fetch()` API。每次發送受保護的請求時，會自動從 `localStorage` 取出 JWT Token，並注入 HTTP Header (`Authorization: Bearer <token>`) 中。
   - **401 攔截器**: 負責全域錯誤攔截。如果後端回傳 HTTP Status `401 Unauthorized` (Token 過期或被竄改)，會自動強制登出，清空快取並導向 `login.html`。
+  - **同源代理**: 設定 `API_BASE = ''`，所有 `/api/*` 的請求都送往與前端相同的網域 (`localhost:3000`)，再由底層的 Caddy 伺服器反向代理至 Go Server (`backend:8000`)，徹底免除了 CORS 的設定麻煩。
   - **業務函數映射**: 提供具語意化的函數如 `apiGetGames()`, `apiAddToCart()`, `apiApproveRefund()`，隱藏底層的 URL 路徑與 HTTP Method 差異，讓各頁面的程式碼保持乾淨。
 
 ### 🟡 共用邏輯與狀態層 (Shared Logic Layer) - `assets/js/main.js`

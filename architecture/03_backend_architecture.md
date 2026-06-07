@@ -30,12 +30,15 @@ backend/
 │   ├── game_controller.go      # 遊戲清單查詢、搜尋、詳情瀏覽
 │   ├── cart_controller.go      # 購物車管理、結帳交易處理 (包含嚴謹的 Database Transaction)
 │   ├── developer_controller.go # 開發者專屬：上架遊戲、上傳素材、查看銷售數據
-│   ├── csr_controller.go       # 客服專屬：審核玩家退款申請
-│   └── admin_controller.go     # 系統管理員專屬：帳號停權、權限變更、強制下架
+│   ├── csr_controller.go       # 客服專屬：審核退款申請
+│   ├── admin_controller.go     # 系統管理員專屬：帳號停權、權限變更、強制下架
+│   ├── user_controller.go      # 使用者個人資料管理
+│   ├── social_controller.go    # 好友、黑名單、訊息、退款申請與評論管理
+│   ├── library_controller.go   # 遊戲庫遊玩授權與願望清單
+│   └── transaction_controller.go # 歷史交易紀錄查詢
 ├── middleware/                 # [中介軟體防護層]
 │   ├── auth_middleware.go      # [第一道防線] 攔截請求，解密 JWT Token，並將 User ID 寫入 Context
-│   ├── role_middleware.go      # [第二道防線] 檢查 Context 內的使用者 Role 是否具備特定操作權限
-│   └── cors_middleware.go      # 處理跨域請求 (CORS) 標頭，允許前端的 Fetch 請求進入
+│   └── role_middleware.go      # [第二道防線] 檢查 Context 內的使用者 Role 是否具備特定操作權限
 └── utils/                      # [共用工具層]
     └── jwt.go                  # 提供 JWT Token 的生成 (Generate) 與驗證 (Validate) 演算法
 ```
@@ -76,10 +79,9 @@ backend/
 以「開發者上架新遊戲」為例，從前端發出請求到資料庫寫入的完整生命週期如下：
 
 ```text
-1. [接收請求] 瀏覽器向後端送出 HTTP POST /api/developer/games
-2. [CORS 放行] 請求先通過 cors_middleware.go，允許前端伺服器的跨域請求進入。
-3. [Token 驗證] 請求進入 auth_middleware.go，成功驗證簽章並解析出 JWT 內容，將 user_id 放入 Context。
-4. [權限驗證] 請求進入 role_middleware.go，確認該使用者的 role 為 DEVELOPER (或超級管理員 ADMIN)，准許放行。
+1. [接收請求] 瀏覽器向 Caddy 送出 HTTP POST /api/developer/games，Caddy 將其反向代理至 Go Server (Port 8000)。
+2. [Token 驗證] 請求進入 auth_middleware.go，成功驗證簽章並解析出 JWT 內容，將 user_id 放入 Context。
+3. [權限驗證] 請求進入 role_middleware.go，確認該使用者的 role 為 DEVELOPER (或超級管理員 ADMIN)，准許放行。
 5. [路由派發] 根據 routes.go 的註冊表，請求被轉交給 GameController 的 CreateGame() 函數。
 6. [參數綁定] Controller 透過 c.ShouldBindJSON() 把前端傳來帶有 title, price 的 JSON 轉換為 Go 的 Struct。
 7. [寫入準備] Controller 從 Context 中提取出開發者 ID，並補齊到要寫入的 Struct 中。
