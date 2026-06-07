@@ -160,8 +160,9 @@
 - **Request Body**:
   ```json
   {
-    "title": "My Indie Game",
-    "price": 350.00
+    "title": "My Indie Game",  // 必填
+    "price": 350.00,           // 必填，最小值 0
+    "desc": "遊戲描述..."        // 選填
   }
   ```
 - **Responses**:
@@ -169,17 +170,17 @@
 
 ### `[PUT] /api/developer/games/{id}` (更新自己的遊戲資訊)
 - **Headers**: `Authorization: Bearer <developer_token>`
-- **Request Body**: (皆為選填)
+- **Request Body**: (皆為選填，至少傳一個)
   ```json
   {
-    "title": "New Title",
-    "description": "New description...",
-    "price": 400.00
+    "price": 400.00,        // 選填，最小值 0
+    "desc": "新的遊戲描述..." // 選填
   }
   ```
+  > **注意**: `title` 無法透過此 API 修改；`price` 若傳 `0` 仍會被視為有效值並寫入。
 - **Responses**:
-  - `200 OK`: `{"message": "Game updated successfully"}`
-  - `403 Forbidden`: `{"error": "Forbidden: You can only update your own games"}`
+  - `200 OK`: `{"message": "Game updated successfully", "game": {...}}`
+  - `403 Forbidden`: `{"error": "Forbidden: You can only edit your own games"}`
   - `404 Not Found`: `{"error": "Game not found"}`
 
 ### `[DELETE] /api/developer/games/{id}` (下架自己的遊戲)
@@ -196,15 +197,16 @@
 
 ### `[POST] /api/developer/games/{id}/media` (上傳遊戲素材)
 - **Headers**: `Authorization: Bearer <developer_token>`
-- **Request Body**:
-  ```json
-  {
-    "file_url": "http://example.com/cover.jpg",
-    "media_type": "media" // 'media' 或 'game_file'
-  }
-  ```
+- **Content-Type**: `multipart/form-data`
+- **Request Form Fields**:
+  | 欄位 | 必填 | 說明 |
+  |---|---|---|
+  | `file` | ✅ | 要上傳的檔案本體 |
+  | `media_type` | 選填 | `"media"`（圖片，預設）或 `"game_file"`（遊戲執行檔）|
+  > **儲存路徑**: `media` → `/media/images/{game_id}/{sha256}.{ext}`；`game_file` → `/downloads/{game_id}/{original_name}`
 - **Responses**:
-  - `201 Created`: `{"message": "Media uploaded successfully", "data": {...}}`
+  - `201 Created`: `{"message": "Media uploaded successfully", "data": {...}, "file_url": "/media/images/..."}`
+  - `400 Bad Request`: `{"error": "Missing file field"}`
   - `403 Forbidden`: `{"error": "Forbidden: You can only upload media for your own games"}`
   - `404 Not Found`: `{"error": "Game not found"}`
 
