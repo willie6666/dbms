@@ -136,12 +136,6 @@ async function apiPostReply(reviewId, content) {
     return parseResponse(res);
 }
 
-// DELETE /api/social/reviews/replies/{id}
-async function apiDeleteReply(replyId) {
-    const res = await authFetch(`/api/social/reviews/replies/${replyId}`, { method: 'DELETE' });
-    return parseResponse(res);
-}
-
 // POST /api/developer/games  [DEVELOPER]
 async function apiGetDeveloperGames() {
     const res = await authFetch('/api/developer/games');
@@ -173,26 +167,6 @@ async function apiDeleteGame(id) {
 // DELETE /api/admin/games/{id} [ADMIN]
 async function apiAdminDeleteGame(id) {
     const res = await authFetch(`/api/admin/games/${id}`, { method: 'DELETE' });
-    return parseResponse(res);
-}
-
-// POST /api/developer/games/{id}/media [DEVELOPER]
-async function apiUploadMedia(gameId, formData) {
-    // multipart/form-data uses fetch directly since authFetch sets Content-Type: application/json
-    const token = localStorage.getItem('token');
-    const headers = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    const res = await fetch(`${API_BASE}/api/developer/games/${gameId}/media`, {
-        method: 'POST',
-        headers,
-        body: formData
-    });
-    return parseResponse(res);
-}
-
-// DELETE /api/developer/games/{id}/media/{media_id} [DEVELOPER]
-async function apiDeleteMedia(gameId, mediaId) {
-    const res = await authFetch(`/api/developer/games/${gameId}/media/${mediaId}`, { method: 'DELETE' });
     return parseResponse(res);
 }
 
@@ -297,18 +271,6 @@ async function apiAddWishlist(gameId) {
 async function apiRemoveWishlist(gameId) {
     const res = await authFetch(`/api/protected/wishlist/${gameId}`, { method: 'DELETE' });
     return parseResponse(res);
-}
-
-// GET /api/protected/library/{game_id}/play
-async function apiPlayGame(gameId) {
-    const res = await authFetch(`/api/protected/library/${gameId}/play`);
-    return parseResponse(res);
-}
-
-// GET /api/protected/library/{game_id}/download
-async function apiDownloadGame(gameId) {
-    // 返回 raw Response 物件，因為是二進制檔案流
-    return await authFetch(`/api/protected/library/${gameId}/download`);
 }
 
 // ============================================================
