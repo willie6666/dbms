@@ -33,8 +33,7 @@
 - **流程 (核准退款 - 最核心的金流與授權邏輯)**：
   1. 客服點擊「核准退款」，呼叫 `PUT /api/csr/refunds/:id`，附上 `{ "status": "APPROVED" }`。
   2. 後端開啟資料庫交易 (`DB.Begin()`) 確保以下步驟完全成功或一起失敗。
-  3. **模擬退回金流**：(目前版本尚未實作真實金流，此處省略退回 `users.wallet_balance` 的數字加減邏輯，僅作狀態更新)。
-  4. **撤銷授權**：透過 `transaction_item_id` 找到關聯的 `game_licenses` 紀錄，將其 `status` 從 `'ACTIVE'` 改為 `'REVOKED'`。
-  5. **結案**：`refund_requests.status` 轉為 `'APPROVED'`，寫入處理時間與人員。
-  6. 交易提交 (`DB.Commit()`)。
+  3. **撤銷授權**：透過 `transaction_item_id` 找到關聯的 `game_licenses` 紀錄，將其 `status` 從 `'ACTIVE'` 改為 `'REVOKED'`。
+  4. **結案**：`refund_requests.status` 轉為 `'APPROVED'`，寫入處理時間與人員。
+  5. 交易提交 (`DB.Commit()`)。
 - **終點**：退款單狀態完結。當玩家再次打開「我的遊戲庫」時，因為授權已經變成 `REVOKED`，該遊戲會直接從畫面上消失。退款閉環完成。

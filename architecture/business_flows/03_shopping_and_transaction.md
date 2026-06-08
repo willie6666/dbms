@@ -39,7 +39,6 @@
   2. 後端利用資料庫的交易機制 (`DB.Begin()`) 開啟一個 Transaction 確保 ACID 屬性。
   3. **重新驗證**：
      - 檢查購物車內是否有非 `ACTIVE` 的遊戲，若有則直接 Rollback 回傳錯誤。
-     - **備註**：(目前版本尚未實作真實金流，此處省略 `users.wallet_balance` 錢包餘額的扣款邏輯)。
   4. **紀錄建立**：
      - 在 `transactions` 表建立一筆交易主檔 (包含總金額與時間)。
      - 針對每一款遊戲，在 `transaction_items` 表建立明細 (包含單款遊戲的購買價格 `purchase_price`)。
