@@ -208,6 +208,9 @@
             const area = document.getElementById('action-area');
             let html = '';
 
+            const gameData = game.game || game;
+            const isTakenDown = gameData.status === 'TAKEN_DOWN';
+
             if (isOwned) {
                 html += `<div class="game-owned-badge">已在你的遊戲庫</div><br>`;
             }
@@ -215,26 +218,38 @@
             html += `<div class="action-buttons">`;
 
             if (role === 'GUEST') {
-                html += `<a href="/pages/auth/login.html" class="button is-primary">登入後購買</a>`;
-                html += `<button class="button is-light" onclick="showToast('請先登入！', 'error')">加入願望清單</button>`;
+                if (isTakenDown) {
+                    html += `<button class="button is-danger is-outlined" disabled style="background-color: transparent; border-color: var(--accent-red); color: var(--accent-red);">此遊戲已下架</button>`;
+                } else {
+                    html += `<a href="/pages/auth/login.html" class="button is-primary">登入後購買</a>`;
+                    html += `<button class="button is-light" onclick="showToast('請先登入！', 'error')">加入願望清單</button>`;
+                }
             } else if (isOwned) {
                 html += `<button class="button is-primary" onclick="showToast('正在啟動遊戲...', 'success')">開始遊戲</button>`;
             } else {
-                if (isCarted) {
-                    html += `<button class="button is-primary" disabled style="background-color: var(--bg-darker); color: var(--text-muted); border: 1px solid var(--border-color);">已在購物車</button>`;
+                if (isTakenDown) {
+                    html += `<button class="button is-danger is-outlined" disabled style="background-color: transparent; border-color: var(--accent-red); color: var(--accent-red);">此遊戲已下架</button>`;
                 } else {
-                    html += `<button class="button is-primary" onclick="addToCart(this)">加入購物車</button>`;
-                }
-                
-                if (isWishlisted) {
-                    html += `<button class="button is-light" disabled>已在願望清單</button>`;
-                } else {
-                    html += `<button class="button is-light" onclick="addToWishlist(this)">加入願望清單</button>`;
+                    if (isCarted) {
+                        html += `<button class="button is-primary" disabled style="background-color: var(--bg-darker); color: var(--text-muted); border: 1px solid var(--border-color);">已在購物車</button>`;
+                    } else {
+                        html += `<button class="button is-primary" onclick="addToCart(this)">加入購物車</button>`;
+                    }
+                    
+                    if (isWishlisted) {
+                        html += `<button class="button is-light" disabled>已在願望清單</button>`;
+                    } else {
+                        html += `<button class="button is-light" onclick="addToWishlist(this)">加入願望清單</button>`;
+                    }
                 }
             }
 
             if (role === 'ADMIN') {
-                html += `<button class="button is-danger is-light" onclick="adminTakeDown()">強制下架</button>`;
+                if (isTakenDown) {
+                    html += `<button class="button is-light" disabled>已強制下架</button>`;
+                } else {
+                    html += `<button class="button is-danger is-light" onclick="adminTakeDown()">強制下架</button>`;
+                }
             }
 
             html += `</div>`;

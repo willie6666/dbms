@@ -41,7 +41,7 @@ func GetGames(c *gin.Context) {
 	developer := c.Query("developer")
 	sort := c.DefaultQuery("sort", "price_asc")
 
-	query := database.DB.Model(&models.Game{}).Group("games.game_id")
+	query := database.DB.Model(&models.Game{}).Group("games.game_id").Where("games.status = ?", "ACTIVE")
 	if q != "" {
 		keyword := "%" + q + "%"
 		query = query.

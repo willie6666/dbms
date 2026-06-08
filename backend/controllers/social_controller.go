@@ -132,6 +132,10 @@ func PostReview(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
 		return
 	}
+	if game.Status == "TAKEN_DOWN" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot review a game that has been taken down"})
+		return
+	}
 
 	// VERIFY OWNERSHIP: Only players who own the game can leave a review
 	var license models.GameLicense
@@ -174,6 +178,12 @@ func ApplyRefund(c *gin.Context) {
 	var license models.GameLicense
 	if err := database.DB.Where("user_id = ? AND transaction_item_id = ?", userID, input.TransactionItemID).First(&license).Error; err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden: Transaction item not found in your library"})
+		return
+	}
+
+	// 1.5 Verify License is Active
+	if license.Status != "ACTIVE" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "This game license is not active or has already been refunded"})
 		return
 	}
 
@@ -253,6 +263,10 @@ func SendFriendRequest(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 			return
 		}
+		if receiver.Permission != "ACTIVE" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User is no longer active"})
+			return
+		}
 		input.ReceiverID = receiver.UserID
 	}
 	if input.ReceiverID == 0 {
@@ -262,6 +276,19 @@ func SendFriendRequest(c *gin.Context) {
 	if input.ReceiverID == userID {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send a friend request to yourself"})
 		return
+	}
+
+	// Double check if ID is given directly instead of username
+	if input.Username == "" {
+		var receiver models.User
+		if err := database.DB.First(&receiver, input.ReceiverID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+		if receiver.Permission != "ACTIVE" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User is no longer active"})
+			return
+		}
 	}
 
 	var existing models.Friendship

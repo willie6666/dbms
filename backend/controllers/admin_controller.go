@@ -18,6 +18,11 @@ func SuspendUser(c *gin.Context) {
 		return
 	}
 
+	if user.Permission == "DELETED" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot modify suspension status of a deleted user"})
+		return
+	}
+
 	// Toggle suspension
 	if user.Permission == "ACTIVE" {
 		user.Permission = "DEACTIVE"
@@ -32,10 +37,31 @@ func SuspendUser(c *gin.Context) {
 // DeleteUser handles DELETE /api/admin/users/:id
 func DeleteUser(c *gin.Context) {
 	userID := c.Param("id")
-	if err := database.DB.Delete(&models.User{}, userID).Error; err != nil {
+
+	var user models.User
+	if err := database.DB.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	user.Permission = "DELETED"
+	if err := database.DB.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 		return
 	}
+
+	// Cascade soft-delete: if this user is a developer, take down all their games
+	if user.Role == "DEVELOPER" {
+		database.DB.Model(&models.Game{}).Where("developer_id = ?", user.UserID).Update("status", "TAKEN_DOWN")
+		
+		// Cascade revoke licenses for all games owned by this developer
+		var developerGames []uint
+		database.DB.Model(&models.Game{}).Where("developer_id = ?", user.UserID).Pluck("game_id", &developerGames)
+		if len(developerGames) > 0 {
+			database.DB.Model(&models.GameLicense{}).Where("game_id IN ?", developerGames).Update("status", "REVOKED")
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "User completely removed"})
 }
 
@@ -61,9 +87,13 @@ func ChangeUserRole(c *gin.Context) {
 // AdminDeleteGame handles DELETE /api/admin/games/:id
 func AdminDeleteGame(c *gin.Context) {
 	gameID := c.Param("id")
-	if err := database.DB.Delete(&models.Game{}, gameID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to forcefully delete game"})
+	if err := database.DB.Model(&models.Game{}).Where("game_id = ?", gameID).Update("status", "TAKEN_DOWN").Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to take down game"})
 		return
 	}
+	
+	// Cascade revoke all licenses for this game
+	database.DB.Model(&models.GameLicense{}).Where("game_id = ?", gameID).Update("status", "REVOKED")
+	
 	c.JSON(http.StatusOK, gin.H{"message": "Game deleted successfully by Admin"})
 }

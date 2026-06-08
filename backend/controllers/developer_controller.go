@@ -128,9 +128,9 @@ func DeleteGame(c *gin.Context) {
 		return
 	}
 
-	// 3. Delete the game
-	if err := database.DB.Delete(&game).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete game"})
+	// 3. Delete the game (Soft delete by setting status to TAKEN_DOWN)
+	if err := database.DB.Model(&game).Update("status", "TAKEN_DOWN").Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to take down game"})
 		return
 	}
 

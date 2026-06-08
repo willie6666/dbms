@@ -52,6 +52,17 @@ func AddToCart(c *gin.Context) {
 		return
 	}
 
+	// 1.8 Check if the game is TAKEN_DOWN
+	var game models.Game
+	if err := database.DB.First(&game, input.GameID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
+		return
+	}
+	if game.Status == "TAKEN_DOWN" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "This game is no longer available for purchase"})
+		return
+	}
+
 	// 2. Add to cart
 	cartItem := models.ShoppingCart{
 		UserID: userID,

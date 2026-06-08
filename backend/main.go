@@ -34,6 +34,9 @@ func main() {
 	database.DB.Exec("UPDATE game_media SET file_url = ? WHERE file_url LIKE ?", "/media/images/protoss_12+8.png", "%protoss_knife.png")
 	database.DB.Exec("UPDATE game_media SET file_url = ? WHERE file_url LIKE ?", "/media/images/protoss_cross.png", "%protoss_best_16.png")
 
+	// Fix existing TAKEN_DOWN games to have REVOKED licenses
+	database.DB.Exec("UPDATE game_licenses SET status = 'REVOKED' FROM games WHERE game_licenses.game_id = games.game_id AND games.status = 'TAKEN_DOWN'")
+
 	// Setup Gin router
 	r := routes.SetupRouter()
 

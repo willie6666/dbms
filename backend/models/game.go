@@ -12,4 +12,5 @@ type Game struct {
 	Media         []GameMedia `gorm:"foreignKey:GameID" json:"media,omitempty"`
 	Tags          []Tag       `gorm:"many2many:game_tags;foreignKey:GameID;joinForeignKey:GameID;References:TagID;joinReferences:TagID" json:"tags,omitempty"`
 	DeveloperName string      `gorm:"-" json:"developer_name"`
+	Status        string      `gorm:"default:ACTIVE" json:"status"`
 }

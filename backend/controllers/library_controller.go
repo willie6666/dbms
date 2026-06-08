@@ -16,8 +16,8 @@ func GetLibrary(c *gin.Context) {
 	userID := uint(userIDFloat.(float64))
 
 	var licenses []models.GameLicense
-	// Preload Game and Game.Media details
-	if err := database.DB.Preload("Game").Preload("Game.Media").Where("user_id = ?", userID).Find(&licenses).Error; err != nil {
+	// Preload Game and Game.Media details, and only fetch ACTIVE licenses
+	if err := database.DB.Preload("Game").Preload("Game.Media").Where("user_id = ? AND status = ?", userID, "ACTIVE").Find(&licenses).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch library"})
 		return
 	}
@@ -55,6 +55,16 @@ func AddToWishlist(c *gin.Context) {
 	var existing models.WishList
 	if err := database.DB.Where("user_id = ? AND game_id = ?", userID, input.GameID).First(&existing).Error; err == nil {
 		c.JSON(http.StatusOK, gin.H{"message": "Already in wishlist", "already_exists": true})
+		return
+	}
+
+	var game models.Game
+	if err := database.DB.First(&game, input.GameID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
+		return
+	}
+	if game.Status == "TAKEN_DOWN" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot add a game to wishlist that has been taken down"})
 		return
 	}
 

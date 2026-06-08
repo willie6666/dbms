@@ -18,6 +18,7 @@ erDiagram
         TEXT description
         DECIMAL price
         DECIMAL overall_rating
+        VARCHAR status "ACTIVE | TAKEN_DOWN"
     }
 
     TAG {

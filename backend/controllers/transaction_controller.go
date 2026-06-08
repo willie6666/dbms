@@ -30,9 +30,14 @@ func Checkout(c *gin.Context) {
 			return fmt.Errorf("Cart is empty")
 		}
 
-		// 2. Calculate Total Amount
+		// 2. Calculate Total Amount & Check Ownership
 		var totalAmount float64 = 0
 		for _, item := range cartItems {
+			// Double check ownership in case of concurrent requests or bypassed frontend
+			var existingLicense models.GameLicense
+			if err := tx.Where("user_id = ? AND game_id = ? AND status = ?", userID, item.GameID, "ACTIVE").First(&existingLicense).Error; err == nil {
+				return fmt.Errorf("You already own '%s'", item.Game.Title)
+			}
 			totalAmount += item.Game.Price
 		}
 

@@ -68,7 +68,7 @@
     }
     ```
   - `401 Unauthorized`: `{"error": "Invalid email or password"}`
-  - `403 Forbidden`: `{"error": "This account is not active"}` (帳號已被停權或角色為 NULL)
+  - `403 Forbidden`: `{"error": "This account is not active"}` (帳號已被停權或刪除)
 
 ### `[POST] /api/auth/logout` (登出)
 - **Headers**: `Authorization: Bearer <token>`
@@ -120,6 +120,7 @@
 ### `[DELETE] /api/admin/users/{id}` (移除帳號)
 - **Headers**: `Authorization: Bearer <admin_token>`
 - **Request Body**: 無
+- **說明**: 實作上為「軟刪除」(將 `permission` 設為 `DELETED`)，以確保過去發布的遊戲、購買紀錄與評論不會被一併刪除。
 - **Responses**:
   - `200 OK`: `{"message": "User completely removed"}`
 
@@ -209,6 +210,7 @@
 
 ### `[DELETE] /api/developer/games/{id}` (下架自己的遊戲)
 - **Headers**: `Authorization: Bearer <developer_token>`
+- **說明**: 實作上為「軟刪除」(將 `status` 設為 `TAKEN_DOWN`)，以確保已購買此遊戲的玩家依然能從遊戲庫下載與遊玩，但會從商店清單中隱藏。
 - **Responses**:
   - `200 OK`: `{"message": "Game deleted successfully"}`
   - `403 Forbidden`: `{"error": "Forbidden: You can only delete your own games"}`
@@ -216,6 +218,7 @@
 
 ### `[DELETE] /api/admin/games/{id}` (強制下架遊戲)
 - **Headers**: `Authorization: Bearer <admin_token>`
+- **說明**: 實作上同樣為「軟刪除」。
 - **Responses**:
   - `200 OK`: `{"message": "Game deleted successfully by Admin"}`
 

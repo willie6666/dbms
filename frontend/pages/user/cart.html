@@ -76,10 +76,12 @@
                 const price  = Number(game.price || item.price || 0);
                 const coverUrl = getGameCoverUrl(game);
                 
+                const isTakenDown = (game.status === 'TAKEN_DOWN' || item.status === 'TAKEN_DOWN');
+                
                 // If title is missing, it means the game was deleted from the store
                 const displayTitle = title ? title : '已下架或失效的遊戲';
                 
-                if (title) {
+                if (title && !isTakenDown) {
                     total += price;
                 }
 
@@ -90,10 +92,11 @@
                         ${coverUrl ? `<img src="${coverUrl}" alt="${escapeHtml(displayTitle)}">` : `<span>No image</span>`}
                     </a>
                     <div class="library-item-info">
-                        <h3 style="color:${title ? 'white' : 'var(--accent-red)'}; font-size:1.2rem; margin-bottom:8px;">
+                        <h3 style="color:${(title && !isTakenDown) ? 'white' : 'var(--text-muted)'}; font-size:1.2rem; margin-bottom:8px;">
                             <a href="/pages/store/game_detail?id=${gameId}" style="color:inherit;">${escapeHtml(displayTitle)}</a>
+                            ${isTakenDown ? '<span class="tag is-danger is-light" style="margin-left:8px;">已下架</span>' : ''}
                         </h3>
-                        <p style="color:var(--accent-pink);font-size:16px;font-weight:700;">NT$ ${price.toLocaleString()}</p>
+                        ${isTakenDown ? `<p style="color:var(--accent-red);font-size:14px;">此商品已下架，請先從購物車移除才能結帳。</p>` : `<p style="color:var(--accent-pink);font-size:16px;font-weight:700;">NT$ ${price.toLocaleString()}</p>`}
                     </div>
                     <div class="library-item-actions">
                          <button class="button is-danger is-light" onclick="removeFromCart(${gameId})">移除</button>
@@ -103,6 +106,26 @@
             });
 
             document.getElementById('total-price').textContent = total.toLocaleString();
+            
+            let hasTakenDown = false;
+            cartData.forEach(item => {
+                const game = item.game || item;
+                if (game.status === 'TAKEN_DOWN' || item.status === 'TAKEN_DOWN') {
+                    hasTakenDown = true;
+                }
+            });
+
+            const checkoutBtn = document.getElementById('checkout-btn');
+            if (hasTakenDown) {
+                checkoutBtn.disabled = true;
+                checkoutBtn.textContent = '包含已下架商品，無法結帳';
+                checkoutBtn.classList.remove('is-primary');
+            } else {
+                checkoutBtn.disabled = false;
+                checkoutBtn.textContent = '確認結帳';
+                checkoutBtn.classList.add('is-primary');
+            }
+
             summaryEl.style.display = 'block';
         }
 

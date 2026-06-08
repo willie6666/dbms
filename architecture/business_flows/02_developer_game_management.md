@@ -1,0 +1,54 @@
+# 2. 開發者遊戲上架與管理 (Developer Game Management)
+
+這份文件描述了具有 `DEVELOPER` 權限的帳號，如何在 VaporAuror 平台上發布、管理與下架自己的遊戲。
+
+---
+
+## 1. 遊戲草稿建立 (Create Game Draft)
+
+- **起點**：開發者在 `dev_dashboard.html` 點擊「新增遊戲」。
+- **流程**：
+  1. 輸入基本的 `Title` (標題)、`Price` (定價)、`Description` (支援 Markdown 格式的介紹)。
+  2. 呼叫 `POST /api/developer/games`。
+  3. 後端驗證使用者身分是否為 `DEVELOPER`，並將開發者 ID 綁定到該款遊戲。
+  4. 遊戲建立完成，初始狀態為 `'ACTIVE'`，並在 `games` 資料表生成唯一 `game_id`。
+- **終點**：畫面上顯示「建立成功」，自動跳轉進入 `edit_game.html?id={game_id}` 的進階編輯介面。
+
+---
+
+## 2. 遊戲素材與檔案上傳 (Upload Media & Game Files)
+
+- **起點**：在 `edit_game.html` 內的「上傳多媒體素材」與「上傳遊戲主檔」區塊。
+- **流程**：
+  1. 開發者選擇圖片 (封面圖、宣傳圖)、影片 (預告片) 或是 ZIP/EXE 遊戲主程式檔。
+  2. 呼叫 `POST /api/developer/games/:id/media` (使用 `multipart/form-data`)。
+  3. 後端會檢查檔案大小與類型：
+     - 若為圖片或影片：歸類為 `media_type = 'media'` 或 `'thumbnail'`，並存入後端硬碟的 `assets/images/`。
+     - 若為遊戲主檔：歸類為 `media_type = 'game_file'`，並存入 `assets/game-files/`。
+  4. 路徑會轉換成對外公開的 URI (例如 `/media/images/xxx.png` 或保護路由 `/downloads/xxx.zip`)，並寫入 `game_media` 資料表。
+- **終點**：前端收到新素材的 URL，並立刻渲染預覽圖或顯示檔案名稱。
+
+---
+
+## 3. 標籤管理 (Tags Management)
+
+- **起點**：開發者在編輯頁面想要為遊戲加上標籤 (例如：RPG, Action)。
+- **流程**：
+  1. 系統可以列出目前資料庫中所有的全域標籤 (`GET /api/tags`)。
+  2. 若無適合標籤，開發者可呼叫 `POST /api/developer/tags` 創建新標籤。
+  3. 呼叫 `POST /api/developer/games/:id/tags` 將 `tag_id` 與 `game_id` 綁定。這會在 `game_tags` (多對多關聯表) 中新增一筆紀錄。
+- **終點**：遊戲分類變得精準，玩家在首頁可以透過標籤篩選出這款遊戲。
+
+---
+
+## 4. 遊戲資訊更新與自主下架 (Update & Take Down)
+
+- **起點**：開發者想要修改價格、介紹，或是決定停止販售這款遊戲。
+- **流程 (更新資訊)**：
+  - 呼叫 `PUT /api/developer/games/:id`，傳入新的 `Price` 與 `Description`。
+- **流程 (自主下架 Delete)**：
+  1. 呼叫 `DELETE /api/developer/games/:id`。
+  2. **重要安全檢查**：後端會驗證這個 `game_id` 的 `DeveloperID` 是否與當前登入者相符，防止跨權限刪除。
+  3. 通過驗證後，將該遊戲的狀態 `games.status` 設為 `'TAKEN_DOWN'` (軟刪除)。
+  4. **與管理員下架的差異**：開發者自主下架時，**不會**連帶撤銷玩家的 `game_licenses`。這是保障消費者的基本權益，也就是「買過的玩家依然可以在遊戲庫中找到它並下載遊玩，只是商店不再開放新玩家購買」。
+- **終點**：遊戲在商店首頁隱藏，進入詳細頁面會顯示「此遊戲已下架」，且無法加入購物車。
