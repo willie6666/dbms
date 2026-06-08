@@ -63,10 +63,7 @@ func AddToWishlist(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
 		return
 	}
-	if game.Status == "TAKEN_DOWN" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot add a game to wishlist that has been taken down"})
-		return
-	}
+	// Removed TAKEN_DOWN check per user requirement: Wishlist is a simple mark state.
 
 	wishItem := models.WishList{
 		UserID: userID,

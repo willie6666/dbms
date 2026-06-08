@@ -82,7 +82,7 @@
             document.getElementById('filter-developer').value = params.get('developer') || '';
             document.getElementById('filter-min-price').value = params.get('min_price') || '';
             document.getElementById('filter-max-price').value = params.get('max_price') || '';
-            document.getElementById('filter-sort').value = params.get('sort') || 'popular';
+            document.getElementById('filter-sort').value = params.get('sort') || 'price_asc';
 
             const hideOwnedWrapper = document.getElementById('hide-owned-wrapper');
             const hideOwnedToggle = document.getElementById('filter-hide-owned');
@@ -92,8 +92,9 @@
                     hideOwnedToggle.classList.add('is-active');
                 }
             }
-            hideOwnedToggle.addEventListener('click', () => {
+            hideOwnedToggle.addEventListener('click', (e) => {
                 hideOwnedToggle.classList.toggle('is-active');
+                applySearchFilters(e);
             });
 
             document.getElementById('search-form').addEventListener('submit', applySearchFilters, true);
@@ -175,7 +176,7 @@
             if (developer) params.set('developer', developer);
             if (minPrice !== '') params.set('min_price', minPrice);
             if (maxPrice !== '') params.set('max_price', maxPrice);
-            if (sort && sort !== 'popular') params.set('sort', sort);
+            if (sort) params.set('sort', sort);
             if (hideOwnedToggle && hideOwnedToggle.classList.contains('is-active')) {
                 params.set('hide_owned', 'true');
             }
