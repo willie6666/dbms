@@ -12,9 +12,10 @@
   2. **黑名單防護檢查**：後端會去查詢 `blocklist` 資料表，檢查這兩人之中「是否有一方封鎖了另一方」。若有，直接回傳 `403 Forbidden`，並提示「無法發送好友邀請」。
   3. **帳號有效性檢查**：確認接收方是否為 `ACTIVE` 狀態 (不發給已刪除或停權的使用者)。
   4. 若無攔截，在 `friendships` 寫入一筆 `status = 'PENDING'` 的邀請紀錄。
-  5. 接收方登入後，呼叫 `GET /api/social/friends/requests/pending` 會看到該邀請。
-  6. 接收方呼叫 `PUT /api/social/friends/requests/:id`，可以選擇傳入 `ACCEPTED` 或 `DECLINED`。
-- **終點**：若 `ACCEPTED`，兩人結為好友 (`status` 更新為 `ACCEPTED`)，此後可以互傳私訊。
+  5. 接收方登入後，呼叫 `GET /api/social/friends/requests` 會看到該邀請。
+  6. 接收方可呼叫 `PUT /api/social/friends/request/:id/accept` 或 `PUT /api/social/friends/request/:id/decline` 來接受或拒絕。
+  7. **管理好友**：雙方皆可呼叫 `GET /api/social/friends` 查看已成立的好友列表；若欲解除好友或收回邀請，可呼叫 `DELETE /api/social/friends/request/:id`。
+- **終點**：若接受邀請，兩人結為好友 (`status` 更新為 `ACCEPTED`)，此後可以互傳私訊。
 
 ---
 
@@ -38,4 +39,5 @@
   2. 系統在 `blocklist` 寫入一筆 `blocker_id = A`, `blocked_id = B` 的紀錄。
   3. **關係保留 (Soft Block)**：
      - 加入黑名單是一種「軟封鎖」機制，它並不會自動到 `friendships` 刪除好友紀錄。但只要在黑名單內，未來的私訊與邀請都會在傳送前被後端強制攔截。
+  4. **黑名單管理**：玩家可透過 `GET /api/social/blacklist` 查看黑名單列表，若欲解除封鎖，可呼叫 `DELETE /api/social/blacklist/:user_id`。
 - **終點**：B 將無法搜尋到 A、無法加 A 好友、無法傳訊息給 A，達到防止騷擾的防護效果。

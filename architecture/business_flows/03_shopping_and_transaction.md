@@ -24,7 +24,10 @@
   2. **防護檢查 1**：後端檢查該遊戲的 `status` 是否為 `'ACTIVE'`。若非 ACTIVE (例如 DRAFT 或 TAKEN_DOWN)，則阻擋加入。
   3. **防護檢查 2**：檢查玩家是否已經擁有這款遊戲 (在 `game_licenses` 中尋找 `ACTIVE` 的紀錄)。若已擁有，拒絕加入。
   4. 寫入 `shopping_carts` 資料表。
-- **終點**：前端右上角的購物車圖示數字增加。
+- **管理購物車**：
+  - 玩家開啟購物車頁面，前端呼叫 `GET /api/protected/cart` 列出所有商品。
+  - 若玩家想移除特定商品，可點擊移除並呼叫 `DELETE /api/protected/cart/:game_id`。
+- **終點**：前端右上角的購物車圖示數字增加或減少，隨時保持與資料庫同步。
 
 ---
 
@@ -36,9 +39,8 @@
   2. 後端利用資料庫的交易機制 (`DB.Begin()`) 開啟一個 Transaction 確保 ACID 屬性。
   3. **重新驗證**：
      - 檢查購物車內是否有非 `ACTIVE` 的遊戲，若有則直接 Rollback 回傳錯誤。
-     - 檢查玩家錢包餘額 (`users.wallet_balance`) 是否大於等於總金額 (未來擴充)。
-  4. **扣款與紀錄**：
-     - 扣除玩家餘額。
+     - **備註**：(目前版本尚未實作真實金流，此處省略 `users.wallet_balance` 錢包餘額的扣款邏輯)。
+  4. **紀錄建立**：
      - 在 `transactions` 表建立一筆交易主檔 (包含總金額與時間)。
      - 針對每一款遊戲，在 `transaction_items` 表建立明細 (包含單款遊戲的購買價格 `purchase_price`)。
   5. **發放授權**：

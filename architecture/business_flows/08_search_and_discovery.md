@@ -7,7 +7,7 @@
 ## 1. 頂部搜尋列 (Top Search Bar)
 
 - **UI 位置**：頁面正上方、最醒目的橫向搜尋框。
-- **功能**：關鍵字模糊搜尋 (Keyword Fuzzy Search)。玩家輸入文字後點擊「搜尋」按鈕。
+- **功能**：關鍵字模糊搜尋 (Keyword Fuzzy Search)。玩家輸入文字後點擊「搜尋」按鈕。點擊進入個別遊戲時，前端會呼叫 `GET /api/games/{id}` 顯示詳情。
 - **底層邏輯**：
   1. 前端將關鍵字放入 `q` 參數，呼叫 `GET /api/games?q={keyword}`。
   2. 後端組建 SQL 查詢，針對以下四個維度進行 `ILIKE` 模糊比對：

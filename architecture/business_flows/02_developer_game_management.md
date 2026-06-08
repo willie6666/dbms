@@ -6,7 +6,7 @@
 
 ## 1. 遊戲草稿建立 (Create Game Draft)
 
-- **起點**：開發者在 `dev_dashboard.html` 點擊「新增遊戲」。
+- **起點**：開發者在 `dev_dashboard.html` 查看自己的遊戲列表 (呼叫 `GET /api/developer/games`)，並點擊「新增遊戲」。
 - **流程**：
   1. 輸入基本的 `Title` (標題)、`Price` (定價)、`Description` (支援 Markdown 格式的介紹)。
   2. 呼叫 `POST /api/developer/games`。
@@ -26,6 +26,7 @@
      - **圖片或影片 (`media` / `thumbnail`)**：會將檔案內容進行 SHA-256 雜湊 (Hash) 產生新的檔名，並存入 `assets/images/{game_id}/{hash}.{ext}`，避免檔名衝突。
      - **遊戲主檔 (`game_file`)**：**不會進行 Hash**，而是保留開發者上傳的**原始檔名**，存入專屬資料夾 `assets/game-files/{game_id}/{original_filename}`。
   4. 實體路徑會轉換成對應的虛擬路由：圖片對應至 `/media/images/{game_id}/{hash}.{ext}`，遊戲檔案則對應至受保護的下載路由 `/downloads/{game_id}/{original_filename}`，並寫入 `game_media` 表。
+  5. **刪除素材**：若開發者欲刪除，可呼叫 `DELETE /api/developer/games/:id/media/:media_id` 移除不要的素材。
 - **終點**：前端收到新素材的 URL，並立刻渲染預覽圖或顯示檔案名稱。
 
 ---
@@ -37,6 +38,7 @@
   1. 系統可以列出目前資料庫中所有的全域標籤 (`GET /api/tags`)。
   2. 若無適合標籤，開發者可呼叫 `POST /api/developer/tags` 創建新標籤。
   3. 呼叫 `POST /api/developer/games/:id/tags` 將 `tag_id` 與 `game_id` 綁定。這會在 `game_tags` (多對多關聯表) 中新增一筆紀錄。
+  4. 若需解除標籤，呼叫 `DELETE /api/developer/games/:id/tags/:tag_id` 將其移除。
 - **終點**：遊戲分類變得精準，玩家在首頁可以透過標籤篩選出這款遊戲。
 
 ---
@@ -64,3 +66,13 @@
   3. 通過驗證後，將該遊戲的狀態 `games.status` 設為 `'TAKEN_DOWN'` (軟刪除)。
   4. **與管理員下架的差異**：開發者自主下架時，**不會**連帶撤銷玩家的 `game_licenses`。這是保障消費者的基本權益，也就是「買過的玩家依然可以在遊戲庫中找到它並下載遊玩，只是商店不再開放新玩家購買」。
 - **終點**：遊戲在商店首頁隱藏，進入詳細頁面會顯示「此遊戲已下架」，且無法加入購物車。
+
+---
+
+## 6. 遊戲銷售數據統計 (Sales Stats)
+
+- **起點**：開發者想要知道自己的遊戲賣得如何。
+- **流程**：
+  - 呼叫 `GET /api/developer/games/:id/stats`。
+  - 後端會從 `transaction_items` 加總銷售數量與總收入。
+- **終點**：在儀表板呈現銷售業績數據。

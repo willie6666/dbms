@@ -6,12 +6,22 @@
 
 ## 1. 使用者角色指派與剝奪 (Role Management)
 
-- **起點**：Admin 在 `admin_dashboard.html` 觀看全站帳號列表。
+- **起點**：Admin 在 `admin_dashboard.html` 觀看全站帳號列表 (呼叫 `GET /api/admin/users`)。
 - **流程**：
   1. 對某位普通 `USER`，Admin 可以從下拉選單選擇變更為 `CSR` (客服人員)。
   2. 呼叫 `PUT /api/admin/users/:id/role`，送出 `{ "role": "CSR" }`。
   3. 後端更新 `users.role`。
 - **終點**：該玩家下次登入時，將能看見「客服中心」的按鈕，並具有處理退款的權限。反之亦可降級回 `USER`。
+
+---
+
+## 2. 帳號停權管理 (Account Suspension)
+
+- **起點**：Admin 發現某位玩家有違規行為，但在 `admin_dashboard.html` 點擊「停權」按鈕。
+- **流程**：
+  1. 呼叫 `PUT /api/admin/users/:id/suspend`。
+  2. 此端點為 Toggle 行為，若原本為 `ACTIVE` 會變更為 `DEACTIVE`；若原本為 `DEACTIVE` 則解除停權變為 `ACTIVE`。
+- **終點**：被停權的使用者將無法登入系統 (在 Login 階段會被擋下)。
 
 ---
 
