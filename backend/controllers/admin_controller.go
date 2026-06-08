@@ -53,7 +53,7 @@ func DeleteUser(c *gin.Context) {
 	// Cascade soft-delete: if this user is a developer, take down all their games
 	if user.Role == "DEVELOPER" {
 		database.DB.Model(&models.Game{}).Where("developer_id = ?", user.UserID).Update("status", "TAKEN_DOWN")
-		
+
 		// Cascade revoke licenses for all games owned by this developer
 		var developerGames []uint
 		database.DB.Model(&models.Game{}).Where("developer_id = ?", user.UserID).Pluck("game_id", &developerGames)
@@ -91,9 +91,9 @@ func AdminDeleteGame(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to take down game"})
 		return
 	}
-	
+
 	// Cascade revoke all licenses for this game
 	database.DB.Model(&models.GameLicense{}).Where("game_id = ?", gameID).Update("status", "REVOKED")
-	
+
 	c.JSON(http.StatusOK, gin.H{"message": "Game deleted successfully by Admin"})
 }
