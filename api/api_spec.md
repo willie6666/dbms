@@ -16,6 +16,7 @@
 ## 1. 使用者與權限 (Users & Auth)
 
 ### `[POST] /api/auth/register` (註冊新帳號)
+- **Go 對應模組**: `auth_controller.go` (函式: `Register`)
 - **Headers**: 無
 - **Request Body**:
   ```json
@@ -45,6 +46,7 @@
   - `500 Internal Server Error`: `{"error": "Failed to create user (username or email might already exist)"}`
 
 ### `[POST] /api/auth/login` (使用者登入)
+- **Go 對應模組**: `auth_controller.go` (函式: `Login`)
 - **Headers**: 無
 - **Request Body**:
   ```json
@@ -71,6 +73,7 @@
   - `403 Forbidden`: `{"error": "This account is not active"}` (帳號已被停權或刪除)
 
 ### `[POST] /api/auth/logout` (登出)
+- **Go 對應模組**: `auth_controller.go` (函式: `Logout`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**: 無
 - **Responses**:
@@ -78,6 +81,7 @@
   - **說明**: 由於採用 JWT 無狀態架構，後端只會回傳成功訊息，真正的登出必須由前端主動清除 Token。
 
 ### `[PUT] /api/users/profile` (修改個人資料)
+- **Go 對應模組**: `user_controller.go` (函式: `UpdateProfile`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**: (皆為選填，想改什麼傳什麼)
   ```json
@@ -104,12 +108,14 @@
   - `404 Not Found`: `{"error": "User not found"}`
 
 ### `[GET] /api/admin/users` (查看所有使用者清單)
+- **Go 對應模組**: `admin_controller.go` (函式: `GetUsers`)
 - **Headers**: `Authorization: Bearer <admin_token>`
 - **Responses**:
   - `200 OK`: `{"data": [ { "id": 1, "username": "PlayerOne", "role": "USERS", "permission": "ACTIVE" } ]}` (permission 包含: `ACTIVE`, `DEACTIVE`, `DELETED`)
   - `403 Forbidden`: `{"error": "Forbidden: Requires ADMIN role"}`
 
 ### `[PUT] /api/admin/users/{id}/suspend` (切換帳號停權狀態)
+- **Go 對應模組**: `admin_controller.go` (函式: `SuspendUser`)
 - **Headers**: `Authorization: Bearer <admin_token>`
 - **Request Body**: 無
 - **說明**: 此端點為 **Toggle** 行為。若帳號為 `ACTIVE` 則切換為 `DEACTIVE`；若為 `DEACTIVE` 則切換回 `ACTIVE`。
@@ -118,6 +124,7 @@
   - `404 Not Found`: `{"error": "User not found"}`
 
 ### `[DELETE] /api/admin/users/{id}` (移除帳號)
+- **Go 對應模組**: `admin_controller.go` (函式: `DeleteUser`)
 - **Headers**: `Authorization: Bearer <admin_token>`
 - **Request Body**: 無
 - **說明**: 實作上為「軟刪除」(將 `permission` 設為 `DELETED`)，以確保過去發布的遊戲、購買紀錄與評論不會被一併刪除。
@@ -125,6 +132,7 @@
   - `200 OK`: `{"message": "User completely removed"}`
 
 ### `[PUT] /api/admin/users/{id}/role` (更改帳號權限)
+- **Go 對應模組**: `admin_controller.go` (函式: `ChangeUserRole`)
 - **Headers**: `Authorization: Bearer <admin_token>`
 - **Request Body**:
   ```json
@@ -138,6 +146,7 @@
 ## 2. 商店與遊戲 (Store & Games)
 
 ### `[GET] /api/games` (瀏覽/搜尋遊戲)
+- **Go 對應模組**: `game_controller.go` (函式: `GetGames`)
 - **Headers**: 無
 - **Query Params** (可選): 
   - `?q=elden` (關鍵字搜尋：比對標題、介紹、標籤與開發者名稱)
@@ -163,24 +172,28 @@
     ```
 
 ### `[GET] /api/games/{id}` (查看遊戲詳情)
+- **Go 對應模組**: `game_controller.go` (函式: `GetGameByID`)
 - **Headers**: 無
 - **Responses**:
   - `200 OK`: `{"data": { "game": {...}, "developer_name": "DevUser", "media": [...], "tags": [...], "reviews": [...] }}`
   - `404 Not Found`: `{"error": "Game not found"}`
 
 ### `[GET] /api/games/{id}/reviews` (查看遊戲評論)
+- **Go 對應模組**: `social_controller.go` (函式: `GetReviews`)
 - **Headers**: 無
 - **Responses**:
   - `200 OK`: `[ { "review_id": 1, "content": "...", "attitude": "POSITIVE", "user": {...}, "replies": [...] } ]`
   - **注意**: 回傳格式為陣列 (非包在 `{"data": [...]}` 內)。
 
 ### `[GET] /api/developer/games` (查看自己的遊戲列表)
+- **Go 對應模組**: `developer_controller.go` (函式: `GetDeveloperGames`)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Responses**:
   - `200 OK`: `{"data": [ { ...game_objects_with_media... } ]}`
   - **說明**: DEVELOPER 只會看到自己上架的遊戲；ADMIN 可查看全部遊戲。
 
 ### `[POST] /api/developer/games` (建立新遊戲草稿)
+- **Go 對應模組**: `developer_controller.go` (函式: `UploadGame`)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Request Body**:
   ```json
@@ -195,6 +208,7 @@
   - **說明**: 建立的新遊戲預設狀態為 `DRAFT` (草稿)，不會出現在商店首頁。
 
 ### `[PUT] /api/developer/games/{id}/publish` (正式上架遊戲)
+- **Go 對應模組**: `developer_controller.go` (函式: `PublishGame`)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **說明**: 將草稿遊戲轉換為 `ACTIVE` 狀態。
 - **後端驗證約束**: 必須檢查該遊戲是否**至少有 1 個標籤 (tag)**。若未達條件則拒絕上架。
@@ -205,6 +219,7 @@
   - `404 Not Found`: `{"error": "Game not found"}`
 
 ### `[PUT] /api/developer/games/{id}` (編輯遊戲資訊)
+- **Go 對應模組**: `developer_controller.go` (函式: `UpdateGame`)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Request Body**:
   ```json
@@ -220,6 +235,7 @@
   - `404 Not Found`: `{"error": "Game not found"}`
 
 ### `[DELETE] /api/developer/games/{id}` (下架自己的遊戲)
+- **Go 對應模組**: `developer_controller.go` (函式: `DeleteGame`)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **說明**: 實作上為「軟刪除」(將 `status` 設為 `TAKEN_DOWN`)，以確保已購買此遊戲的玩家依然能從遊戲庫下載與遊玩，但會從商店清單中隱藏。
 - **Responses**:
@@ -228,12 +244,14 @@
   - `404 Not Found`: `{"error": "Game not found"}`
 
 ### `[DELETE] /api/admin/games/{id}` (強制下架遊戲)
+- **Go 對應模組**: `admin_controller.go` (函式: `AdminDeleteGame`)
 - **Headers**: `Authorization: Bearer <admin_token>`
 - **說明**: 實作上同樣為「軟刪除」。
 - **Responses**:
   - `200 OK`: `{"message": "Game deleted successfully by Admin"}`
 
 ### `[POST] /api/developer/games/{id}/media` (上傳遊戲素材)
+- **Go 對應模組**: `developer_controller.go` (函式: `UploadMedia`)
 - **Headers**: `Authorization: Bearer <developer_token>`, `Content-Type: multipart/form-data`
 - **Request Body** (`multipart/form-data`):
   | 欄位名稱 | 類型 | 必填 | 說明 |
@@ -250,6 +268,7 @@
   - `404 Not Found`: `{"error": "Game not found"}`
 
 ### `[DELETE] /api/developer/games/{id}/media/{media_id}` (刪除遊戲素材)
+- **Go 對應模組**: `developer_controller.go` (函式: `DeleteMedia`)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Responses**:
   - `200 OK`: `{"message": "Media deleted successfully"}`
@@ -257,6 +276,7 @@
   - `404 Not Found`: `{"error": "Media not found"}` 或 `{"error": "Game not found"}`
 
 ### `[GET] /api/developer/games/{id}/stats` (查看遊戲銷售數據)
+- **Go 對應模組**: `developer_controller.go` (函式: `GetGameStats`)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Responses**:
   - `200 OK`:
@@ -272,11 +292,13 @@
   - `404 Not Found`: `{"error": "Game not found"}`
 
 ### `[GET] /api/tags` (查看所有可用標籤)
+- **Go 對應模組**: `developer_controller.go` (函式: `GetTags`)
 - **Headers**: 無
 - **Responses**:
   - `200 OK`: `{"data": [ {"tag_id": 1, "tag_name": "RPG"} ]}`
 
 ### `[POST] /api/developer/tags` (建立新標籤)
+- **Go 對應模組**: `developer_controller.go` (函式: `CreateTag`)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Request Body**: `{"tag_name": "Action"}`
 - **Responses**:
@@ -284,6 +306,7 @@
   - `500 Internal Server Error`: `{"error": "Failed to create tag (might already exist)"}`
 
 ### `[POST] /api/developer/games/{id}/tags` (為遊戲貼標籤)
+- **Go 對應模組**: `developer_controller.go` (函式: `AddTagToGame`)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Request Body**: `{"tag_id": 2}`
 - **Responses**:
@@ -292,6 +315,7 @@
   - `404 Not Found`: `{"error": "Game not found"}`
 
 ### `[DELETE] /api/developer/games/{id}/tags/{tag_id}` (移除遊戲標籤)
+- **Go 對應模組**: `developer_controller.go` (函式: `RemoveTagFromGame`)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Responses**:
   - `200 OK`: `{"message": "Tag removed from game"}`
@@ -303,11 +327,13 @@
 ## 3. 訂單、購物車與客服 (Transactions & Carts)
 
 ### `[GET] /api/protected/cart` (查看購物車內容)
+- **Go 對應模組**: `cart_controller.go` (函式: `GetCart`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"data": [ { ...cart_items... } ]}`
 
 ### `[POST] /api/protected/cart` (放入購物車)
+- **Go 對應模組**: `cart_controller.go` (函式: `AddToCart`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**: `{"game_id": 1}`
 - **Responses**:
@@ -315,11 +341,13 @@
   - `400 Bad Request`: `{"error": "Game already in cart"}` 或 `{"error": "You already own this game"}` 或 `{"error": "This game is not available for purchase"}`
 
 ### `[DELETE] /api/protected/cart/{game_id}` (移出購物車)
+- **Go 對應模組**: `cart_controller.go` (函式: `RemoveFromCart`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"message": "Game removed from cart"}`
 
 ### `[POST] /api/protected/checkout` (結帳)
+- **Go 對應模組**: `transaction_controller.go` (函式: `Checkout`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**: 無 (自動結算購物車內所有物品)
 - **Responses**:
@@ -327,16 +355,19 @@
   - `500 Internal Server Error`: `{"error": "Checkout failed: Cart is empty"}` 或 `{"error": "Checkout failed: Game '...' is no longer available for purchase"}`
 
 ### `[GET] /api/protected/transactions` (查看購買紀錄)
+- **Go 對應模組**: `transaction_controller.go` (函式: `GetTransactions`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"data": [ { ...transactions... } ]}`
 
 ### `[GET] /api/protected/refunds` (查看個人退款歷史)
+- **Go 對應模組**: `social_controller.go` (函式: `GetMyRefunds`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"data": [ { "refund_id": 1, "status": "REJECTED", "game_title": "...", "game_cover": "..." } ]}`
 
 ### `[POST] /api/social/refunds` (申請退款)
+- **Go 對應模組**: `social_controller.go` (函式: `ApplyRefund`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**:
   ```json
@@ -351,11 +382,13 @@
   - `403 Forbidden`: `{"error": "Forbidden: Transaction item not found in your library"}`
 
 ### `[GET] /api/csr/refunds` (查看待處理退款)
+- **Go 對應模組**: `csr_controller.go` (函式: `GetRefundRequests`)
 - **Headers**: `Authorization: Bearer <csr_token>`
 - **Responses**:
   - `200 OK`: `{"data": [ { ...pending_refunds... } ]}`
 
 ### `[PUT] /api/csr/refunds/{id}` (同意/拒絕退款)
+- **Go 對應模組**: `csr_controller.go` (函式: `ProcessRefund`)
 - **Headers**: `Authorization: Bearer <csr_token>`
 - **Request Body**:
   ```json
@@ -373,16 +406,19 @@
 ## 4. 遊戲庫與願望清單 (Library & Wishlist)
 
 ### `[GET] /api/protected/library` (顯示個人遊戲庫)
+- **Go 對應模組**: `library_controller.go` (函式: `GetLibrary`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"data": [ { "license_id": 1, "game_id": 5, "status": "ACTIVE" } ]}`
 
 ### `[GET] /api/protected/wishlist` (查看願望清單)
+- **Go 對應模組**: `library_controller.go` (函式: `GetWishlist`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"data": [ ...wishlist_items... ]}`
 
 ### `[POST] /api/protected/wishlist` (加入願望清單)
+- **Go 對應模組**: `library_controller.go` (函式: `AddToWishlist`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**: `{"game_id": 3}`
 - **Responses**:
@@ -390,17 +426,20 @@
   - `500 Internal Server Error`: `{"error": "Failed to add to wishlist (might already exist)"}`
 
 ### `[DELETE] /api/protected/wishlist/{game_id}` (移除願望清單)
+- **Go 對應模組**: `library_controller.go` (函式: `RemoveFromWishlist`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"message": "Removed from wishlist"}`
 
 ### `[GET] /api/protected/library/{game_id}/play` (玩遊戲)
+- **Go 對應模組**: `library_controller.go` (函式: `PlayGame`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"message": "Game launched successfully", "auth_token": "mock-play-token-12345"}`
   - `403 Forbidden`: `{"error": "You do not own this game or the license is inactive"}`
 
 ### `[GET] /api/protected/library/{game_id}/download` (下載遊戲)
+- **Go 對應模組**: `library_controller.go` (函式: `DownloadGame`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: 直接回傳檔案串流 (binary)，附帶 `Content-Disposition: attachment; filename="{filename}"` 標頭。
@@ -413,6 +452,7 @@
 ## 5. 社交、評論與通訊 (Social & Reviews)
 
 ### `[POST] /api/social/games/{id}/reviews` (對遊戲發表評價)
+- **Go 對應模組**: `social_controller.go` (函式: `PostReview`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**:
   ```json
@@ -427,6 +467,7 @@
   - `404 Not Found`: `{"error": "Game not found"}`
 
 ### `[POST] /api/social/reviews/{review_id}/replies` (樓中樓回覆)
+- **Go 對應模組**: `social_controller.go` (函式: `ReplyToReview`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**:
   ```json
@@ -440,6 +481,7 @@
   - `404 Not Found`: `{"error": "Review not found"}`
 
 ### `[DELETE] /api/social/reviews/replies/{reply_id}` (刪除樓中樓回覆)
+- **Go 對應模組**: `social_controller.go` (函式: `DeleteReviewReply`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"message": "Reply deleted successfully"}`
@@ -447,18 +489,21 @@
   - `404 Not Found`: `{"error": "Reply not found"}`
 
 ### `[GET] /api/social/friends` (查看好友列表)
+- **Go 對應模組**: `social_controller.go` (函式: `GetFriends`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Description**: 回傳所有已接受的好友（注意：即使好友已被加入黑名單，依然會出現在此列表中，屬於軟封鎖機制）。
 - **Responses**:
   - `200 OK`: `{"data": [ { "friendship_id": 1, "status": "ACCEPTED" } ]}`
 
 ### `[GET] /api/social/friends/requests` (查看待審核邀請)
+- **Go 對應模組**: `social_controller.go` (函式: `GetFriendRequests`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Description**: 同時回傳「你收到的」以及「你送出的」待審核邀請。
 - **Responses**:
   - `200 OK`: `{"data": [ { "friendship_id": 2, "sender_id": 1, "receiver_id": 2, "sender": {}, "receiver": {}, "status": "PENDING" } ]}`
 
 ### `[POST] /api/social/friends/request` (發送好友邀請)
+- **Go 對應模組**: `social_controller.go` (函式: `SendFriendRequest`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**: (擇一即可)
   ```json
@@ -474,6 +519,7 @@
   - `404 Not Found`: `{"error": "User not found"}` (使用 username 查找時)
 
 ### `[PUT] /api/social/friends/request/{id}/accept` (接受好友邀請)
+- **Go 對應模組**: `social_controller.go` (函式: `AcceptFriendRequest`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"message": "Friend request accepted"}`
@@ -481,6 +527,7 @@
   - `404 Not Found`: `{"error": "Friend request not found"}`
 
 ### `[PUT] /api/social/friends/request/{id}/decline` (拒絕好友邀請)
+- **Go 對應模組**: `social_controller.go` (函式: `DeclineFriendRequest`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"message": "Friend request declined"}`
@@ -488,6 +535,7 @@
   - `404 Not Found`: `{"error": "Friend request not found"}`
 
 ### `[DELETE] /api/social/friends/request/{id}` (收回/解除好友)
+- **Go 對應模組**: `social_controller.go` (函式: `RevokeFriendRequest`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"message": "Friend request revoked / removed"}`
@@ -495,6 +543,7 @@
   - `404 Not Found`: `{"error": "Friend request not found"}`
 
 ### `[POST] /api/social/messages` (傳輸文字訊息)
+- **Go 對應模組**: `social_controller.go` (函式: `SendMessage`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Request Body**:
   ```json
@@ -507,6 +556,7 @@
   - `200 OK`: `{"message": "Message sent"}`
 
 ### `[GET] /api/social/messages/{user_id}` (讀取對話紀錄)
+- **Go 對應模組**: `social_controller.go` (函式: `GetMessages`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Description**: 獲取與指定使用者的歷史對話紀錄。此操作會自動將「對方傳送給自己且尚未讀取」的訊息標記為「已讀」(`is_read=true`)。
 - **Responses**:
@@ -527,11 +577,13 @@
     ```
 
 ### `[GET] /api/social/blacklist` (查看黑名單列表)
+- **Go 對應模組**: `social_controller.go` (函式: `GetBlacklist`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"data": [ { "blacklist_id": 1, "blocked_id": 5 } ]}`
 
 ### `[POST] /api/social/blacklist` (加入黑名單)
+- **Go 對應模組**: `social_controller.go` (函式: `AddBlacklist`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Description**: 將使用者加入黑名單。此為「軟封鎖 (Soft Block)」機制，不會刪除雙方的好友關係。
 - **Request Body**: `{"blocked_id": 5}` (也可使用 `{"user_id": 5}` 作為替代欄位名稱)
@@ -540,6 +592,7 @@
   - `400 Bad Request`: `{"error": "Cannot blacklist yourself"}` 或 `{"error": "blocked_id is required"}`
 
 ### `[DELETE] /api/social/blacklist/{user_id}` (移除黑名單)
+- **Go 對應模組**: `social_controller.go` (函式: `RemoveBlacklist`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
   - `200 OK`: `{"message": "User removed from blacklist"}`
