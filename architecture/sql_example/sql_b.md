@@ -6,7 +6,12 @@
 
 ### 1. 查詢購物車內容與遊戲資訊
 - **對應 API**：`GET /api/protected/cart`
-- **原生 SQL 語法 (INNER JOIN)**：
+- **Go 實作 (GORM)**：
+  ```go
+  var cart []models.ShoppingCart
+  database.DB.Preload("Game").Where("user_id = ?", userID).Find(&cart)
+  ```
+- **原生 SQL 語法 (INNER JOIN 等效邏輯)**：
   ```sql
   SELECT shopping_carts.*, games.title, games.price, games.status, games.discount
   FROM shopping_carts
@@ -16,7 +21,12 @@
 
 ### 2. 查詢願望清單與遊戲資訊
 - **對應 API**：`GET /api/protected/wishlist`
-- **原生 SQL 語法 (INNER JOIN)**：
+- **Go 實作 (GORM)**：
+  ```go
+  var wishlist []models.WishList
+  database.DB.Preload("Game").Where("user_id = ?", userID).Find(&wishlist)
+  ```
+- **原生 SQL 語法 (INNER JOIN 等效邏輯)**：
   ```sql
   SELECT wish_lists.*, games.title, games.price, games.status
   FROM wish_lists
@@ -26,7 +36,12 @@
 
 ### 3. 獲取遊戲的評論列表並包含評論者名稱
 - **對應 API**：`GET /api/games/:id/reviews`
-- **原生 SQL 語法 (INNER JOIN)**：
+- **Go 實作 (GORM)**：
+  ```go
+  var reviews []models.Review
+  database.DB.Preload("User").Where("game_id = ? AND status = 'VISIBLE'", gameID).Order("created_at DESC").Find(&reviews)
+  ```
+- **原生 SQL 語法 (INNER JOIN 等效邏輯)**：
   ```sql
   SELECT reviews.*, users.username, users.avatar_url
   FROM reviews
@@ -38,7 +53,12 @@
 
 ### 4. 獲取評論的獨立回覆列表
 - **對應 API**：`GET /api/social/reviews/:id/replies`
-- **原生 SQL 語法 (INNER JOIN)**：
+- **Go 實作 (GORM)**：
+  ```go
+  var replies []models.ReviewReply
+  database.DB.Preload("User").Where("review_id = ?", reviewID).Order("created_at ASC").Find(&replies)
+  ```
+- **原生 SQL 語法 (INNER JOIN 等效邏輯)**：
   ```sql
   SELECT review_replies.*, users.username, users.avatar_url
   FROM review_replies
@@ -46,11 +66,16 @@
   WHERE review_replies.review_id = 128
   ORDER BY review_replies.created_at ASC;
   ```
-- **說明**：與評論本身相同，留言回覆也必須關聯 `users` 表來顯示回覆者。
 
 ### 5. 商店搜尋由特定開發者發布的遊戲
 - **對應 API**：`GET /api/games?developer={username}`
-- **原生 SQL 語法 (INNER JOIN)**：
+- **Go 實作 (GORM)**：
+  ```go
+  query = query.
+      Joins("JOIN users filter_developers ON filter_developers.user_id = games.developer_id").
+      Where("filter_developers.username ILIKE ?", "%"+developer+"%")
+  ```
+- **原生 SQL 語法 (真實 INNER JOIN)**：
   ```sql
   SELECT games.* 
   FROM games

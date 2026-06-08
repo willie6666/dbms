@@ -6,6 +6,13 @@
 
 ### 1. 透過特定標籤搜尋遊戲 (多對多關聯)
 - **對應 API**：`GET /api/games?tag={name}`
+- **Go 實作 (GORM)**：
+  ```go
+  query = query.
+      Joins("JOIN game_tags filter_game_tags ON filter_game_tags.game_id = games.game_id").
+      Joins("JOIN tags filter_tags ON filter_tags.tag_id = filter_game_tags.tag_id").
+      Where("filter_tags.tag_name ILIKE ?", tag)
+  ```
 - **原生 SQL 語法 (連續 INNER JOIN)**：
   ```sql
   SELECT games.* 
@@ -18,7 +25,12 @@
 
 ### 2. 查詢玩家的遊戲庫並包含遊戲封面圖
 - **對應 API**：`GET /api/protected/library`
-- **原生 SQL 語法 (JOIN + LEFT JOIN)**：
+- **Go 實作 (GORM)**：
+  ```go
+  var licenses []models.GameLicense
+  database.DB.Preload("Game.Media").Where("user_id = ? AND status = 'ACTIVE'", userID).Find(&licenses)
+  ```
+- **原生 SQL 語法 (JOIN + LEFT JOIN 等效邏輯)**：
   ```sql
   SELECT game_licenses.license_id, games.title, game_media.file_url 
   FROM game_licenses 
@@ -31,7 +43,12 @@
 
 ### 3. 查詢歷史訂單明細與對應的遊戲名稱
 - **對應 API**：`GET /api/protected/transactions`
-- **原生 SQL 語法**：
+- **Go 實作 (GORM)**：
+  ```go
+  var transactions []models.Transaction
+  database.DB.Preload("Items.Game").Where("user_id = ?", userID).Order("created_at DESC").Find(&transactions)
+  ```
+- **原生 SQL 語法 (連續 JOIN 等效邏輯)**：
   ```sql
   SELECT transactions.transaction_id, transactions.created_at, 
          transaction_items.purchase_price, games.title
@@ -43,9 +60,19 @@
   ```
 - **說明**：這是標準的電商一對多對一三表關聯。從主訂單 (`transactions`) 關聯出明細項目 (`transaction_items`)，再關聯到遊戲主檔 (`games`) 來顯示玩家到底買了什麼遊戲。
 
-### 4. 下載遊戲檔案授權驗證
+### 4. 下載遊戲檔案前之授權與實體檔案驗證
 - **對應 API**：`GET /api/protected/library/:game_id/download`
-- **原生 SQL 語法**：
+- **Go 實作 (GORM)**：
+  ```go
+  var license models.GameLicense
+  // 驗證授權 (Table 1: game_licenses, Table 2: games)
+  database.DB.Joins("Game").Where("user_id = ? AND game_licenses.game_id = ? AND game_licenses.status = 'ACTIVE'", userID, gameID).First(&license)
+
+  var media models.GameMedia
+  // 尋找實體檔案 (Table 3: game_media)
+  database.DB.Where("game_id = ? AND media_type = 'GAME_FILE'", gameID).First(&media)
+  ```
+- **原生 SQL 語法 (邏輯上等同三表驗證 JOIN)**：
   ```sql
   SELECT game_licenses.license_id, games.game_id, game_media.file_url 
   FROM game_licenses

@@ -6,6 +6,10 @@
 
 ### 1. 使用 NOT EXISTS 過濾已購買的遊戲
 - **對應 API**：`GET /api/games?hide_owned=true`
+- **Go 實作 (GORM)**：
+  ```go
+  query = query.Where("NOT EXISTS (SELECT 1 FROM game_licenses WHERE game_licenses.game_id = games.game_id AND game_licenses.user_id = ? AND game_licenses.status = 'ACTIVE')", userID)
+  ```
 - **原生 SQL 語法**：
   ```sql
   SELECT * FROM games 
@@ -20,6 +24,11 @@
 
 ### 2. 使用 ILIKE 進行多欄位模糊搜尋 (Keyword Search)
 - **對應 API**：`GET /api/games?q={keyword}`
+- **Go 實作 (GORM)**：
+  ```go
+  keyword := "%" + q + "%"
+  query = query.Where("games.title ILIKE ? OR games.description ILIKE ? OR filter_tags.tag_name ILIKE ? OR filter_developers.username ILIKE ?", keyword, keyword, keyword, keyword)
+  ```
 - **原生 SQL 語法**：
   ```sql
   SELECT games.* FROM games
@@ -36,6 +45,11 @@
 
 ### 3. 使用 >= 與 <= 進行價格區間過濾
 - **對應 API**：`GET /api/games?min_price=100&max_price=500`
+- **Go 實作 (GORM)**：
+  ```go
+  query = query.Where("games.price >= ?", minPrice)
+  query = query.Where("games.price <= ?", maxPrice)
+  ```
 - **原生 SQL 語法**：
   ```sql
   SELECT * FROM games 
@@ -46,6 +60,11 @@
 
 ### 4. 後台管理員使用 ILIKE 搜尋使用者
 - **對應 API**：`GET /api/admin/users?q={keyword}`
+- **Go 實作 (GORM)**：
+  ```go
+  keyword := "%" + q + "%"
+  database.DB.Where("username ILIKE ? OR email ILIKE ?", keyword, keyword).Order("created_at DESC").Find(&users)
+  ```
 - **原生 SQL 語法**：
   ```sql
   SELECT * FROM users 
@@ -53,8 +72,12 @@
   ORDER BY created_at DESC;
   ```
 
-### 5. 確保審核通過的遊戲才顯示 (常態條件限制)
+### 5. 確保審核通過的遊戲才顯示 (使用不等於 !=)
 - **對應 API**：(所有前台 `GET /api/games` 相關路由)
+- **Go 實作 (GORM)**：
+  ```go
+  query = query.Where("games.status != 'TAKEN_DOWN'")
+  ```
 - **原生 SQL 語法**：
   ```sql
   SELECT * FROM games WHERE status != 'TAKEN_DOWN';
