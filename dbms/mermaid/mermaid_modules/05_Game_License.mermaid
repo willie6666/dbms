@@ -1,0 +1,37 @@
+erDiagram
+    USERS {
+        INT user_id PK
+        VARCHAR username
+        VARCHAR email
+        VARCHAR password_hash
+        DATETIME registration_date
+        VARCHAR last_visit_ip
+        VARCHAR role "NULL | USERS | CSR | ADMIN | DEVELOPER"
+        VARCHAR status "ONLINE | OFFLINE"
+        VARCHAR permission "ACTIVE | DEACTIVE | DELETED"
+    }
+    GAME {
+        INT game_id PK
+        INT developer_id FK
+        VARCHAR title
+        DECIMAL price
+        DECIMAL overall_rating
+    }
+    TRANSACTION_ITEM {
+        INT item_id PK
+        INT transaction_id FK
+        INT game_id FK
+        DECIMAL purchase_price
+    }
+    GAME_LICENSE {
+        INT license_id PK
+        INT game_id FK
+        INT user_id FK
+        INT transaction_item_id FK
+        DATETIME acquired_date
+        VARCHAR status "ACTIVE | REVOKED | FROZEN"
+    }
+
+    USERS ||--o{ GAME_LICENSE : owns
+    GAME ||--o{ GAME_LICENSE : licensed_as
+    TRANSACTION_ITEM ||--|| GAME_LICENSE : generates

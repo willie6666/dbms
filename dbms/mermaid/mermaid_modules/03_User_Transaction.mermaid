@@ -1,0 +1,36 @@
+erDiagram
+    USERS {
+        INT user_id PK
+        VARCHAR username
+        VARCHAR email
+        VARCHAR password_hash
+        DATETIME registration_date
+        VARCHAR last_visit_ip
+        VARCHAR role "NULL | USERS | CSR | ADMIN | DEVELOPER"
+        VARCHAR status "ONLINE | OFFLINE"
+        VARCHAR permission "ACTIVE | DEACTIVE | DELETED"
+    }
+    GAME {
+        INT game_id PK
+        INT developer_id FK
+        VARCHAR title
+        DECIMAL price
+        DECIMAL overall_rating
+    }
+    TRANSACTION {
+        INT transaction_id PK
+        INT user_id FK
+        DECIMAL total_amount
+        DATETIME transaction_date
+        VARCHAR receipt_number
+    }
+    TRANSACTION_ITEM {
+        INT item_id PK
+        INT transaction_id FK
+        INT game_id FK
+        DECIMAL purchase_price
+    }
+
+    USERS ||--o{ TRANSACTION : makes
+    TRANSACTION ||--|{ TRANSACTION_ITEM : contains
+    GAME ||--o{ TRANSACTION_ITEM : purchased_as

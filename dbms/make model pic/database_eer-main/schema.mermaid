@@ -1,0 +1,309 @@
+erDiagram
+    %% ==========================================
+    %% 1. 使用者與權限 (User & Roles)
+    %% ==========================================
+    GUEST ||--|| USER : "ISA (extends)"
+    USER ||--o| CSR : "ISA (extends)"
+    USER ||--o| ADMIN : "ISA (extends)"
+    USER ||--o| DEVELOPER : "ISA (extends)"
+    USER ||--|| USER_PREFERENCE : "has"
+    COMMUNITY_GROUP ||--o{ GROUP_PERMISSION : "grants"
+    USER ||--o{ GROUP_PERMISSION : "holds"
+
+    GUEST {
+        BIGINT user_id PK
+        INET last_visit_ip
+    }
+    USER {
+        BIGINT user_id PK,FK
+        VARCHAR username
+        VARCHAR email
+        VARCHAR password_hash
+        TIMESTAMPTZ last_login
+        TIMESTAMPTZ registration_date
+        ENUM role
+        ENUM status
+    }
+    CSR {
+        BIGINT user_id PK,FK
+        VARCHAR employee_id
+    }
+    ADMIN {
+        BIGINT user_id PK,FK
+        INTEGER admin_level
+    }
+    DEVELOPER {
+        BIGINT user_id PK,FK
+    }
+    COMMUNITY_GROUP {
+        BIGINT group_id PK
+        VARCHAR group_name
+        VARCHAR contact_email
+        VARCHAR tax_id
+        VARCHAR bank_account
+    }
+    USER_PREFERENCE {
+        BIGINT user_id PK,FK
+        ENUM language
+        ENUM region
+        ENUM theme
+        ENUM content_filter_level
+        ENUM color_blind_mode
+    }
+    GROUP_PERMISSION {
+        BIGINT group_id PK,FK
+        BIGINT user_id PK,FK
+        ENUM role
+    }
+
+    %% ==========================================
+    %% 2. 商店與遊戲 (Store)
+    %% ==========================================
+    COMMUNITY_GROUP ||--o{ GAME : "develops"
+    COMMUNITY_GROUP ||--o{ GAME : "publishes"
+    GAME ||--o{ GAME_UPDATE : "receives"
+    GAME ||--o{ GAME_MEDIA : "contains"
+    GAME_UPDATE ||--o{ GAME_MEDIA : "includes (optional)"
+    GAME ||--o{ GAME_TAG : "has"
+    TAG ||--o{ GAME_TAG : "categorizes"
+
+    GAME {
+        BIGINT game_id PK
+        BIGINT developer_id FK
+        BIGINT publisher_id FK
+        VARCHAR title
+        NUMERIC base_price
+        NUMERIC overall_rating
+        NUMERIC discount
+    }
+    GAME_UPDATE {
+        BIGINT update_id PK
+        BIGINT game_id FK
+        VARCHAR version_no
+    }
+    GAME_MEDIA {
+        BIGINT media_id PK
+        BIGINT game_id FK
+        BIGINT update_id FK
+        TEXT file_url
+        ENUM media_type
+    }
+    TAG {
+        BIGINT tag_id PK
+        VARCHAR tag_name
+    }
+    GAME_TAG {
+        BIGINT game_id PK,FK
+        BIGINT tag_id PK,FK
+    }
+
+    %% ==========================================
+    %% 3. 訂單與交易 (Order)
+    %% ==========================================
+    USER ||--o{ TRANSACTION : "makes"
+    TRANSACTION ||--|{ TRANSACTION_ITEM : "contains"
+    GAME ||--o{ TRANSACTION_ITEM : "is_part_of"
+    USER ||--o{ SHOPPING_CART : "adds_to"
+    GAME ||--o{ SHOPPING_CART : "in_cart_of"
+
+    TRANSACTION {
+        UUID transaction_id PK
+        BIGINT user_id FK
+        NUMERIC total_amount
+        ENUM payment_method
+        TIMESTAMPTZ transaction_date
+        VARCHAR receipt_number
+    }
+    TRANSACTION_ITEM {
+        BIGINT item_id PK
+        UUID transaction_id FK
+        BIGINT game_id FK
+        NUMERIC purchase_price
+        NUMERIC discount_applied
+    }
+    SHOPPING_CART {
+        BIGINT cart_id PK
+        BIGINT user_id FK
+        BIGINT game_id FK
+        TIMESTAMPTZ added_at
+    }
+
+    %% ==========================================
+    %% 4. 遊戲庫與授權 (Library)
+    %% ==========================================
+    USER ||--o{ GAME_LICENSE : "owns"
+    GAME ||--o{ GAME_LICENSE : "licensed_to"
+    TRANSACTION ||--|{ GAME_LICENSE : "generates"
+    USER ||--o{ PLAY_SESSION : "plays"
+    GAME ||--o{ PLAY_SESSION : "is_played"
+    GAME ||--o{ ACHIEVEMENT : "features"
+    USER ||--o{ USER_ACHIEVEMENT : "unlocks"
+    ACHIEVEMENT ||--o{ USER_ACHIEVEMENT : "unlocked_by"
+    USER ||--o{ WISH_LIST : "wishes"
+    GAME ||--o{ WISH_LIST : "wished_by"
+
+    GAME_LICENSE {
+        BIGINT license_id PK
+        BIGINT game_id FK
+        BIGINT user_id FK
+        UUID transaction_id FK
+        TIMESTAMPTZ acquired_date
+        ENUM status
+    }
+    PLAY_SESSION {
+        BIGINT session_id PK
+        BIGINT game_id FK
+        BIGINT user_id FK
+        TIMESTAMPTZ start_time
+        TIMESTAMPTZ end_time
+        NUMERIC duration_minutes
+    }
+    ACHIEVEMENT {
+        BIGINT achievement_id PK
+        BIGINT game_id FK
+        VARCHAR achievement_name
+        TEXT description
+        TEXT icon_url
+    }
+    USER_ACHIEVEMENT {
+        BIGINT user_id PK,FK
+        BIGINT achievement_id PK,FK
+        TIMESTAMPTZ unlocked_at
+    }
+    WISH_LIST {
+        BIGINT wishlist_id PK
+        BIGINT game_id FK
+        BIGINT user_id FK
+        TIMESTAMPTZ added_at
+    }
+
+    %% ==========================================
+    %% 5. 社交與社群 (Social)
+    %% ==========================================
+    USER ||--o{ REVIEW : "writes"
+    GAME ||--o{ REVIEW : "reviewed_in"
+    USER ||--o{ DISCUSSION_POST : "posts"
+    GAME ||--o{ DISCUSSION_POST : "discusses"
+    DISCUSSION_POST ||--o{ DISCUSSION_REPLY : "receives"
+    USER ||--o{ DISCUSSION_REPLY : "replies"
+    USER ||--o{ NOTIFICATION : "receives"
+    USER ||--o{ FRIENDSHIP : "sends"
+    USER ||--o{ FRIENDSHIP : "receives"
+    USER ||--o{ MESSAGE : "sends"
+    USER ||--o{ MESSAGE : "receives"
+    USER ||--o{ BLACKLIST : "blocks"
+    USER ||--o{ BLACKLIST : "is_blocked_by"
+
+    REVIEW {
+        BIGINT review_id PK
+        BIGINT game_id FK
+        BIGINT user_id FK
+        TEXT content
+        TIMESTAMPTZ created_at
+        ENUM recommendation
+        ENUM status
+    }
+    DISCUSSION_POST {
+        BIGINT post_id PK
+        BIGINT game_id FK
+        BIGINT user_id FK
+        VARCHAR title
+        TEXT content
+        TIMESTAMPTZ created_at
+    }
+    DISCUSSION_REPLY {
+        BIGINT reply_id PK
+        BIGINT post_id FK
+        BIGINT user_id FK
+        TEXT content
+        TIMESTAMPTZ created_at
+    }
+    NOTIFICATION {
+        BIGINT notification_id PK
+        BIGINT user_id FK
+        TEXT content
+        BOOLEAN is_read
+        TIMESTAMPTZ created_at
+        ENUM type
+    }
+    FRIENDSHIP {
+        BIGINT friendship_id PK
+        BIGINT sender_id FK
+        BIGINT receiver_id FK
+        TIMESTAMPTZ created_at
+        ENUM status
+    }
+    MESSAGE {
+        BIGINT message_id PK
+        BIGINT sender_id FK
+        BIGINT receiver_id FK
+        TEXT content
+        TIMESTAMPTZ sent_at
+        BOOLEAN is_read
+    }
+    BLACKLIST {
+        BIGINT blacklist_id PK
+        BIGINT blocker_id FK
+        BIGINT blocked_id FK
+        TIMESTAMPTZ created_at
+    }
+
+    %% ==========================================
+    %% 6. 審查與客服 (Support)
+    %% ==========================================
+    USER ||--o{ REFUND_REQUEST : "requests"
+    CSR ||--o{ REFUND_REQUEST : "handles"
+    TRANSACTION_ITEM ||--o{ REFUND_REQUEST : "subject_to"
+    USER ||--o{ REPORT : "submits"
+    REPORTABLE ||--o{ REPORT : "receives"
+    CSR ||--o{ REPORT : "handles"
+
+    %% Polymorphic connections to REPORTABLE
+    REPORTABLE ||--o| REVIEW : "targets_review"
+    REPORTABLE ||--o| DISCUSSION_POST : "targets_post"
+    REPORTABLE ||--o| DISCUSSION_REPLY : "targets_reply"
+    REPORTABLE ||--o| GAME : "targets_game"
+    REPORTABLE ||--o| USER : "targets_user"
+    REPORTABLE ||--o| COMMUNITY_GROUP : "targets_group"
+
+    REFUND_REQUEST {
+        BIGINT refund_id PK
+        BIGINT user_id FK
+        BIGINT handled_by FK
+        BIGINT transaction_item_id FK
+        TEXT reason
+        TEXT reject_reason
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ resolved_at
+        ENUM status
+    }
+    REPORTABLE {
+        BIGINT reportable_id PK
+        ENUM type
+        BIGINT target_id
+    }
+    REPORT {
+        BIGINT report_id PK
+        BIGINT reporter_id FK
+        BIGINT reportable_id FK
+        BIGINT handled_by FK
+        TEXT reason
+        TIMESTAMPTZ created_at
+        ENUM status
+        ENUM action_taken
+    }
+
+    %% ==========================================
+    %% 7. 團隊與營運 (Operation)
+    %% ==========================================
+    ADMIN ||--o{ EVENT : "creates"
+
+    EVENT {
+        BIGINT event_id PK
+        BIGINT admin_id FK
+        VARCHAR event_name
+        TEXT event_description
+        TIMESTAMPTZ start_date
+        TIMESTAMPTZ end_date
+        ENUM status
+    }

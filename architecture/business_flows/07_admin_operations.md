@@ -25,7 +25,7 @@
 
 ---
 
-## 2. 強制下架違規遊戲 (Force Takedown & License Revocation)
+## 3. 強制下架違規遊戲 (Force Takedown & License Revocation)
 
 - **起點**：Admin 發現某款遊戲 (`games.status = 'ACTIVE'`) 涉及侵權、惡意軟體或嚴重違規，在 `admin_dashboard.html` 對該遊戲點擊「強制下架」。
 - **流程**：
@@ -42,7 +42,7 @@
 
 ---
 
-## 3. 全局惡意帳號殲滅 (Account Annihilation)
+## 4. 全局惡意帳號殲滅 (Account Annihilation)
 
 - **起點**：Admin 對某位屢勸不聽的開發者點擊「永久刪除」。
 - **流程**：

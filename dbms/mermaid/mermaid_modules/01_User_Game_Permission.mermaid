@@ -1,0 +1,21 @@
+erDiagram
+    USERS {
+        INT user_id PK
+        VARCHAR username
+        VARCHAR email
+        VARCHAR password_hash
+        DATETIME registration_date
+        VARCHAR last_visit_ip
+        VARCHAR role "NULL | USERS | CSR | ADMIN | DEVELOPER"
+        VARCHAR status "ONLINE | OFFLINE"
+        VARCHAR permission "ACTIVE | DEACTIVE | DELETED"
+    }
+    GAME {
+        INT game_id PK
+        INT developer_id FK
+        VARCHAR title
+        DECIMAL price
+        DECIMAL overall_rating
+    }
+
+    USERS ||--o{ GAME : develops

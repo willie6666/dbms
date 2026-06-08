@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relation Schema Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Relation Schema 工具</h2>
+            <p style="font-size: 13px; color: #666; margin-top: 0;">將 Mermaid 語法轉換成關聯綱要圖。</p>
+            <textarea id="mermaidInput" placeholder="在此貼上 Mermaid erDiagram 語法..."></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button id="renderBtn">渲染 Schema</button>
+                <button id="clearBtn">清空</button>
+            </div>
+        </div>
+        <div class="main-content" id="scrollContainer">
+            <h2>Relation Schema (關聯綱要)</h2>
+            <div id="schemaContainer">
+                <svg id="arrowLayer">
+                    <defs></defs>
+                </svg>
+                <div id="textLayer"></div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

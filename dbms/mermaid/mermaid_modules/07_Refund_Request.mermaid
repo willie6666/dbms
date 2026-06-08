@@ -1,0 +1,33 @@
+erDiagram
+    USERS {
+        INT user_id PK
+        VARCHAR username
+        VARCHAR email
+        VARCHAR password_hash
+        DATETIME registration_date
+        VARCHAR last_visit_ip
+        VARCHAR role "NULL | USERS | CSR | ADMIN | DEVELOPER"
+        VARCHAR status "ONLINE | OFFLINE"
+        VARCHAR permission "ACTIVE | DEACTIVE | DELETED"
+    }
+    TRANSACTION_ITEM {
+        INT item_id PK
+        INT transaction_id FK
+        INT game_id FK
+        DECIMAL purchase_price
+    }
+    REFUND_REQUEST {
+        INT refund_id PK
+        INT buyer_id FK
+        INT transaction_item_id FK
+        INT handled_by FK "nullable"
+        TEXT reason
+        TEXT reject_reason
+        DATETIME created_at
+        DATETIME resolved_at
+        VARCHAR status "PENDING | APPROVED | REJECTED"
+    }
+
+    USERS ||--o{ REFUND_REQUEST : submits
+    USERS o|--o{ REFUND_REQUEST : handles
+    TRANSACTION_ITEM ||--o| REFUND_REQUEST : refund_for

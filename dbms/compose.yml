@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    container_name: vapor_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: vapor_auror
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d/
+  
+  adminer:
+    image: adminer
+    restart: always
+    container_name: adminer
+    ports:
+      - "8080:8080"
+    volumes:
+      # 這一行就是魔法的關鍵：把您剛剛存好的 css 檔，貼到容器內的網頁根目錄！
+      - ./adminer.css:/var/www/html/adminer.css

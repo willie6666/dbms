@@ -1,0 +1,169 @@
+erDiagram
+    USERS {
+        INT user_id PK
+        VARCHAR username
+        VARCHAR email
+        VARCHAR password_hash
+        DATETIME registration_date
+        VARCHAR last_visit_ip
+        VARCHAR role "NULL | USERS | CSR | ADMIN | DEVELOPER"
+        VARCHAR status "ONLINE | OFFLINE"
+        VARCHAR permission "ACTIVE | DEACTIVE | DELETED"
+    }
+
+    GAMES {
+        INT game_id PK
+        INT developer_id FK
+        VARCHAR title
+        DECIMAL price
+        DECIMAL overall_rating
+    }
+
+    TAG {
+        INT tag_id PK
+        VARCHAR tag_name
+    }
+
+    GAME_TAG {
+        INT game_id PK, FK
+        INT tag_id PK, FK
+    }
+
+    GAME_MEDIA {
+        INT media_id PK
+        INT game_id FK
+        VARCHAR file_url
+        VARCHAR media_type "media | game_file"
+    }
+
+    TRANSACTION {
+        INT transaction_id PK
+        INT user_id FK
+        DECIMAL total_amount
+        DATETIME transaction_date
+        VARCHAR receipt_number
+    }
+
+    TRANSACTION_ITEM {
+        INT item_id PK
+        INT transaction_id FK
+        INT game_id FK
+        DECIMAL purchase_price
+    }
+
+    SHOPPING_CART {
+        INT cart_id PK
+        INT user_id FK
+        INT game_id FK
+        DATETIME added_at
+    }
+
+    GAME_LICENSE {
+        INT license_id PK
+        INT game_id FK
+        INT user_id FK
+        INT transaction_item_id FK
+        DATETIME acquired_date
+        VARCHAR status "ACTIVE | REVOKED | FROZEN"
+    }
+
+    WISH_LIST {
+        INT wishlist_id PK
+        INT user_id FK
+        INT game_id FK
+        DATETIME added_at
+    }
+
+    REFUND_REQUEST {
+        INT refund_id PK
+        INT buyer_id FK
+        INT transaction_item_id FK
+        INT handled_by FK "nullable"
+        TEXT reason
+        TEXT reject_reason
+        DATETIME created_at
+        DATETIME resolved_at
+        VARCHAR status "PENDING | APPROVED | REJECTED"
+    }
+
+    REVIEW {
+        INT review_id PK
+        INT game_id FK
+        INT user_id FK
+        TEXT content
+        DATETIME created_at
+        VARCHAR attitude "POSITIVE | NEGATIVE"
+        VARCHAR status "VISIBLE | HIDDEN | DELETED"
+    }
+
+    REVIEW_REPLY {
+        INT review_reply_id PK
+        INT review_id FK
+        INT user_id FK
+        INT parent_reply_id FK "nullable"
+        TEXT content
+        VARCHAR status "VISIBLE | HIDDEN | DELETED"
+    }
+
+    FRIENDSHIP {
+        INT friendship_id PK
+        INT sender_id FK
+        INT receiver_id FK
+        DATETIME created_at
+        VARCHAR status "PENDING | ACCEPTED | DECLINED"
+    }
+
+    MESSAGE {
+        INT message_id PK
+        INT sender_id FK
+        INT receiver_id FK
+        TEXT content
+        DATETIME sent_at
+        BOOLEAN is_read
+    }
+
+    BLACKLIST {
+        INT blacklist_id PK
+        INT blocker_id FK
+        INT blocked_id FK
+        DATETIME created_at
+    }
+
+    USERS ||--o{ GAMES : develops
+
+    GAMES ||--|{ GAME_MEDIA : has
+    GAMES ||--|{ GAME_TAG : tagged_as
+    TAG ||--o{ GAME_TAG : used_by
+
+    USERS ||--o{ TRANSACTION : makes
+    TRANSACTION ||--|{ TRANSACTION_ITEM : contains
+    GAMES ||--o{ TRANSACTION_ITEM : purchased_as
+
+    USERS ||--o{ SHOPPING_CART : adds
+    GAMES ||--o{ SHOPPING_CART : added_to_cart
+
+    USERS ||--o{ GAME_LICENSE : owns
+    GAMES ||--o{ GAME_LICENSE : licensed_as
+    TRANSACTION_ITEM ||--|| GAME_LICENSE : generates
+
+    USERS ||--o{ WISH_LIST : collects
+    GAMES ||--o{ WISH_LIST : appears_in
+
+    USERS ||--o{ REFUND_REQUEST : submits
+    USERS o|--o{ REFUND_REQUEST : handles
+    TRANSACTION_ITEM ||--o| REFUND_REQUEST : refund_for
+
+    USERS ||--o{ REVIEW : writes
+    GAMES ||--o{ REVIEW : receives
+    REVIEW ||--o{ REVIEW_REPLY : has
+    USERS ||--o{ REVIEW_REPLY : writes
+    REVIEW_REPLY o|--o{ REVIEW_REPLY : parent_of
+
+    USERS ||--o{ FRIENDSHIP : sends
+    USERS ||--o{ FRIENDSHIP : receives
+
+    USERS ||--o{ MESSAGE : sends
+    USERS ||--o{ MESSAGE : receives
+
+    USERS ||--o{ BLACKLIST : blocks
+    USERS ||--o{ BLACKLIST : blocked_by
