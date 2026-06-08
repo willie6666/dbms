@@ -33,18 +33,22 @@ INSERT INTO game_tags (game_id, tag_id) VALUES
 
 -- ==========================================
 -- 4. 寫入 game_media 資料
---    圖片路徑格式：/media/images/{game_id}/{sha256}.{ext}
+--    圖片/影片 (media): /media/images/{game_id}/{sha256}.{ext}
+--    遊戲主檔 (game_file): /downloads/{game_id}/{original_name}
 -- ==========================================
 INSERT INTO game_media (game_id, file_url, media_type) VALUES
 (1, '/media/images/1/63cb3d94925658f69d65f10a8a529599b42c0faaf97559f3212acc085c5d4da7.jpg', 'media'),
 (1, '/media/images/1/2899c89bd64ddca70f023a2bf9d4a0c77897dc990fe260aabe2e3814259559b7.jpg', 'media'),
-(1, '/downloads/1/cybercity-demo.txt', 'game_file'),
 (1, '/media/images/1/acaba9e0fae5fa9d72cfe96b930ccdc4d447cce078bd6eff0ee73b869019530c.png', 'media'),
 (1, '/media/images/1/cec7e79ee9686b5ca9fa4112ed16db99cb4c5c3f55440a065935a1e7ff171582.png', 'media'),
 (1, '/media/images/1/cac363c57e461ca353b5b61a8dc7a865a989f1ee606c530ef4f4c76bbdea7142.png', 'media'),
 
 (3, '/media/images/3/acaba9e0fae5fa9d72cfe96b930ccdc4d447cce078bd6eff0ee73b869019530c.png', 'media'),
+(3, '/media/images/3/acaba9e0fae5fa9d72cfe96b930ccdc4d447cce078bd6eff0ee73b869019530c.png', 'media'),
 (3, '/media/images/3/cec7e79ee9686b5ca9fa4112ed16db99cb4c5c3f55440a065935a1e7ff171582.png', 'media'),
+
+(1, '/downloads/1/cybercity-demo.txt', 'game_file'),
+(3, '/downloads/3/bathroom.png', 'game_file'),
 (4, '/downloads/4/farm-simulator-demo.txt', 'game_file');
 
 -- ==========================================
