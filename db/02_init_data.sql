@@ -43,6 +43,9 @@ INSERT INTO game_media (game_id, file_url, media_type) VALUES
 (1, '/media/images/1/cec7e79ee9686b5ca9fa4112ed16db99cb4c5c3f55440a065935a1e7ff171582.png', 'media'),
 (1, '/media/images/1/cac363c57e461ca353b5b61a8dc7a865a989f1ee606c530ef4f4c76bbdea7142.png', 'media'),
 
+(2, '/media/images/2/hot dog.gif', 'media'),
+(2, '/media/images/2/86.jpg', 'media'),
+
 (3, '/media/images/3/acaba9e0fae5fa9d72cfe96b930ccdc4d447cce078bd6eff0ee73b869019530c.png', 'media'),
 (3, '/media/images/3/acaba9e0fae5fa9d72cfe96b930ccdc4d447cce078bd6eff0ee73b869019530c.png', 'media'),
 (3, '/media/images/3/cec7e79ee9686b5ca9fa4112ed16db99cb4c5c3f55440a065935a1e7ff171582.png', 'media'),
