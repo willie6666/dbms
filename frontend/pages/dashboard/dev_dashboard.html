@@ -34,7 +34,7 @@
                     </div>
                     <div class="field form-group">
                         <label class="label" for="new-game-price">定價 (NT$)</label>
-                        <div class="control"><input class="input" type="number" id="new-game-price" min="0"
+                        <div class="control"><input class="input" type="number" id="new-game-price" min="0" step="0.01"
                                 placeholder="0 表示免費" required></div>
                     </div>
                     <div class="field form-group">
@@ -168,7 +168,7 @@
         document.getElementById('upload-game-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const title = document.getElementById('new-game-title').value.trim();
-            const price = parseInt(document.getElementById('new-game-price').value) || 0;
+            const price = parseFloat(document.getElementById('new-game-price').value) || 0;
             const desc = document.getElementById('new-game-desc').value.trim();
             const btn = document.getElementById('publish-btn');
 
