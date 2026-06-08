@@ -64,7 +64,7 @@
 - **Go 實作 (GORM)**：
   ```go
   database.DB.Table("transaction_items ti").
-      Select("COUNT(ti.transaction_item_id) as total_sales_count, COALESCE(SUM(ti.purchase_price), 0) as total_revenue").
+      Select("COUNT(ti.item_id) as total_sales_count, COALESCE(SUM(ti.purchase_price), 0) as total_revenue").
       Joins("JOIN games g ON ti.game_id = g.game_id").
       Where("g.developer_id = ? AND g.game_id = ?", developerID, gameID).
       Row().Scan(&stats.TotalSalesCount, &stats.TotalRevenue)
@@ -72,7 +72,7 @@
 - **原生 SQL 語法**：
   ```sql
   SELECT 
-    COUNT(ti.transaction_item_id) as total_sales_count,
+    COUNT(ti.item_id) as total_sales_count,
     COALESCE(SUM(ti.purchase_price), 0) as total_revenue
   FROM transaction_items ti
   JOIN games g ON ti.game_id = g.game_id

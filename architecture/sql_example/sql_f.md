@@ -16,7 +16,7 @@
 - **原生 SQL 語法**：
   ```sql
   INSERT INTO users (username, email, password_hash, role) 
-  VALUES ('JohnDoe', 'john@test.com', '$2a$10$...', 'PLAYER') RETURNING user_id;
+  VALUES ('JohnDoe', 'john@test.com', '$2a$10$...', 'USERS') RETURNING user_id;
   ```
 
 ### 2. 更新個人檔案 (UPDATE)
