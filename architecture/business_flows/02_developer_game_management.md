@@ -22,10 +22,10 @@
 - **流程**：
   1. 開發者選擇圖片 (封面圖、宣傳圖)、影片 (預告片) 或是 ZIP/EXE 遊戲主程式檔。
   2. 呼叫 `POST /api/developer/games/:id/media` (使用 `multipart/form-data`)。
-  3. 後端會檢查檔案大小與類型：
-     - 若為圖片或影片：歸類為 `media_type = 'media'` 或 `'thumbnail'`，並存入後端硬碟的 `assets/images/`。
-     - 若為遊戲主檔：歸類為 `media_type = 'game_file'`，並存入 `assets/game-files/`。
-  4. 路徑會轉換成對外公開的 URI (例如 `/media/images/xxx.png` 或保護路由 `/downloads/xxx.zip`)，並寫入 `game_media` 資料表。
+  3. 後端根據檔案類型 (`media_type`) 進行不同的實體儲存處理：
+     - **圖片或影片 (`media` / `thumbnail`)**：會將檔案內容進行 SHA-256 雜湊 (Hash) 產生新的檔名，並存入 `assets/images/{game_id}/{hash}.{ext}`，避免檔名衝突。
+     - **遊戲主檔 (`game_file`)**：**不會進行 Hash**，而是保留開發者上傳的**原始檔名**，存入專屬資料夾 `assets/game-files/{game_id}/{original_filename}`。
+  4. 實體路徑會轉換成對應的虛擬路由：圖片對應至 `/media/images/{game_id}/{hash}.{ext}`，遊戲檔案則對應至受保護的下載路由 `/downloads/{game_id}/{original_filename}`，並寫入 `game_media` 表。
 - **終點**：前端收到新素材的 URL，並立刻渲染預覽圖或顯示檔案名稱。
 
 ---

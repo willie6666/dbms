@@ -229,9 +229,9 @@
   |----------|------|------|------|
   | `file` | File | ✅ | 要上傳的圖片或遊戲檔案 |
   | `media_type` | String | 否 | `"media"` (圖片，預設) 或 `"game_file"` (遊戲檔案) |
-- **儲存路徑**:
-  - `media` → `assets/images/{game_id}/{sha256}.{ext}`，對外 URL `/media/images/{game_id}/{sha256}.{ext}`
-  - `game_file` → `assets/game-files/{game_id}/{original_name}`，對外 URL `/downloads/{game_id}/{original_name}`
+- **儲存路徑與命名規則**:
+  - `media` (圖片/影片) → 會以檔案內容進行 SHA-256 Hash 重新命名：`assets/images/{game_id}/{sha256}.{ext}`，對外 URL `/media/images/{game_id}/{sha256}.{ext}`
+  - `game_file` (遊戲主檔) → 不會進行 Hash，保留上傳的原始檔名：`assets/game-files/{game_id}/{original_name}`，對外 URL `/downloads/{game_id}/{original_name}`
 - **Responses**:
   - `201 Created`: `{"message": "Media uploaded successfully", "data": {...}, "file_url": "/media/images/..."}`
   - `400 Bad Request`: `{"error": "Missing file field"}`

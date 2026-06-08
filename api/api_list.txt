@@ -31,7 +31,7 @@
 [PUT]    /api/developer/games/{id}            - [JWT + DEVELOPER] 編輯遊戲資訊 (price, desc) (系統管理輔助)
 [DELETE] /api/developer/games/{id}            - [JWT + DEVELOPER] 下架自己的遊戲 (UC-25)
 [DELETE] /api/admin/games/{id}                - [JWT + ADMIN] 強制下架遊戲 (UC-25)
-[POST]   /api/developer/games/{id}/media      - [JWT + DEVELOPER] 上傳遊戲圖片或檔案素材 (multipart/form-data) (UC-26)
+[POST]   /api/developer/games/{id}/media      - [JWT + DEVELOPER] 上傳遊戲圖片(會經過 SHA-256 Hash) 或 遊戲主檔(保留原始檔名不 Hash) (multipart/form-data) (UC-26)
 [DELETE] /api/developer/games/{id}/media/{media_id} - [JWT + DEVELOPER] 刪除遊戲素材 (系統管理輔助)
 [GET]    /api/developer/games/{id}/stats      - [JWT + DEVELOPER] 查看遊戲銷售量與收入數據 (UC-27)
 [GET]    /api/tags                            - 查看標籤列表 (系統分類輔助)
