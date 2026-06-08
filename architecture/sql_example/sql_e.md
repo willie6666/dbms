@@ -84,11 +84,11 @@
 - **對應 API**：`GET /api/admin/users`
 - **Go 實作 (GORM)**：
   ```go
-  database.DB.Order("created_at DESC").Find(&users)
+  database.DB.Order("registration_date DESC").Find(&users)
   ```
 - **原生 SQL 語法**：
   ```sql
-  SELECT * FROM users ORDER BY created_at DESC;
+  SELECT * FROM users ORDER BY registration_date DESC;
   ```
 
 ### 6. 退款紀錄列表排序 (ORDER BY 多欄位)

@@ -67,13 +67,13 @@
 - **Go 實作 (GORM)**：
   ```go
   keyword := "%" + q + "%"
-  database.DB.Where("username ILIKE ? OR email ILIKE ?", keyword, keyword).Order("created_at DESC").Find(&users)
+  database.DB.Where("username ILIKE ? OR email ILIKE ?", keyword, keyword).Order("registration_date DESC").Find(&users)
   ```
 - **原生 SQL 語法**：
   ```sql
   SELECT * FROM users 
   WHERE username ILIKE '%test%' OR email ILIKE '%test%'
-  ORDER BY created_at DESC;
+  ORDER BY registration_date DESC;
   ```
 
 ### 5. 確保審核通過的遊戲才顯示 (使用 != 不等於)

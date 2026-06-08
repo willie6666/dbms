@@ -94,7 +94,7 @@
 - **Go 實作 (GORM)**：
   ```go
   var users []models.User
-  database.DB.Order("created_at DESC").Find(&users)
+  database.DB.Order("registration_date DESC").Find(&users)
   ```
 - **原生 SQL 語法**：
   ```sql
