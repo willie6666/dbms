@@ -20,7 +20,7 @@
   ```
 
 ### 2. 更新個人檔案 (UPDATE)
-- **說明**：使用者修改自我介紹或大頭貼時，系統會針對特定欄位進行更新，並自動刷新 `updated_at` 欄位以記錄最後修改時間。
+- **說明**：使用者修改帳號資訊 (如使用者名稱、信箱) 時，系統會針對這些特定欄位進行更新。
 - **對應 API**：`PUT /api/users/profile`
 - **Go 實作 (GORM)**：
   ```go
@@ -28,7 +28,7 @@
   ```
 - **原生 SQL 語法**：
   ```sql
-  UPDATE users SET bio = 'Hello World!', avatar_url = 'img.png', updated_at = NOW() WHERE user_id = 5;
+  UPDATE users SET username = 'CoolPlayer', email = 'cool@test.com' WHERE user_id = 5;
   ```
 
 ---
@@ -86,10 +86,10 @@
 - **原生 SQL 語法**：
   ```sql
   BEGIN;
-  INSERT INTO transactions (user_id, total_amount) VALUES (5, 1200.00) RETURNING transaction_id;
-  INSERT INTO transaction_items (transaction_id, game_id, purchase_price) VALUES (99, 42, 1200.00);
-  INSERT INTO game_licenses (user_id, game_id, transaction_item_id, status) VALUES (5, 42, 105, 'ACTIVE');
-  DELETE FROM shopping_carts WHERE user_id = 5;
+  INSERT INTO transactions (user_id, total_amount, receipt_number) VALUES (4, 1200.00, 'REC-DEMO-0001') RETURNING transaction_id;
+  INSERT INTO transaction_items (transaction_id, game_id, purchase_price) VALUES (99, 1, 1200.00);
+  INSERT INTO game_licenses (user_id, game_id, transaction_item_id, status) VALUES (4, 1, 105, 'ACTIVE');
+  DELETE FROM shopping_carts WHERE user_id = 4;
   COMMIT;
   ```
 
