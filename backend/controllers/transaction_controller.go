@@ -33,6 +33,9 @@ func Checkout(c *gin.Context) {
 		// 2. Calculate Total Amount & Check Ownership
 		var totalAmount float64 = 0
 		for _, item := range cartItems {
+			if item.Game.Status != "ACTIVE" {
+				return fmt.Errorf("Game '%s' is no longer available for purchase", item.Game.Title)
+			}
 			// Double check ownership in case of concurrent requests or bypassed frontend
 			var existingLicense models.GameLicense
 			if err := tx.Where("user_id = ? AND game_id = ? AND status = ?", userID, item.GameID, "ACTIVE").First(&existingLicense).Error; err == nil {

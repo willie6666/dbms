@@ -58,8 +58,8 @@ func AddToCart(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
 		return
 	}
-	if game.Status == "TAKEN_DOWN" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "This game is no longer available for purchase"})
+	if game.Status != "ACTIVE" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "This game is not available for purchase"})
 		return
 	}
 

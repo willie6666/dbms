@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>開發者中心 — VaporAuror</title>
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
+
 <body>
 
     <header id="global-header"></header>
@@ -27,15 +29,18 @@
                 <form id="upload-game-form" class="dev-form">
                     <div class="field form-group">
                         <label class="label" for="new-game-title">遊戲名稱</label>
-                        <div class="control"><input class="input" type="text" id="new-game-title" placeholder="輸入炫酷的標題" required></div>
+                        <div class="control"><input class="input" type="text" id="new-game-title" placeholder="輸入炫酷的標題"
+                                required></div>
                     </div>
                     <div class="field form-group">
                         <label class="label" for="new-game-price">定價 (NT$)</label>
-                        <div class="control"><input class="input" type="number" id="new-game-price" min="0" placeholder="0 表示免費" required></div>
+                        <div class="control"><input class="input" type="number" id="new-game-price" min="0"
+                                placeholder="0 表示免費" required></div>
                     </div>
                     <div class="field form-group">
                         <label class="label" for="new-game-desc">遊戲介紹</label>
-                        <div class="control"><textarea class="textarea" id="new-game-desc" placeholder="簡短描述你的遊戲亮點..." required style="min-height: 120px;"></textarea></div>
+                        <div class="control"><textarea class="textarea" id="new-game-desc" placeholder="簡短描述你的遊戲亮點..."
+                                required style="min-height: 120px;"></textarea></div>
                     </div>
                     <button type="submit" class="button is-primary is-fullwidth" id="publish-btn">
                         立即上架
@@ -71,7 +76,7 @@
         // ── Load dashboard ─────────────────────────────────
         async function loadDashboard() {
             try {
-                const result  = await apiGetDeveloperGames();
+                const result = await apiGetDeveloperGames();
                 const myGames = Array.isArray(result) ? result : (result.data || result.games || []);
 
                 let totalRevenue = 0, totalSales = 0;
@@ -79,8 +84,8 @@
                     try {
                         const s = await apiGetGameStats(g.game_id || g.id);
                         totalRevenue += Number(s.total_revenue || s.revenue || 0);
-                        totalSales   += Number(s.total_sales   || s.sales   || 0);
-                    } catch (_) {}
+                        totalSales += Number(s.total_sales || s.sales || 0);
+                    } catch (_) { }
                 }));
 
                 const activeCount = myGames.filter(g => !g.deleted_at && g.status !== 'TAKEN_DOWN').length;
@@ -118,11 +123,26 @@
             }
 
             games.forEach(game => {
-                const gameId      = game.game_id || game.id;
-                const isActive    = !game.deleted_at && game.status !== 'TAKEN_DOWN';
-                const statusBadge = isActive
-                    ? `<span class="tag status-badge status-active">上架中</span>`
-                    : `<span class="tag status-badge status-taken-down">已下架</span>`;
+                const gameId = game.game_id || game.id;
+                let statusBadge = '';
+                let actionBtns = '';
+
+                if (game.status === 'ACTIVE') {
+                    statusBadge = `<span class="tag status-badge status-active">上架中</span>`;
+                    actionBtns = `
+                        <button class="button is-primary is-small" onclick="window.location.href='/pages/dashboard/edit_game?id=${gameId}'">編輯</button>
+                        <button class="button is-danger is-light is-small" onclick="takeDownGame(${gameId})">下架</button>
+                    `;
+                } else if (game.status === 'DRAFT') {
+                    statusBadge = `<span class="tag status-badge" style="background:var(--accent-purple); color:white;">草稿</span>`;
+                    actionBtns = `
+                        <button class="button is-primary is-small" onclick="window.location.href='/pages/dashboard/edit_game?id=${gameId}'">編輯素材與標籤</button>
+                        <button class="button is-success is-small" onclick="publishGame(${gameId})">發佈</button>
+                    `;
+                } else {
+                    statusBadge = `<span class="tag status-badge status-taken-down">已下架</span>`;
+                    actionBtns = `<span style="color:var(--text-muted);font-size:13px;">已停止販售</span>`;
+                }
 
                 const item = document.createElement('div');
                 item.className = 'library-item';
@@ -136,16 +156,7 @@
                             </p>
                         </div>
                         <div class="library-item-actions">
-                            ${isActive ? `
-                                <button class="button is-primary is-small"
-                                    onclick="window.location.href='/pages/dashboard/edit_game?id=${gameId}'">
-                                    編輯
-                                </button>
-                                <button class="button is-danger is-light is-small"
-                                    onclick="takeDownGame(${gameId})">
-                                    下架
-                                </button>
-                            ` : `<span style="color:var(--text-muted);font-size:13px;">已停止販售</span>`}
+                            ${actionBtns}
                         </div>
                     </div>
                 `;
@@ -158,10 +169,10 @@
             e.preventDefault();
             const title = document.getElementById('new-game-title').value.trim();
             const price = parseInt(document.getElementById('new-game-price').value) || 0;
-            const desc  = document.getElementById('new-game-desc').value.trim();
-            const btn   = document.getElementById('publish-btn');
+            const desc = document.getElementById('new-game-desc').value.trim();
+            const btn = document.getElementById('publish-btn');
 
-            btn.disabled    = true;
+            btn.disabled = true;
             btn.textContent = '上架中...';
             try {
                 await apiCreateGame(title, price, desc);
@@ -171,22 +182,40 @@
             } catch (err) {
                 alert(`上架失敗：${err.message}`);
             } finally {
-                btn.disabled    = false;
+                btn.disabled = false;
                 btn.textContent = '立即上架';
             }
         });
 
-        // ── Take down ──────────────────────────────────────
-        async function takeDownGame(gameId) {
-            if (!confirm("確定要下架此遊戲嗎？\n已購買的玩家仍可遊玩，但商店頁面將隱藏。")) return;
+        // ── Actions ────────────────────────────────────────
+        async function publishGame(id) {
             try {
-                await apiDeleteGame(gameId);
-                alert('遊戲已下架！');
-                await loadDashboard();
+                const res = await authFetch(`/api/developer/games/${id}/publish`, { method: 'PUT' });
+                if (res.ok) {
+                    showToast('遊戲已正式上架！', 'success');
+                    loadDashboard();
+                } else {
+                    const data = await res.json();
+                    showToast('發佈失敗：' + (data.error || '未知錯誤'), 'error');
+                }
             } catch (err) {
-                alert(`下架失敗：${err.message}`);
+                console.error(err);
+                showToast('發生錯誤', 'error');
+            }
+        }
+
+        async function takeDownGame(id) {
+            if (!confirm('確定要下架此遊戲嗎？已購買的玩家仍可下載，但商店將不再顯示。')) return;
+            try {
+                await apiDeleteGame(id);
+                alert('遊戲已下架！');
+                loadDashboard();
+            } catch (err) {
+                console.error(err);
+                alert('下架失敗');
             }
         }
     </script>
 </body>
+
 </html>

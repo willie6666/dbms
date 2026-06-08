@@ -21,7 +21,7 @@
 - **起點**：玩家在商店或願望清單中點擊「加入購物車」。
 - **流程**：
   1. 前端呼叫 `POST /api/protected/cart`。
-  2. **防護檢查 1**：後端檢查該遊戲的 `status` 是否為 `'TAKEN_DOWN'`。若已下架，則阻擋加入。
+  2. **防護檢查 1**：後端檢查該遊戲的 `status` 是否為 `'ACTIVE'`。若非 ACTIVE (例如 DRAFT 或 TAKEN_DOWN)，則阻擋加入。
   3. **防護檢查 2**：檢查玩家是否已經擁有這款遊戲 (在 `game_licenses` 中尋找 `ACTIVE` 的紀錄)。若已擁有，拒絕加入。
   4. 寫入 `shopping_carts` 資料表。
 - **終點**：前端右上角的購物車圖示數字增加。
@@ -35,8 +35,8 @@
   1. 前端向 `POST /api/protected/checkout` 發出請求。
   2. 後端利用資料庫的交易機制 (`DB.Begin()`) 開啟一個 Transaction 確保 ACID 屬性。
   3. **重新驗證**：
-     - 檢查購物車內是否有 `TAKEN_DOWN` 遊戲，若有則直接 Rollback 回傳錯誤。
-     - 檢查玩家錢包餘額 (`users.wallet_balance`) 是否大於等於總金額。
+     - 檢查購物車內是否有非 `ACTIVE` 的遊戲，若有則直接 Rollback 回傳錯誤。
+     - 檢查玩家錢包餘額 (`users.wallet_balance`) 是否大於等於總金額 (未來擴充)。
   4. **扣款與紀錄**：
      - 扣除玩家餘額。
      - 在 `transactions` 表建立一筆交易主檔 (包含總金額與時間)。

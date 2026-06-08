@@ -19,7 +19,7 @@ CREATE TABLE games (
     description TEXT DEFAULT '',
     price DECIMAL(10, 2) NOT NULL DEFAULT 0.00 CHECK (price >= 0),
     overall_rating DECIMAL(3, 2) DEFAULT 0.00,
-    status VARCHAR(20) DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'TAKEN_DOWN'))
+    status VARCHAR(20) DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'ACTIVE', 'TAKEN_DOWN'))
 );
 
 -- 3. 建立 tags 資料表

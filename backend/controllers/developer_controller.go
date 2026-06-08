@@ -60,6 +60,7 @@ func UploadGame(c *gin.Context) {
 		Title:       input.Title,
 		Description: input.Desc,
 		Price:       input.Price,
+		Status:      "DRAFT",
 	}
 
 	// Insert new game into the database
@@ -72,6 +73,37 @@ func UploadGame(c *gin.Context) {
 		"message": "Game uploaded successfully",
 		"game":    game,
 	})
+}
+
+// PublishGame handles PUT /api/developer/games/:id/publish
+func PublishGame(c *gin.Context) {
+	userIDFloat, _ := c.Get("user_id")
+	developerID := uint(userIDFloat.(float64))
+	gameID := c.Param("id")
+
+	var game models.Game
+	// Preload Tags to check count
+	if err := database.DB.Preload("Tags").First(&game, gameID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
+		return
+	}
+
+	if role, _ := c.Get("role"); role != "ADMIN" && game.DeveloperID != developerID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden: You can only publish your own games"})
+		return
+	}
+
+	if len(game.Tags) < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Game must have at least 1 tag to be published"})
+		return
+	}
+
+	if err := database.DB.Model(&game).Update("status", "ACTIVE").Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish game"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Game published successfully"})
 }
 
 // UpdateGame handles PUT /api/developer/games/:id

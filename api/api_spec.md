@@ -180,7 +180,7 @@
   - `200 OK`: `{"data": [ { ...game_objects_with_media... } ]}`
   - **說明**: DEVELOPER 只會看到自己上架的遊戲；ADMIN 可查看全部遊戲。
 
-### `[POST] /api/developer/games` (上架新遊戲)
+### `[POST] /api/developer/games` (建立新遊戲草稿)
 - **Headers**: `Authorization: Bearer <developer_token>`
 - **Request Body**:
   ```json
@@ -192,6 +192,17 @@
   ```
 - **Responses**:
   - `201 Created`: `{"message": "Game uploaded successfully", "game": {...}}`
+  - **說明**: 建立的新遊戲預設狀態為 `DRAFT` (草稿)，不會出現在商店首頁。
+
+### `[PUT] /api/developer/games/{id}/publish` (正式上架遊戲)
+- **Headers**: `Authorization: Bearer <developer_token>`
+- **說明**: 將草稿遊戲轉換為 `ACTIVE` 狀態。
+- **後端驗證約束**: 必須檢查該遊戲是否**至少有 1 個標籤 (tag)**。若未達條件則拒絕上架。
+- **Responses**:
+  - `200 OK`: `{"message": "Game published successfully"}`
+  - `400 Bad Request`: `{"error": "Game must have at least 1 tag to be published"}`
+  - `403 Forbidden`: `{"error": "Forbidden: You can only publish your own games"}`
+  - `404 Not Found`: `{"error": "Game not found"}`
 
 ### `[PUT] /api/developer/games/{id}` (編輯遊戲資訊)
 - **Headers**: `Authorization: Bearer <developer_token>`
@@ -301,7 +312,7 @@
 - **Request Body**: `{"game_id": 1}`
 - **Responses**:
   - `200 OK`: `{"message": "Game added to cart successfully"}`
-  - `400 Bad Request`: `{"error": "Game already in cart"}` 或 `{"error": "You already own this game"}`
+  - `400 Bad Request`: `{"error": "Game already in cart"}` 或 `{"error": "You already own this game"}` 或 `{"error": "This game is not available for purchase"}`
 
 ### `[DELETE] /api/protected/cart/{game_id}` (移出購物車)
 - **Headers**: `Authorization: Bearer <token>`
@@ -313,7 +324,7 @@
 - **Request Body**: 無 (自動結算購物車內所有物品)
 - **Responses**:
   - `200 OK`: `{"message": "Checkout successful. Games added to your library!"}`
-  - `500 Internal Server Error`: `{"error": "Checkout failed: Cart is empty"}`
+  - `500 Internal Server Error`: `{"error": "Checkout failed: Cart is empty"}` 或 `{"error": "Checkout failed: Game '...' is no longer available for purchase"}`
 
 ### `[GET] /api/protected/transactions` (查看購買紀錄)
 - **Headers**: `Authorization: Bearer <token>`
