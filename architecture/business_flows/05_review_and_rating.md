@@ -29,14 +29,3 @@
   3. 將回覆寫入 `review_replies` 表。
   4. **刪除回覆**：若玩家想刪除自己的回覆，可呼叫 `DELETE /api/social/reviews/replies/:reply_id`。
 - **終點**：回覆將以巢狀或列表形式附掛在該評論下方。
-
----
-
-## 3. 隱藏/軟刪除違規評論 (Admin Moderation)
-
-- **起點**：Admin 在平台巡邏，發現有惡意辱罵或是洗版評論。
-- **流程**：
-  1. Admin 呼叫 `DELETE /api/social/reviews/:review_id`。
-  2. 後端將 `reviews.status` 修改為 `'HIDDEN'` 或 `'DELETED'` (軟刪除)。
-  3. **自動重新計分**：軟刪除後，後端會再次觸發 `updateGameOverallRating(game_id)`。因為該評論已被隱藏，它**不再計入**遊戲的總分之中，確保遊戲分數還原至客觀真實。
-- **終點**：該評論從遊戲詳情頁消失，分數動態校正。
