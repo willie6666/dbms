@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"vapor_auror_backend/database"
