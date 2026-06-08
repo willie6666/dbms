@@ -111,7 +111,7 @@
                     displayMedia.forEach((m, idx) => {
                         let content = m.file_url.endsWith('.mp4') 
                             ? `<video src="${m.file_url}" controls style="width:100%;height:100%;object-fit:cover;"></video>`
-                            : `<img src="${m.file_url}" alt="Media" style="width:100%;height:100%;object-fit:cover;">`;
+                            : `<img src="${m.file_url}" alt="Media" onerror="this.onerror=null; this.src='https://placehold.co/800x450/1a1a2e/00f0ff?text=No+Cover'" style="width:100%;height:100%;object-fit:cover;">`;
                         let display = idx === 0 ? 'block' : 'none';
                         carouselHtml += `<div class="carousel-slide" id="slide-${idx}" style="display:${display}; width:100%; height:100%;">${content}</div>`;
                     });
@@ -124,6 +124,8 @@
                     }
                     carouselHtml += `</div>`;
                     coverEl.innerHTML = carouselHtml;
+                } else {
+                    coverEl.innerHTML = `<img src="https://placehold.co/800x450/1a1a2e/00f0ff?text=No+Cover" style="width:100%;height:100%;object-fit:cover;">`;
                 }
 
                 const tagsEl = document.getElementById('detail-tags');
@@ -215,32 +217,36 @@
                 html += `<div class="game-owned-badge">已在你的遊戲庫</div><br>`;
             }
 
-            html += `<div class="action-buttons">`;
+            html += `<div class="buttons" style="margin-top: 15px;">`;
 
             if (role === 'GUEST') {
                 if (isTakenDown) {
                     html += `<button class="button is-danger is-outlined" disabled style="background-color: transparent; border-color: var(--accent-red); color: var(--accent-red);">此遊戲已下架</button>`;
                 } else {
                     html += `<a href="/pages/auth/login.html" class="button is-primary">登入後購買</a>`;
-                    html += `<button class="button is-light" onclick="showToast('請先登入！', 'error')">加入願望清單</button>`;
                 }
-            } else if (isOwned) {
-                html += `<button class="button is-primary" onclick="showToast('正在啟動遊戲...', 'success')">開始遊戲</button>`;
+                html += `<button class="button is-light" onclick="showToast('請先登入！', 'error')">加入願望清單</button>`;
             } else {
-                if (isTakenDown) {
-                    html += `<button class="button is-danger is-outlined" disabled style="background-color: transparent; border-color: var(--accent-red); color: var(--accent-red);">此遊戲已下架</button>`;
+                if (isOwned) {
+                    html += `<button class="button is-primary" onclick="playGame(${gameData.game_id || gameData.id})">啟動</button>`;
+                    html += `<button class="button is-light" onclick="downloadGame(${gameData.game_id || gameData.id})">下載</button>`;
                 } else {
-                    if (isCarted) {
-                        html += `<button class="button is-primary" disabled style="background-color: var(--bg-darker); color: var(--text-muted); border: 1px solid var(--border-color);">已在購物車</button>`;
+                    if (isTakenDown) {
+                        html += `<button class="button is-danger is-outlined" disabled style="background-color: transparent; border-color: var(--accent-red); color: var(--accent-red);">此遊戲已下架</button>`;
                     } else {
-                        html += `<button class="button is-primary" onclick="addToCart(this)">加入購物車</button>`;
+                        if (isCarted) {
+                            html += `<button class="button is-primary" disabled style="background-color: var(--bg-darker); color: var(--text-muted); border: 1px solid var(--border-color);">已在購物車</button>`;
+                        } else {
+                            html += `<button class="button is-primary" onclick="addToCart(this)">加入購物車</button>`;
+                        }
                     }
-                    
-                    if (isWishlisted) {
-                        html += `<button class="button is-light" disabled>已在願望清單</button>`;
-                    } else {
-                        html += `<button class="button is-light" onclick="addToWishlist(this)">加入願望清單</button>`;
-                    }
+                }
+                
+                // 願望清單獨立顯示：不論是否擁有或已下架
+                if (isWishlisted) {
+                    html += `<button class="button is-light" disabled>已在願望清單</button>`;
+                } else {
+                    html += `<button class="button is-light" onclick="addToWishlist(this)">加入願望清單</button>`;
                 }
             }
 
@@ -513,6 +519,44 @@
                 setTimeout(() => window.location.href = '/', 1500);
             } catch (err) {
                 showToast(`下架失敗：${err.message}`, 'error');
+            }
+        }
+
+        async function playGame(gameId) {
+            try {
+                const result = await authFetch(`/api/protected/library/${gameId}/play`);
+                const data   = await result.json();
+                if (data && data.launch_url) {
+                    window.open(data.launch_url, '_blank');
+                } else {
+                    showToast('遊戲啟動中...', 'success');
+                }
+            } catch (err) {
+                showToast(`啟動失敗：${err.message}`, 'error');
+            }
+        }
+
+        async function downloadGame(gameId) {
+            try {
+                const result = await authFetch(`/api/protected/library/${gameId}/download`);
+                if (!result.ok) {
+                    await parseResponse(result);
+                }
+                const blob = await result.blob();
+                const disposition = result.headers.get('content-disposition') || '';
+                const match = disposition.match(/filename="?([^";]+)"?/i);
+                const filename = match ? match[1] : `game-${gameId}.download`;
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
+                showToast('開始下載遊戲...', 'success');
+            } catch (err) {
+                showToast(`下載失敗：${err.message}`, 'error');
             }
         }
 

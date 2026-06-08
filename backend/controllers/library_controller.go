@@ -136,6 +136,14 @@ func DownloadGame(c *gin.Context) {
 			return
 		}
 		fullPath = filepath.Join("assets", "game-files", rel)
+
+		// Fallback for legacy DB entries: If file isn't found at the root, check inside the game_id subfolder
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) && !strings.Contains(rel, "/") && !strings.Contains(rel, "\\") {
+			fallbackPath := filepath.Join("assets", "game-files", gameID, rel)
+			if _, err2 := os.Stat(fallbackPath); err2 == nil {
+				fullPath = fallbackPath
+			}
+		}
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid game file path"})
 		return
