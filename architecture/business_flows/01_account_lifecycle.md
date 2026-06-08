@@ -14,7 +14,7 @@
   3. **角色分派 (Role Assignment)**：
      - 若 `is_developer` 為 `true`，賦予 `DEVELOPER` 角色。
      - 若為 `false`，賦予 `USERS` 角色。
-  4. **預設狀態**：帳號建立時，系統自動將 `Status` 設為 `ONLINE`，`Permission` 設為 `ACTIVE`。
+  4. **預設狀態**：帳號建立時，系統預設將 `Status` 設為 `OFFLINE`，`Permission` 設為 `ACTIVE`。
   5. **資料庫寫入**：寫入 `users` 表。若 `username` 或 `email` 已被占用，會由 GORM 的 Unique 限制擋下並回傳錯誤。
 - **終點 (自動登入)**：註冊成功後，後端會直接核發並回傳 JWT Token，前端收到後存入 `localStorage` 並自動導向商店首頁 (`index.html`)，完成無縫登入體驗。
 
