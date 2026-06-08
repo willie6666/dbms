@@ -85,12 +85,19 @@
   ```
 - **原生 SQL 語法**：
   ```sql
-  BEGIN;
-  INSERT INTO transactions (user_id, total_amount, receipt_number) VALUES (4, 1200.00, 'REC-DEMO-0001') RETURNING transaction_id;
-  INSERT INTO transaction_items (transaction_id, game_id, purchase_price) VALUES (99, 1, 1200.00);
-  INSERT INTO game_licenses (user_id, game_id, transaction_item_id, status) VALUES (4, 1, 105, 'ACTIVE');
+  WITH new_tx AS (
+      INSERT INTO transactions (user_id, total_amount, receipt_number) 
+      VALUES (4, 1200.00, 'REC-DEMO-0002') 
+      RETURNING transaction_id
+  ), new_item AS (
+      INSERT INTO transaction_items (transaction_id, game_id, purchase_price) 
+      SELECT transaction_id, 1, 1200.00 FROM new_tx 
+      RETURNING item_id
+  ), new_license AS (
+      INSERT INTO game_licenses (user_id, game_id, transaction_item_id, status) 
+      SELECT 4, 1, item_id, 'ACTIVE' FROM new_item
+  )
   DELETE FROM shopping_carts WHERE user_id = 4;
-  COMMIT;
   ```
 
 ### 7. 將遊戲加入願望清單 (INSERT)
