@@ -28,7 +28,7 @@ erDiagram
         VARCHAR attitude "POSITIVE | NEGATIVE"
         VARCHAR status "VISIBLE | HIDDEN | DELETED"
     }
-    REVIEW_REPLYS {
+    REVIEW_REPLIES {
         INT review_reply_id PK
         INT review_id FK
         INT user_id FK
@@ -40,6 +40,6 @@ erDiagram
 
     USERS ||--o{ REVIEWS : writes
     GAMES ||--o{ REVIEWS : receives
-    REVIEWS ||--o{ REVIEW_REPLYS : has
-    USERS ||--o{ REVIEW_REPLYS : writes
-    REVIEW_REPLYS o|--o{ REVIEW_REPLYS : parent_of
+    REVIEWS ||--o{ REVIEW_REPLIES : has
+    USERS ||--o{ REVIEW_REPLIES : writes
+    REVIEW_REPLIES |o--o{ REVIEW_REPLIES : parent_of
