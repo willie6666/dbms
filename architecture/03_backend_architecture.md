@@ -18,7 +18,7 @@
 
 ```text
 backend/
-├── main.go                     # [系統啟動點] 負責初始化 DB 連線、註冊全域路由、並啟動 Gin Server 監聽 Port 8000
+├── main.go                     # [系統啟動點] 初始化 DB 連線、執行資料庫欄位補丁與種子密碼雜湊校正、註冊全域路由、並啟動 Gin Server (Port 8000)
 ├── assets/                     # [靜態資源層] (儲存所有遊戲上傳的圖片與檔案)
 │   ├── images/                 # 遊戲封面圖與截圖 (經由 /media/images 對外服務)
 │   └── game-files/             # 遊戲可下載檔案 (經由 API 授權下載)
@@ -31,14 +31,14 @@ backend/
 ├── controllers/                # [業務邏輯層] (系統心臟)
 │   ├── auth_controller.go      # 登入、註冊邏輯 (包含 Bcrypt 密碼比對與 JWT 簽發)
 │   ├── game_controller.go      # 遊戲清單查詢、搜尋、詳情瀏覽
-│   ├── cart_controller.go      # 購物車管理、結帳交易處理 (包含嚴謹的 Database Transaction)
+│   ├── cart_controller.go      # 購物車管理 (加入、移除、查詢)
 │   ├── developer_controller.go # 開發者專屬：上架遊戲、上傳素材、查看銷售數據
 │   ├── csr_controller.go       # 客服專屬：審核退款申請
 │   ├── admin_controller.go     # 系統管理員專屬：帳號停權、權限變更、強制下架
 │   ├── user_controller.go      # 使用者個人資料管理
 │   ├── social_controller.go    # 好友、黑名單、訊息、退款申請與評論管理
 │   ├── library_controller.go   # 遊戲庫遊玩授權與願望清單
-│   └── transaction_controller.go # 歷史交易紀錄查詢
+│   └── transaction_controller.go # 結帳交易處理 (包含嚴謹的 Database Transaction) 與歷史交易紀錄查詢
 ├── middleware/                 # [中介軟體防護層]
 │   ├── auth_middleware.go      # [第一道防線] 攔截請求，解密 JWT Token，並將 User ID 寫入 Context
 │   └── role_middleware.go      # [第二道防線] 檢查 Context 內的使用者 Role 是否具備特定操作權限
