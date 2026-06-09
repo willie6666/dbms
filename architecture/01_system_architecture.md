@@ -52,13 +52,13 @@ VaporAuror 採用經典的現代 Web 三層架構，職責分明：
                                                     ▼
        ┌────────────────── Go Backend ──────────────────┐
        │                                                │
-       │  1. go.Gin (路由分發、Auth/Role 中介軟體)      │
+       │  1. go.Gin (路由分發、Auth/Role 中介軟體)        │
        │                         │                      │
-       │  2. go.Controller (核心業務邏輯、加解密)       │
+       │  2. go.Controller (核心業務邏輯、加解密)         │
        │                         │                      │
-       │  3. go.GORM (ORM 物件關聯對映)                 │
+       │  3. go.GORM (ORM 物件關聯對映)                  │
        │                         │                      │
-       │  4. go.Driver (pgx) (底層 TCP 連線驅動)        │
+       │  4. go.Driver (pgx) (底層 TCP 連線驅動)         │
        └─────────────────────────┬──────────────────────┘
                                  │
                                  ▼ SQL 語法 (查詢 / 寫入)
