@@ -21,12 +21,12 @@ erDiagram
         VARCHAR status "DRAFT | ACTIVE | TAKEN_DOWN"
     }
 
-    TAG {
+    TAGS {
         INT tag_id PK
         VARCHAR tag_name
     }
 
-    GAME_TAG {
+    GAME_TAGS {
         INT game_id PK, FK
         INT tag_id PK, FK
     }
@@ -38,7 +38,7 @@ erDiagram
         VARCHAR media_type "media | game_file"
     }
 
-    TRANSACTION {
+    TRANSACTIONS {
         INT transaction_id PK
         INT user_id FK
         DECIMAL total_amount
@@ -46,21 +46,21 @@ erDiagram
         VARCHAR receipt_number
     }
 
-    TRANSACTION_ITEM {
+    TRANSACTION_ITEMS {
         INT item_id PK
         INT transaction_id FK
         INT game_id FK
         DECIMAL purchase_price
     }
 
-    SHOPPING_CART {
+    SHOPPING_CARTS {
         INT cart_id PK
         INT user_id FK
         INT game_id FK
         DATETIME added_at
     }
 
-    GAME_LICENSE {
+    GAME_LICENSES {
         INT license_id PK
         INT game_id FK
         INT user_id FK
@@ -69,14 +69,14 @@ erDiagram
         VARCHAR status "ACTIVE | REVOKED | FROZEN"
     }
 
-    WISH_LIST {
+    WISH_LISTS {
         INT wishlist_id PK
         INT user_id FK
         INT game_id FK
         DATETIME added_at
     }
 
-    REFUND_REQUEST {
+    REFUND_REQUESTS {
         INT refund_id PK
         INT buyer_id FK
         INT transaction_item_id FK
@@ -88,7 +88,7 @@ erDiagram
         VARCHAR status "PENDING | APPROVED | REJECTED"
     }
 
-    REVIEW {
+    REVIEWS {
         INT review_id PK
         INT game_id FK
         INT user_id FK
@@ -98,7 +98,7 @@ erDiagram
         VARCHAR status "VISIBLE | HIDDEN | DELETED"
     }
 
-    REVIEW_REPLY {
+    REVIEW_REPLYS {
         INT review_reply_id PK
         INT review_id FK
         INT user_id FK
@@ -108,7 +108,7 @@ erDiagram
         VARCHAR status "VISIBLE | HIDDEN | DELETED"
     }
 
-    FRIENDSHIP {
+    FRIENDSHIPS {
         INT friendship_id PK
         INT sender_id FK
         INT receiver_id FK
@@ -116,7 +116,7 @@ erDiagram
         VARCHAR status "PENDING | ACCEPTED | DECLINED"
     }
 
-    MESSAGE {
+    MESSAGES {
         INT message_id PK
         INT sender_id FK
         INT receiver_id FK
@@ -125,7 +125,7 @@ erDiagram
         BOOLEAN is_read
     }
 
-    BLACKLIST {
+    BLACKLISTS {
         INT blacklist_id PK
         INT blocker_id FK
         INT blocked_id FK
@@ -136,38 +136,38 @@ erDiagram
     USERS ||--o{ GAMES : develops
 
     GAMES ||--|{ GAME_MEDIA : has
-    GAMES ||--|{ GAME_TAG : tagged_as
-    TAG ||--o{ GAME_TAG : used_by
+    GAMES ||--|{ GAME_TAGS : tagged_as
+    TAGS ||--o{ GAME_TAGS : used_by
 
-    USERS ||--o{ TRANSACTION : makes
-    TRANSACTION ||--|{ TRANSACTION_ITEM : contains
-    GAMES ||--o{ TRANSACTION_ITEM : purchased_as
+    USERS ||--o{ TRANSACTIONS : makes
+    TRANSACTIONS ||--|{ TRANSACTION_ITEMS : contains
+    GAMES ||--o{ TRANSACTION_ITEMS : purchased_as
 
-    USERS ||--o{ SHOPPING_CART : adds
-    GAMES ||--o{ SHOPPING_CART : added_to_cart
+    USERS ||--o{ SHOPPING_CARTS : adds
+    GAMES ||--o{ SHOPPING_CARTS : added_to_cart
 
-    USERS ||--o{ GAME_LICENSE : owns
-    GAMES ||--o{ GAME_LICENSE : licensed_as
-    TRANSACTION_ITEM ||--|| GAME_LICENSE : generates
+    USERS ||--o{ GAME_LICENSES : owns
+    GAMES ||--o{ GAME_LICENSES : licensed_as
+    TRANSACTION_ITEMS ||--|| GAME_LICENSES : generates
 
-    USERS ||--o{ WISH_LIST : collects
-    GAMES ||--o{ WISH_LIST : appears_in
+    USERS ||--o{ WISH_LISTS : collects
+    GAMES ||--o{ WISH_LISTS : appears_in
 
-    USERS ||--o{ REFUND_REQUEST : submits
-    USERS |o--o{ REFUND_REQUEST : handles
-    TRANSACTION_ITEM ||--|o REFUND_REQUEST : refund_for
+    USERS ||--o{ REFUND_REQUESTS : submits
+    USERS |o--o{ REFUND_REQUESTS : handles
+    TRANSACTION_ITEMS ||--|o REFUND_REQUESTS : refund_for
 
-    USERS ||--o{ REVIEW : writes
-    GAMES ||--o{ REVIEW : receives
-    REVIEW ||--o{ REVIEW_REPLY : has
-    USERS ||--o{ REVIEW_REPLY : writes
-    REVIEW_REPLY |o--o{ REVIEW_REPLY : parent_of
+    USERS ||--o{ REVIEWS : writes
+    GAMES ||--o{ REVIEWS : receives
+    REVIEWS ||--o{ REVIEW_REPLYS : has
+    USERS ||--o{ REVIEW_REPLYS : writes
+    REVIEW_REPLYS |o--o{ REVIEW_REPLYS : parent_of
 
-    USERS ||--o{ FRIENDSHIP : sends
-    USERS ||--o{ FRIENDSHIP : receives
+    USERS ||--o{ FRIENDSHIPS : sends
+    USERS ||--o{ FRIENDSHIPS : receives
 
-    USERS ||--o{ MESSAGE : sends
-    USERS ||--o{ MESSAGE : receives
+    USERS ||--o{ MESSAGES : sends
+    USERS ||--o{ MESSAGES : receives
 
-    USERS ||--o{ BLACKLIST : blocks
-    USERS ||--o{ BLACKLIST : blocked_by
+    USERS ||--o{ BLACKLISTS : blocks
+    USERS ||--o{ BLACKLISTS : blocked_by

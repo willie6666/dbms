@@ -10,13 +10,13 @@ erDiagram
         VARCHAR status "ONLINE | OFFLINE"
         VARCHAR permission "ACTIVE | DEACTIVE | DELETED"
     }
-    TRANSACTION_ITEM {
+    TRANSACTION_ITEMS {
         INT item_id PK
         INT transaction_id FK
         INT game_id FK
         DECIMAL purchase_price
     }
-    REFUND_REQUEST {
+    REFUND_REQUESTS {
         INT refund_id PK
         INT buyer_id FK
         INT transaction_item_id FK
@@ -28,6 +28,6 @@ erDiagram
         VARCHAR status "PENDING | APPROVED | REJECTED"
     }
 
-    USERS ||--o{ REFUND_REQUEST : submits
-    USERS o|--o{ REFUND_REQUEST : handles
-    TRANSACTION_ITEM ||--o| REFUND_REQUEST : refund_for
+    USERS ||--o{ REFUND_REQUESTS : submits
+    USERS o|--o{ REFUND_REQUESTS : handles
+    TRANSACTION_ITEMS ||--o| REFUND_REQUESTS : refund_for

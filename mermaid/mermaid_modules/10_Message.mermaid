@@ -10,7 +10,7 @@ erDiagram
         VARCHAR status "ONLINE | OFFLINE"
         VARCHAR permission "ACTIVE | DEACTIVE | DELETED"
     }
-    MESSAGE {
+    MESSAGES {
         INT message_id PK
         INT sender_id FK
         INT receiver_id FK
@@ -19,5 +19,5 @@ erDiagram
         BOOLEAN is_read
     }
 
-    USERS ||--o{ MESSAGE : sends
-    USERS ||--o{ MESSAGE : receives
+    USERS ||--o{ MESSAGES : sends
+    USERS ||--o{ MESSAGES : receives

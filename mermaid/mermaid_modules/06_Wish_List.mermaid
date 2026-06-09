@@ -19,12 +19,12 @@ erDiagram
         DECIMAL overall_rating
         VARCHAR status "DRAFT | ACTIVE | TAKEN_DOWN"
     }
-    WISH_LIST {
+    WISH_LISTS {
         INT wishlist_id PK
         INT user_id FK
         INT game_id FK
         DATETIME added_at
     }
 
-    USERS ||--o{ WISH_LIST : collects
-    GAMES ||--o{ WISH_LIST : appears_in
+    USERS ||--o{ WISH_LISTS : collects
+    GAMES ||--o{ WISH_LISTS : appears_in

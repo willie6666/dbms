@@ -8,11 +8,11 @@ erDiagram
         DECIMAL overall_rating
         VARCHAR status "DRAFT | ACTIVE | TAKEN_DOWN"
     }
-    TAG {
+    TAGS {
         INT tag_id PK
         VARCHAR tag_name
     }
-    GAME_TAG {
+    GAME_TAGS {
         INT game_id PK, FK
         INT tag_id PK, FK
     }
@@ -24,5 +24,5 @@ erDiagram
     }
 
     GAMES ||--|{ GAME_MEDIA : has
-    GAMES ||--|{ GAME_TAG : tagged_as
-    TAG ||--o{ GAME_TAG : used_by
+    GAMES ||--|{ GAME_TAGS : tagged_as
+    TAGS ||--o{ GAME_TAGS : used_by

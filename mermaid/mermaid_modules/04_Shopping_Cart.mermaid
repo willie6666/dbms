@@ -19,12 +19,12 @@ erDiagram
         DECIMAL overall_rating
         VARCHAR status "DRAFT | ACTIVE | TAKEN_DOWN"
     }
-    SHOPPING_CART {
+    SHOPPING_CARTS {
         INT cart_id PK
         INT user_id FK
         INT game_id FK
         DATETIME added_at
     }
 
-    USERS ||--o{ SHOPPING_CART : adds
-    GAMES ||--o{ SHOPPING_CART : added_to_cart
+    USERS ||--o{ SHOPPING_CARTS : adds
+    GAMES ||--o{ SHOPPING_CARTS : added_to_cart

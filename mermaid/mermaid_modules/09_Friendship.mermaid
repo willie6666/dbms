@@ -10,7 +10,7 @@ erDiagram
         VARCHAR status "ONLINE | OFFLINE"
         VARCHAR permission "ACTIVE | DEACTIVE | DELETED"
     }
-    FRIENDSHIP {
+    FRIENDSHIPS {
         INT friendship_id PK
         INT sender_id FK
         INT receiver_id FK
@@ -18,5 +18,5 @@ erDiagram
         VARCHAR status "PENDING | ACCEPTED | DECLINED"
     }
 
-    USERS ||--o{ FRIENDSHIP : sends
-    USERS ||--o{ FRIENDSHIP : receives
+    USERS ||--o{ FRIENDSHIPS : sends
+    USERS ||--o{ FRIENDSHIPS : receives

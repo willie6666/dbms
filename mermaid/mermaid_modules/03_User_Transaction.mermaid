@@ -19,20 +19,20 @@ erDiagram
         DECIMAL overall_rating
         VARCHAR status "DRAFT | ACTIVE | TAKEN_DOWN"
     }
-    TRANSACTION {
+    TRANSACTIONS {
         INT transaction_id PK
         INT user_id FK
         DECIMAL total_amount
         DATETIME transaction_date
         VARCHAR receipt_number
     }
-    TRANSACTION_ITEM {
+    TRANSACTION_ITEMS {
         INT item_id PK
         INT transaction_id FK
         INT game_id FK
         DECIMAL purchase_price
     }
 
-    USERS ||--o{ TRANSACTION : makes
-    TRANSACTION ||--|{ TRANSACTION_ITEM : contains
-    GAMES ||--o{ TRANSACTION_ITEM : purchased_as
+    USERS ||--o{ TRANSACTIONS : makes
+    TRANSACTIONS ||--|{ TRANSACTION_ITEMS : contains
+    GAMES ||--o{ TRANSACTION_ITEMS : purchased_as

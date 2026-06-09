@@ -10,12 +10,12 @@ erDiagram
         VARCHAR status "ONLINE | OFFLINE"
         VARCHAR permission "ACTIVE | DEACTIVE | DELETED"
     }
-    BLACKLIST {
+    BLACKLISTS {
         INT blacklist_id PK
         INT blocker_id FK
         INT blocked_id FK
         DATETIME created_at
     }
 
-    USERS ||--o{ BLACKLIST : blocks
-    USERS ||--o{ BLACKLIST : blocked_by
+    USERS ||--o{ BLACKLISTS : blocks
+    USERS ||--o{ BLACKLISTS : blocked_by

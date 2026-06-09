@@ -19,13 +19,13 @@ erDiagram
         DECIMAL overall_rating
         VARCHAR status "DRAFT | ACTIVE | TAKEN_DOWN"
     }
-    TRANSACTION_ITEM {
+    TRANSACTION_ITEMS {
         INT item_id PK
         INT transaction_id FK
         INT game_id FK
         DECIMAL purchase_price
     }
-    GAME_LICENSE {
+    GAME_LICENSES {
         INT license_id PK
         INT game_id FK
         INT user_id FK
@@ -34,6 +34,6 @@ erDiagram
         VARCHAR status "ACTIVE | REVOKED | FROZEN"
     }
 
-    USERS ||--o{ GAME_LICENSE : owns
-    GAMES ||--o{ GAME_LICENSE : licensed_as
-    TRANSACTION_ITEM ||--|| GAME_LICENSE : generates
+    USERS ||--o{ GAME_LICENSES : owns
+    GAMES ||--o{ GAME_LICENSES : licensed_as
+    TRANSACTION_ITEMS ||--|| GAME_LICENSES : generates
