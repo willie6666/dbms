@@ -132,6 +132,7 @@ erDiagram
         DATETIME created_at
     }
 
+erDiagram
     USERS ||--o{ GAMES : develops
 
     GAMES ||--|{ GAME_MEDIA : has
@@ -153,14 +154,14 @@ erDiagram
     GAMES ||--o{ WISH_LIST : appears_in
 
     USERS ||--o{ REFUND_REQUEST : submits
-    USERS o|--o{ REFUND_REQUEST : handles
-    TRANSACTION_ITEM ||--o| REFUND_REQUEST : refund_for
+    USERS |o--o{ REFUND_REQUEST : handles
+    TRANSACTION_ITEM ||--|o REFUND_REQUEST : refund_for
 
     USERS ||--o{ REVIEW : writes
     GAMES ||--o{ REVIEW : receives
     REVIEW ||--o{ REVIEW_REPLY : has
     USERS ||--o{ REVIEW_REPLY : writes
-    REVIEW_REPLY o|--o{ REVIEW_REPLY : parent_of
+    REVIEW_REPLY |o--o{ REVIEW_REPLY : parent_of
 
     USERS ||--o{ FRIENDSHIP : sends
     USERS ||--o{ FRIENDSHIP : receives
