@@ -291,8 +291,14 @@ func SendFriendRequest(c *gin.Context) {
 		}
 	}
 
-	var existing models.Friendship
-	if err := database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", userID, input.ReceiverID, input.ReceiverID, userID).First(&existing).Error; err == nil {
+	var blocks []models.Blacklist
+	if database.DB.Where("(blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)", userID, input.ReceiverID, input.ReceiverID, userID).Limit(1).Find(&blocks).RowsAffected > 0 {
+		c.JSON(http.StatusForbidden, gin.H{"error": "無法發送好友邀請"})
+		return
+	}
+
+	var existings []models.Friendship
+	if database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", userID, input.ReceiverID, input.ReceiverID, userID).Limit(1).Find(&existings).RowsAffected > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Friend request already exists"})
 		return
 	}
@@ -324,6 +330,12 @@ func SendMessage(c *gin.Context) {
 		return
 	}
 
+	var friend models.Friendship
+	if err := database.DB.Where("((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) AND status = ?", userID, input.ReceiverID, input.ReceiverID, userID, "ACCEPTED").First(&friend).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "無法發送訊息：你們不是好友"})
+		return
+	}
+
 	msg := models.Message{
 		SenderID:   userID,
 		ReceiverID: input.ReceiverID,
@@ -339,13 +351,24 @@ func GetMessages(c *gin.Context) {
 	myID := uint(userIDFloat.(float64))
 	otherID := c.Param("user_id")
 
+	// Check if I blocked the other user
+	var blocks []models.Blacklist
+	database.DB.Where("blocker_id = ? AND blocked_id = ?", myID, otherID).Limit(1).Find(&blocks)
+	hasBlocked := len(blocks) > 0
+
 	// Mark all unread messages sent by the other user to me as read
-	database.DB.Model(&models.Message{}).
-		Where("sender_id = ? AND receiver_id = ? AND is_read = ?", otherID, myID, false).
-		Update("is_read", true)
+	readQuery := database.DB.Model(&models.Message{}).Where("sender_id = ? AND receiver_id = ? AND is_read = ?", otherID, myID, false)
+	if hasBlocked {
+		readQuery = readQuery.Where("sent_at <= ?", blocks[0].CreatedAt)
+	}
+	readQuery.Update("is_read", true)
 
 	var messages []models.Message
-	database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", myID, otherID, otherID, myID).Order("sent_at asc").Find(&messages)
+	if hasBlocked {
+		database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ? AND sent_at <= ?)", myID, otherID, otherID, myID, blocks[0].CreatedAt).Order("sent_at asc").Find(&messages)
+	} else {
+		database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", myID, otherID, otherID, myID).Order("sent_at asc").Find(&messages)
+	}
 
 	c.JSON(http.StatusOK, gin.H{"data": messages})
 }
