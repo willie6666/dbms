@@ -39,14 +39,20 @@
                     cartItems = Array.isArray(cart) ? cart : (cart.data || cart.items || []);
                 } catch (_) {}
 
-                renderWishlist(games, cartItems);
+                let libraryItems = [];
+                try {
+                    const library = await apiGetLibrary();
+                    libraryItems = Array.isArray(library) ? library : (library.data || library.games || []);
+                } catch (_) {}
+
+                renderWishlist(games, cartItems, libraryItems);
             } catch (err) {
                 document.getElementById('wishlist-container').innerHTML =
                     `<p style="color:var(--accent-red);text-align:center;padding:40px;">載入失敗：${err.message}</p>`;
             }
         }
 
-        function renderWishlist(games, cartItems) {
+        function renderWishlist(games, cartItems, libraryItems = []) {
             const listEl = document.getElementById('wishlist-container');
             listEl.innerHTML = '';
 
@@ -76,11 +82,19 @@
                     return Number(cId) === Number(gameId);
                 });
 
+                const isOwned = libraryItems.some(lib => {
+                    const libGame = lib.game || lib;
+                    const libId = libGame.game_id || libGame.id || lib.game_id;
+                    return Number(libId) === Number(gameId) && (lib.status === 'ACTIVE' || !lib.status);
+                });
+
                 const isTakenDown = (game.status === 'TAKEN_DOWN' || item.status === 'TAKEN_DOWN');
 
                 let cartBtnHtml = '';
                 if (isTakenDown) {
                     cartBtnHtml = `<button class="button is-danger is-outlined" disabled style="background-color: transparent; border-color: var(--accent-red); color: var(--accent-red);">已下架</button>`;
+                } else if (isOwned) {
+                    cartBtnHtml = `<button class="button is-primary" disabled style="background-color: var(--bg-darker); color: var(--text-muted); border: 1px solid var(--border-color);">已在遊戲庫</button>`;
                 } else if (isCarted) {
                     cartBtnHtml = `<button class="button is-primary" disabled style="background-color: var(--bg-darker); color: var(--text-muted); border: 1px solid var(--border-color);">已在購物車</button>`;
                 } else {
