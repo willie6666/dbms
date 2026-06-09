@@ -135,15 +135,18 @@ a:hover {
 }
 
 .navbar.va-navbar .navbar-item,
-.navbar.va-navbar .navbar-link {
-    color: var(--text-secondary);
+.navbar.va-navbar .navbar-link,
+.navbar-dropdown .navbar-item {
+    color: var(--text-secondary) !important;
+    background: transparent !important;
 }
 
 .navbar.va-navbar .navbar-item:hover,
 .navbar.va-navbar .navbar-link:hover,
-.navbar.va-navbar .navbar-item.is-active {
-    background: rgba(55, 216, 255, 0.08);
-    color: var(--text-primary);
+.navbar.va-navbar .navbar-item.is-active,
+.navbar-dropdown .navbar-item:hover {
+    background: rgba(55, 216, 255, 0.08) !important;
+    color: var(--text-primary) !important;
 }
 
 .navbar.va-navbar .navbar-menu {
@@ -173,9 +176,17 @@ a:hover {
 }
 
 .navbar-dropdown {
-    background: #111827;
+    background: #111827 !important;
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: var(--shadow-card);
+}
+
+.navbar-divider {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    display: block;
+    border: none;
+    height: 1px;
+    margin: 0.5rem 0;
 }
 
 .button,
@@ -1575,4 +1586,4 @@ label,
 .vp-switch.is-active .vp-off {
     background: #fff;
     color: #555;
-}
+}
