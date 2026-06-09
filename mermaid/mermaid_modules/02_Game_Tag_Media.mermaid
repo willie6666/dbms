@@ -23,6 +23,6 @@ erDiagram
         VARCHAR media_type "media | game_file"
     }
 
-    GAMES ||--|{ GAME_MEDIA : has
-    GAMES ||--|{ GAME_TAGS : tagged_as
+    GAMES ||--o{ GAME_MEDIA : has
+    GAMES ||--o{ GAME_TAGS : tagged_as
     TAGS ||--o{ GAME_TAGS : used_by

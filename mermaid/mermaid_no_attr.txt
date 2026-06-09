@@ -1,0 +1,39 @@
+erDiagram
+    USERS ||--o{ GAMES : develops
+
+    GAMES ||--o{ GAME_MEDIA : has
+    GAMES ||--o{ GAME_TAGS : tagged_as
+    TAGS ||--o{ GAME_TAGS : used_by
+
+    USERS ||--o{ TRANSACTIONS : makes
+    TRANSACTIONS ||--|{ TRANSACTION_ITEMS : contains
+    GAMES ||--o{ TRANSACTION_ITEMS : purchased_as
+
+    USERS ||--o{ SHOPPING_CARTS : adds
+    GAMES ||--o{ SHOPPING_CARTS : added_to_cart
+
+    USERS ||--o{ GAME_LICENSES : owns
+    GAMES ||--o{ GAME_LICENSES : licensed_as
+    TRANSACTION_ITEMS ||--|| GAME_LICENSES : generates
+
+    USERS ||--o{ WISH_LISTS : collects
+    GAMES ||--o{ WISH_LISTS : appears_in
+
+    USERS ||--o{ REFUND_REQUESTS : submits
+    USERS |o--o{ REFUND_REQUESTS : handles
+    TRANSACTION_ITEMS ||--|o REFUND_REQUESTS : refund_for
+
+    USERS ||--o{ REVIEWS : writes
+    GAMES ||--o{ REVIEWS : receives
+    REVIEWS ||--o{ REVIEW_REPLYS : has
+    USERS ||--o{ REVIEW_REPLYS : writes
+    REVIEW_REPLYS |o--o{ REVIEW_REPLYS : parent_of
+
+    USERS ||--o{ FRIENDSHIPS : sends
+    USERS ||--o{ FRIENDSHIPS : receives
+
+    USERS ||--o{ MESSAGES : sends
+    USERS ||--o{ MESSAGES : receives
+
+    USERS ||--o{ BLACKLISTS : blocks
+    USERS ||--o{ BLACKLISTS : blocked_by
