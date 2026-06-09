@@ -6,6 +6,8 @@
 // ============================================================
 // 頁面初始化
 // ============================================================
+document.documentElement.setAttribute('data-theme', 'dark');
+
 document.addEventListener("DOMContentLoaded", () => {
     renderHeader();
 
