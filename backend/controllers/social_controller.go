@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"net/http"
+	"sort"
 	"time"
+
 	"vapor_auror_backend/database"
 	"vapor_auror_backend/models"
 
@@ -224,10 +226,14 @@ func GetFriends(c *gin.Context) {
 	database.DB.Where("(sender_id = ? OR receiver_id = ?) AND status = ?", userID, userID, "ACCEPTED").Order("created_at desc").Find(&friends)
 
 	type FriendDTO struct {
-		FriendshipID uint          `json:"friendship_id"`
-		ID           uint          `json:"id"`
-		Username     string        `json:"username"`
-		User         socialUserDTO `json:"user"`
+		FriendshipID  uint          `json:"friendship_id"`
+		ID            uint          `json:"id"`
+		Username      string        `json:"username"`
+		User          socialUserDTO `json:"user"`
+		CreatedAt     time.Time     `json:"created_at"`
+		LastMessage   string        `json:"last_message"`
+		LastMessageAt time.Time     `json:"last_message_at"`
+		HasUnread     bool          `json:"has_unread"`
 	}
 
 	result := make([]FriendDTO, 0, len(friends))
@@ -237,8 +243,47 @@ func GetFriends(c *gin.Context) {
 			friendID = friend.ReceiverID
 		}
 		friendUser := getSocialUser(friendID)
-		result = append(result, FriendDTO{FriendshipID: friend.FriendshipID, ID: friendID, Username: friendUser.Username, User: friendUser})
+		
+		// 檢查黑名單，過濾已被自己封鎖的好友
+		var blocks []models.Blacklist
+		database.DB.Where("blocker_id = ? AND blocked_id = ?", userID, friendID).Limit(1).Find(&blocks)
+
+		if len(blocks) > 0 {
+			continue // 已經封鎖的好友不顯示在好友名單中
+		}
+
+		query := database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", userID, friendID, friendID, userID)
+
+		var lastMsg models.Message
+		hasMsg := query.Order("sent_at desc, message_id desc").Limit(1).Find(&lastMsg).RowsAffected > 0
+
+		lastMsgContent := ""
+		lastMsgAt := friend.CreatedAt // Fallback
+		if hasMsg {
+			lastMsgContent = lastMsg.Content
+			lastMsgAt = lastMsg.SentAt
+		}
+
+		// 檢查是否有未讀訊息
+		var unreadCount int64
+		database.DB.Model(&models.Message{}).Where("sender_id = ? AND receiver_id = ? AND is_read = ?", friendID, userID, false).Count(&unreadCount)
+
+		result = append(result, FriendDTO{
+			FriendshipID:  friend.FriendshipID,
+			ID:            friendID,
+			Username:      friendUser.Username,
+			User:          friendUser,
+			CreatedAt:     friend.CreatedAt,
+			LastMessage:   lastMsgContent,
+			LastMessageAt: lastMsgAt,
+			HasUnread:     unreadCount > 0,
+		})
 	}
+
+	// 依照 LastMessageAt (最新訊息時間) 降冪排序
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].LastMessageAt.After(result[j].LastMessageAt)
+	})
 
 	c.JSON(http.StatusOK, gin.H{"data": result})
 }
@@ -365,9 +410,9 @@ func GetMessages(c *gin.Context) {
 
 	var messages []models.Message
 	if hasBlocked {
-		database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ? AND sent_at <= ?)", myID, otherID, otherID, myID, blocks[0].CreatedAt).Order("sent_at asc").Find(&messages)
+		database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ? AND sent_at <= ?)", myID, otherID, otherID, myID, blocks[0].CreatedAt).Order("sent_at asc, message_id asc").Find(&messages)
 	} else {
-		database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", myID, otherID, otherID, myID).Order("sent_at asc").Find(&messages)
+		database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", myID, otherID, otherID, myID).Order("sent_at asc, message_id asc").Find(&messages)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": messages})

@@ -55,24 +55,24 @@
 - **Go 實作 (GORM)**：
   ```go
   var friendships []models.Friendship
-  database.DB.Where("user_id1 = ? OR user_id2 = ?", userID, userID).Find(&friendships)
+  database.DB.Where("(sender_id = ? OR receiver_id = ?) AND status = ?", userID, userID, "ACCEPTED").Order("created_at desc").Find(&friendships)
   ```
 - **原生 SQL 語法**：
   ```sql
-  SELECT * FROM friendships WHERE user_id1 = 5 OR user_id2 = 5;
+  SELECT * FROM friendships WHERE (sender_id = 5 OR receiver_id = 5) AND status = 'ACCEPTED' ORDER BY created_at DESC;
   ```
 
 ### 6. 查看未處理的好友邀請
-- **說明**：列出別人發送給自己，且尚未同意或拒絕的好友邀請紀錄。
+- **說明**：列出別人發送給自己或是自己發送出去，且尚未同意或拒絕的好友邀請紀錄。
 - **對應 API**：`GET /api/social/friends/requests`
 - **Go 實作 (GORM)**：
   ```go
-  var requests []models.FriendRequest
-  database.DB.Where("receiver_id = ? AND status = 'PENDING'", userID).Find(&requests)
+  var requests []models.Friendship
+  database.DB.Where("(receiver_id = ? OR sender_id = ?) AND status = ?", userID, userID, "PENDING").Order("created_at desc").Find(&requests)
   ```
 - **原生 SQL 語法**：
   ```sql
-  SELECT * FROM friend_requests WHERE receiver_id = 5 AND status = 'PENDING';
+  SELECT * FROM friendships WHERE (receiver_id = 5 OR sender_id = 5) AND status = 'PENDING' ORDER BY created_at DESC;
   ```
 
 ### 7. 查看自己的黑名單
@@ -80,12 +80,12 @@
 - **對應 API**：`GET /api/social/blacklist`
 - **Go 實作 (GORM)**：
   ```go
-  var blacklist []models.Blocklist
-  database.DB.Where("blocker_id = ?", userID).Find(&blacklist)
+  var blacklist []models.Blacklist
+  database.DB.Where("blocker_id = ?", userID).Order("created_at desc").Find(&blacklist)
   ```
 - **原生 SQL 語法**：
   ```sql
-  SELECT * FROM blacklists WHERE blocker_id = 5;
+  SELECT * FROM blacklists WHERE blocker_id = 5 ORDER BY created_at DESC;
   ```
 
 ### 8. 管理員獲取全站使用者名單
@@ -172,9 +172,9 @@
 - **Go 實作 (GORM)**：
   ```go
   var messages []models.Message
-  database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", myID, peerID, peerID, myID).Order("created_at ASC").Find(&messages)
+  database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", myID, peerID, peerID, myID).Order("sent_at asc, message_id asc").Find(&messages)
   ```
 - **原生 SQL 語法**：
   ```sql
-  SELECT * FROM messages WHERE (sender_id = 5 AND receiver_id = 10) OR (sender_id = 10 AND receiver_id = 5) ORDER BY sent_at ASC;
+  SELECT * FROM messages WHERE (sender_id = 5 AND receiver_id = 10) OR (sender_id = 10 AND receiver_id = 5) ORDER BY sent_at ASC, message_id ASC;
   ```

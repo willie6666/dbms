@@ -51,50 +51,66 @@
         let currentActiveTab = 'friends';
         let currentChatFriendId = null;
         let currentChatFriendName = '';
-        let chatInterval = null;
+        let socialPollingInterval = null;
 
         document.addEventListener("DOMContentLoaded", async () => {
             if (!requireLogin()) return;
             await loadSocialData();
+
+            socialPollingInterval = setInterval(async () => {
+                await loadSocialData(true);
+                if (currentChatFriendId) {
+                    await renderChat(true);
+                }
+            }, 1000);
         });
 
+        let socialDataStringified = '';
         // 載入好友、邀請與黑名單資料
-        async function loadSocialData() {
+        async function loadSocialData(isSilent = false) {
             try {
+                let tempFriends = [], tempRequests = [], tempBlocked = [];
                 const res = await apiGetFriends();
                 
                 // 相容於整合回傳或個別欄位
                 if (res && !Array.isArray(res) && (res.friends || res.requests || res.blocked)) {
-                    socialData.friends = res.friends || [];
-                    socialData.requests = res.requests || [];
-                    socialData.blocked = res.blocked || [];
+                    tempFriends = res.friends || [];
+                    tempRequests = res.requests || [];
+                    tempBlocked = res.blocked || [];
                 } else {
-                    socialData.friends = Array.isArray(res) ? res : (res.data || []);
+                    tempFriends = Array.isArray(res) ? res : (res.data || []);
                     
                     // Fallback 取得邀請列表
                     try {
                         const reqs = await apiGetFriendRequests();
-                        socialData.requests = Array.isArray(reqs) ? reqs : (reqs.requests || reqs.data || []);
+                        tempRequests = Array.isArray(reqs) ? reqs : (reqs.requests || reqs.data || []);
                     } catch (e) {
-                        console.warn("使用 fallback 取得好友邀請失敗，預設為空列表", e);
-                        socialData.requests = [];
+                        if (!isSilent) console.warn("使用 fallback 取得好友邀請失敗，預設為空列表", e);
                     }
 
                     // Fallback 取得黑名單列表
                     try {
                         const bl = await apiGetBlacklist();
-                        socialData.blocked = Array.isArray(bl) ? bl : (bl.blocked || bl.data || []);
+                        tempBlocked = Array.isArray(bl) ? bl : (bl.blocked || bl.data || []);
                     } catch (e) {
-                        console.warn("使用 fallback 取得黑名單失敗，預設為空列表", e);
-                        socialData.blocked = [];
+                        if (!isSilent) console.warn("使用 fallback 取得黑名單失敗，預設為空列表", e);
                     }
                 }
                 
-                renderList();
+                const newDataObj = { friends: tempFriends, requests: tempRequests, blocked: tempBlocked };
+                const newDataStr = JSON.stringify(newDataObj);
+                
+                if (newDataStr !== socialDataStringified) {
+                    socialData = newDataObj;
+                    socialDataStringified = newDataStr;
+                    renderList();
+                }
             } catch (err) {
-                console.error("載入社群資料失敗：", err);
-                const listContainer = document.getElementById('social-list');
-                listContainer.innerHTML = `<p style="color:var(--accent-red); text-align:center; margin-top:20px;">載入失敗：${err.message}</p>`;
+                if (!isSilent) {
+                    console.error("載入社群資料失敗：", err);
+                    const listContainer = document.getElementById('social-list');
+                    listContainer.innerHTML = `<p style="color:var(--accent-red); text-align:center; margin-top:20px;">載入失敗：${err.message}</p>`;
+                }
             }
         }
 
@@ -129,22 +145,31 @@
                 div.className = 'list-item' + (currentActiveTab === 'blocked' ? ' blocked' : '') + (currentChatFriendId === userId ? ' active' : '');
                 
                 const avatarChar = username.charAt(0).toUpperCase();
+                let lastMsgHtml = '';
+                let avatarStyle = '';
+                if (currentActiveTab === 'friends') {
+                    if (item.last_message) {
+                        lastMsgHtml = `<div style="font-size: 0.75rem; color: var(--text-subtle); max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">${escapeHtml(item.last_message)}</div>`;
+                    }
+                    if (item.has_unread) {
+                        avatarStyle = 'background-color: var(--accent-green) !important; color: #151b23 !important;';
+                    }
+                }
+
                 let contentHtml = `
-                    <div style="display:flex; align-items:center;">
-                        <div class="list-item-avatar">${avatarChar}</div>
-                        <span style="color: var(--text-primary); font-weight: 600;">${escapeHtml(username)}</span>
+                    <div style="display:flex; align-items:center; width: 60%; overflow: hidden;">
+                        <div class="list-item-avatar" style="${avatarStyle}">${avatarChar}</div>
+                        <div style="display:flex; flex-direction:column; overflow:hidden;">
+                            <span style="color: var(--text-primary); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(username)}</span>
+                            ${lastMsgHtml}
+                        </div>
                     </div>
                 `;
                 let actionHtml = '';
 
                 if (currentActiveTab === 'friends') {
-                    const isBlockedByMe = socialData.blocked && socialData.blocked.some(b => b.blocked_id === userId);
                     div.onclick = () => openChat(userId, username);
-                    if (isBlockedByMe) {
-                        actionHtml = `<button class="button is-light is-small" onclick="event.stopPropagation(); unblockUser(${userId})">解除封鎖</button>`;
-                    } else {
-                        actionHtml = `<button class="button is-danger is-light is-small" onclick="event.stopPropagation(); blockUser(${userId}, '${escapeHtml(username)}')">封鎖</button>`;
-                    }
+                    actionHtml = `<button class="button is-danger is-light is-small" onclick="event.stopPropagation(); blockUser(${userId}, '${escapeHtml(username)}')">封鎖</button>`;
                 } 
                 else if (currentActiveTab === 'requests') {
                     const requestId = item.friendship_id || item.id || userId;
@@ -243,10 +268,6 @@
 
         // 關閉聊天視窗
         function closeChat() {
-            if (chatInterval) {
-                clearInterval(chatInterval);
-                chatInterval = null;
-            }
             currentChatFriendId = null;
             currentChatFriendName = '';
             document.getElementById('chat-header').innerText = "請選擇一位好友開始聊天";
@@ -279,7 +300,6 @@
                 headerEl.innerText = `與 ${friendName} 聊天中 (封鎖中)`;
                 inputEl.disabled = true;
                 inputEl.placeholder = "已封鎖此用戶，無法接收與傳送新訊息";
-                if (chatInterval) clearInterval(chatInterval);
                 await renderChat();
             } else {
                 headerEl.innerText = `與 ${friendName} 聊天中`;
@@ -287,13 +307,6 @@
                 inputEl.placeholder = "輸入訊息...";
                 
                 await renderChat();
-                
-                if (chatInterval) clearInterval(chatInterval);
-                chatInterval = setInterval(async () => {
-                    if (currentChatFriendId === userId) {
-                        await renderChat(true);
-                    }
-                }, 3000);
             }
 
             renderList();
@@ -381,8 +394,8 @@
         });
 
         window.addEventListener('beforeunload', () => {
-            if (chatInterval) {
-                clearInterval(chatInterval);
+            if (socialPollingInterval) {
+                clearInterval(socialPollingInterval);
             }
         });
     </script>

@@ -491,9 +491,25 @@
 ### `[GET] /api/social/friends` (查看好友列表)
 - **Go 對應模組**: `social_controller.go` (函式: `GetFriends`)
 - **Headers**: `Authorization: Bearer <token>`
-- **Description**: 回傳所有已接受的好友（注意：即使好友已被加入黑名單，依然會出現在此列表中，屬於軟封鎖機制）。
+- **Description**: 回傳所有已接受的好友（注意：若好友已被加入黑名單，將會被過濾排除在此列表之外）。回傳陣列將會依據 `last_message_at` 降冪排序，時間相同則依據 `message_id` 降冪排序。
 - **Responses**:
-  - `200 OK`: `{"data": [ { "friendship_id": 1, "status": "ACCEPTED" } ]}`
+  - `200 OK`: 
+    ```json
+    {
+      "data": [
+        {
+          "friendship_id": 1,
+          "id": 2,
+          "username": "PlayerTwo",
+          "user": { "id": 2, "username": "PlayerTwo", "email": "..." },
+          "created_at": "2026-06-09T00:00:00Z",
+          "last_message": "最新的對話內容預覽...",
+          "last_message_at": "2026-06-09T05:40:00Z",
+          "has_unread": true
+        }
+      ]
+    }
+    ```
 
 ### `[GET] /api/social/friends/requests` (查看待審核邀請)
 - **Go 對應模組**: `social_controller.go` (函式: `GetFriendRequests`)
@@ -558,7 +574,7 @@
 ### `[GET] /api/social/messages/{user_id}` (讀取對話紀錄)
 - **Go 對應模組**: `social_controller.go` (函式: `GetMessages`)
 - **Headers**: `Authorization: Bearer <token>`
-- **Description**: 獲取與指定使用者的歷史對話紀錄。此操作會自動將「對方傳送給自己且尚未讀取」的訊息標記為「已讀」(`is_read=true`)。
+- **Description**: 獲取與指定使用者的歷史對話紀錄。此操作會自動將「對方傳送給自己且尚未讀取」的訊息標記為「已讀」(`is_read=true`)。回傳陣列將會嚴格依據 `sent_at` 升冪與 `message_id` 升冪排序。
 - **Responses**:
   - `200 OK`: 
     ```json
