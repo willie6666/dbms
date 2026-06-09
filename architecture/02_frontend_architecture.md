@@ -35,6 +35,7 @@ frontend/
     │   ├── cart.html           # 購物車結帳頁面
     │   ├── profile.html        # 個人資料修改
     │   ├── history.html        # 交易歷史紀錄
+    │   ├── refund_request.html # 退款申請頁面
     │   ├── wishlist.html       # 願望清單
     │   └── social.html         # 好友、訊息與黑名單管理
     └── dashboard/              # [後台管理模組 (嚴格依角色隔離)]
@@ -86,3 +87,22 @@ frontend/
 8. [動態更新] 收到後端 JSON 回應後，透過 document.getElementById() 將數據 (如價格、評論) 動態寫入畫面。
 9. [等待互動] 頁面渲染完畢，靜待使用者的點擊或表單輸入操作。
 ```
+
+---
+
+## 5. 前端進階技術與模式 (Advanced Frontend Patterns)
+
+隨著系統演進，前端導入了以下幾項關鍵技術與架構模式，以處理更複雜的互動與安全性：
+
+### 1. 狀態防護與邏輯解耦層 (UI Protection Layer)
+- 雖然在後端架構上（例如：願望清單）採行了**「絕對解耦」**，允許任意狀態共存。但前端在渲染 UI 時，扮演了重要的**「狀態防禦者」**角色。
+- **實作範例**：在 `wishlist.html` 中，前端不僅會抓取願望清單，還會同步呼叫 `apiGetLibrary()` 與 `apiGetCart()`。透過前端的陣列比對 (Array.some)，動態將按鈕轉換為「已在遊戲庫」或「已在購物車」的不可點擊狀態，有效避免玩家送出無效的重複購買請求，提升 UX 並減少後端無效的 Request。
+
+### 2. 即時狀態輪詢 (Real-time Polling)
+- 針對社群功能 (如 `social.html`) 中的即時訊息與未讀通知，前端採用了輕量級的**短輪詢 (Short Polling)** 機制。
+- **實作機制**：利用 `setInterval` (預設為 1 秒)，定期向後端發送請求 (`GET /api/social/messages`)。若偵測到狀態改變（如新訊息），則局部更新 DOM 元素（如將大頭貼底色轉為綠色或渲染新對話氣泡），實現低延遲的即時通訊體驗，而無須引入複雜的 WebSocket。
+
+### 3. 安全的 Markdown 渲染 (Secure Markdown Rendering)
+- 遊戲介紹 (`description`) 支援豐富的 Markdown 語法。為了防範 XSS (跨站腳本攻擊)，前端在顯示這些內容時（如 `game_detail.html`, `edit_game.html`）採用了雙層防護機制：
+- **解析器**: 使用 `marked.js` 將 Markdown 文本轉換為 HTML。
+- **消毒器**: 緊接著將產生的 HTML 餵給 `DOMPurify` 進行嚴格的過濾，拔除所有具備潛在威脅的 `<script>` 或 `onerror` 等屬性後，才透過 `innerHTML` 寫入畫面中。

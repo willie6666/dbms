@@ -140,10 +140,9 @@
 
         async function moveToCart(gameId) {
             try {
-                // POST /api/protected/cart + DELETE /api/protected/wishlist/{game_id}
+                // POST /api/protected/cart
                 await apiAddToCart(gameId);
-                await apiRemoveWishlist(gameId);
-                showToast('已將遊戲移至購物車！', 'success');
+                showToast('已將遊戲加入購物車！', 'success');
                 await loadWishlist();
             } catch (err) {
                 showToast(`操作失敗：${err.message}`, 'error');

@@ -596,7 +596,23 @@
 - **Go 對應模組**: `social_controller.go` (函式: `GetBlacklist`)
 - **Headers**: `Authorization: Bearer <token>`
 - **Responses**:
-  - `200 OK`: `{"data": [ { "blacklist_id": 1, "blocked_id": 5 } ]}`
+  - `200 OK`: 
+    ```json
+    {
+      "data": [
+        {
+          "blacklist_id": 1,
+          "blocker_id": 2,
+          "blocked_id": 5,
+          "user": {
+            "id": 5,
+            "username": "BlockedUser",
+            "email": "..."
+          }
+        }
+      ]
+    }
+    ```
 
 ### `[POST] /api/social/blacklist` (加入黑名單)
 - **Go 對應模組**: `social_controller.go` (函式: `AddBlacklist`)
