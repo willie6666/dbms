@@ -291,14 +291,14 @@ func SendFriendRequest(c *gin.Context) {
 		}
 	}
 
-	var block models.Blacklist
-	if err := database.DB.Where("(blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)", userID, input.ReceiverID, input.ReceiverID, userID).First(&block).Error; err == nil {
+	var blocks []models.Blacklist
+	if database.DB.Where("(blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)", userID, input.ReceiverID, input.ReceiverID, userID).Limit(1).Find(&blocks).RowsAffected > 0 {
 		c.JSON(http.StatusForbidden, gin.H{"error": "無法發送好友邀請"})
 		return
 	}
 
-	var existing models.Friendship
-	if err := database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", userID, input.ReceiverID, input.ReceiverID, userID).First(&existing).Error; err == nil {
+	var existings []models.Friendship
+	if database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", userID, input.ReceiverID, input.ReceiverID, userID).Limit(1).Find(&existings).RowsAffected > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Friend request already exists"})
 		return
 	}
@@ -352,19 +352,20 @@ func GetMessages(c *gin.Context) {
 	otherID := c.Param("user_id")
 
 	// Check if I blocked the other user
-	var block models.Blacklist
-	hasBlocked := database.DB.Where("blocker_id = ? AND blocked_id = ?", myID, otherID).First(&block).Error == nil
+	var blocks []models.Blacklist
+	database.DB.Where("blocker_id = ? AND blocked_id = ?", myID, otherID).Limit(1).Find(&blocks)
+	hasBlocked := len(blocks) > 0
 
 	// Mark all unread messages sent by the other user to me as read
 	readQuery := database.DB.Model(&models.Message{}).Where("sender_id = ? AND receiver_id = ? AND is_read = ?", otherID, myID, false)
 	if hasBlocked {
-		readQuery = readQuery.Where("sent_at <= ?", block.CreatedAt)
+		readQuery = readQuery.Where("sent_at <= ?", blocks[0].CreatedAt)
 	}
 	readQuery.Update("is_read", true)
 
 	var messages []models.Message
 	if hasBlocked {
-		database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ? AND sent_at <= ?)", myID, otherID, otherID, myID, block.CreatedAt).Order("sent_at asc").Find(&messages)
+		database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ? AND sent_at <= ?)", myID, otherID, otherID, myID, blocks[0].CreatedAt).Order("sent_at asc").Find(&messages)
 	} else {
 		database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", myID, otherID, otherID, myID).Order("sent_at asc").Find(&messages)
 	}
