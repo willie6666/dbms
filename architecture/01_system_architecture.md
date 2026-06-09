@@ -8,28 +8,79 @@
 
 VaporAuror 採用經典的現代 Web 三層架構，職責分明：
 
-- **前端 (Presentation Layer)**
-  - **技術棧**: `HTML`, `CSS`, `Vanilla JS`
-  - **職責**: 負責刻畫使用者介面、監聽使用者互動 (點擊、表單提交)、儲存狀態 (如 `localStorage` 中的 JWT Token) 並向後端發起非同步請求。
-- **連線層 (API Layer)**
+- **基礎設施 (Infrastructure)**
+  - **技術棧**: `Docker`, `Docker Compose`
+  - **職責**: 負責將前端、後端與資料庫等所有服務打包成獨立的容器 (Container)，提供統一且隔離的執行環境，並透過內部網路 (Docker Network) 讓各層級服務能安全互相溝通。
+- **表示層 / 前端 (Presentation Layer)**
+  - **技術棧**: `Caddy`, `HTML`, `CSS (bulma)`, `Vanilla JS`
+  - **職責**: 
+    - **Caddy**: 作為面向瀏覽器的單一入口，負責託管與分發靜態網頁檔案，並將 API 與媒體檔案的請求反向代理 (Reverse Proxy) 至後端。
+    - **Vanilla JS**: 負責刻畫使用者介面、監聽使用者互動 (點擊、表單提交)、儲存狀態 (JWT Token) 並向後端發起非同步請求。
+- **連線層 (Connection Layer)**
   - **技術棧**: `RESTful API`, `JSON`, `JWT (JSON Web Token)`
   - **職責**: 作為前後端溝通的橋樑，統一使用 JSON 格式傳遞資料，並透過 HTTP Status Codes 表達結果狀態。
-- **後端 (Business & Data Access Layer)**
-  - **`go.Gin`**: 輕量級 Web 框架。負責攔截 HTTP 請求、路由分發 (Routing)、以及執行中介軟體 (如 JWT 驗證 `AuthMiddleware`、權限控制 `RoleMiddleware`)。
+- **應用層 / 後端 (Application Layer)**
+  - **`go.Gin`**: 輕量級 Web 框架。負責攔截 HTTP 請求、路由分發、以及執行中介軟體 (JWT 驗證 `AuthMiddleware`、權限控制 `RoleMiddleware`)。
   - **`go.Controller`**: 業務邏輯層。負責將 HTTP 請求的參數翻譯成 Go 程式邏輯，執行驗證、加解密、以及呼叫資料庫。
   - **`go.GORM`**: ORM (物件關聯對映) 層。負責將 Go 的 Object 語法翻譯成 PostgreSQL 的 SQL 語法，並將回傳的 Raw Data 轉譯回 Go Object。
   - **`go.Driver` (`pgx`)**: 底層驅動。負責建立 TCP 連線，將 SQL 語法送往資料庫並取回結果。
-- **資料庫 (Data Layer)**
+- **資料庫層 (Database Layer)**
   - **技術棧**: `PostgreSQL`
-  - **職責**: 持久化儲存所有的關聯式資料，確保資料的 ACID 特性。
+  - **職責**: 負責資料的持久化儲存、關聯查詢，確保資料的一致性與完整性。
 
 ---
 
-## 2. 核心功能技術流程 (Core Technical Flows)
+## 2. 三層架構文字圖表 (表示層 / 應用層 / 資料庫層)
+
+```text
+               [ 使用者 / 瀏覽器 Browser ]
+                           │
+                           ▼ HTTP / HTTPS 請求
+=====================================================================
+【 表示層 (Presentation Layer) 】
+
+       ┌──────────────── Caddy (Web Server) ────────────────┐
+       │                                                    │
+       ▼ (託管靜態網頁)                              ▼ (反向代理)
+[ HTML / CSS(Bulma) / JS ]                 ( /api/* , /media/* )
+(UI 渲染、使用者互動、JWT儲存)                       │
+===========================│========================│================
+【 連線層 (Bridge) 】      ▼                        ▼
+                   RESTful API (JSON 格式資料傳遞 + JWT 驗證)
+===========================│========================│================
+【 應用層 (Application Layer) 】                    │
+                                                    ▼
+       ┌────────────────── Go Backend ──────────────────┐
+       │                                                │
+       │  1. go.Gin (路由分發、Auth/Role 中介軟體)      │
+       │                         │                      │
+       │  2. go.Controller (核心業務邏輯、加解密)       │
+       │                         │                      │
+       │  3. go.GORM (ORM 物件關聯對映)                 │
+       │                         │                      │
+       │  4. go.Driver (pgx) (底層 TCP 連線驅動)        │
+       └─────────────────────────┬──────────────────────┘
+                                 │
+                                 ▼ SQL 語法 (查詢 / 寫入)
+=====================================================================
+【 資料庫層 (Database Layer) 】
+                                 │
+                                 ▼
+                     ┌───────────────────────┐
+                     │ PostgreSQL (資料持久化) │
+                     └───────────────────────┘
+=====================================================================
+ * 基礎設施保護傘：上述三層之 Caddy、Go Backend 與 PostgreSQL 
+   皆受到 [ Docker Compose ] 之容器化隔離環境包覆與統一管理。
+```
+
+---
+
+## 3. 核心功能技術流程 (Core Technical Flows)
 
 以下將專案中的關鍵行為，以「前端 -> API -> Router -> Controller -> ORM -> DB -> Response」的標準流程進行解構。
 
-### 2.1 使用者登入流程 (User Login Flow)
+### 3.1 使用者登入流程 (User Login Flow)
 ```text
 browser (Frontend 收集表單送出 HTTP POST {email, password})
     -> RESTful API (送到 /api/auth/login)
@@ -44,7 +95,7 @@ browser (Frontend 收集表單送出 HTTP POST {email, password})
 browser (Frontend 接收 json 資料，將 token 存入 localStorage 並跳轉首頁)
 ```
 
-### 2.2 瀏覽/搜尋商店遊戲 (Browse Games Flow)
+### 3.2 瀏覽/搜尋商店遊戲 (Browse Games Flow)
 ```text
 browser (Frontend 進入首頁或輸入關鍵字，JS 送出 HTTP GET ?q=Cyber)
     -> RESTful API (送到 /api/games?q=Cyber)
@@ -57,7 +108,7 @@ browser (Frontend 進入首頁或輸入關鍵字，JS 送出 HTTP GET ?q=Cyber)
 browser (Frontend 接收 json 資料，透過 JS 動態生成 HTML DOM 顯示遊戲卡片)
 ```
 
-### 2.3 加入購物車流程 (Add to Cart Flow)
+### 3.3 加入購物車流程 (Add to Cart Flow)
 ```text
 browser (Frontend 點擊「加入購物車」，JS 從 localStorage 提取 Token，送出 HTTP POST {game_id})
     -> RESTful API (送到 /api/protected/cart)
@@ -74,7 +125,7 @@ browser (Frontend 點擊「加入購物車」，JS 從 localStorage 提取 Token
 browser (Frontend 接收 json 資料，顯示「已加入購物車」並將按鈕反灰)
 ```
 
-### 2.4 購物車結帳流程 (Checkout Flow - 牽涉 Transaction)
+### 3.4 購物車結帳流程 (Checkout Flow - 牽涉 Transaction)
 ```text
 browser (Frontend 點擊「確認結帳」，JS 帶上 Token 送出 HTTP POST)
     -> RESTful API (送到 /api/protected/checkout)
@@ -92,7 +143,7 @@ browser (Frontend 點擊「確認結帳」，JS 帶上 Token 送出 HTTP POST)
 browser (Frontend 接收 json 資料，清空畫面並提示前往遊戲庫查看)
 ```
 
-### 2.5 客服退款審核流程 (CSR Refund Approval Flow)
+### 3.5 客服退款審核流程 (CSR Refund Approval Flow)
 ```text
 browser (Frontend CSR 管理員點擊「核准退款」，JS 帶上 CSR Token 送出 HTTP PUT {status: "APPROVED"})
     -> RESTful API (送到 /api/csr/refunds/{id})
