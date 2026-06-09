@@ -29,5 +29,5 @@ erDiagram
     }
 
     USERS ||--o{ REFUND_REQUESTS : submits
-    USERS o|--o{ REFUND_REQUESTS : handles
-    TRANSACTION_ITEMS ||--o| REFUND_REQUESTS : refund_for
+    USERS |o--o{ REFUND_REQUESTS : handles
+    TRANSACTION_ITEMS ||--|o REFUND_REQUESTS : refund_for
