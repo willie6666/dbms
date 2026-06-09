@@ -331,6 +331,7 @@
                     container.style.display = 'flex';
                     container.style.flexDirection = 'column';
                     container.style.alignSelf = isMe ? 'flex-end' : 'flex-start';
+                    container.style.maxWidth = 'min(70%, 560px)';
 
                     const div = document.createElement('div');
                     div.className = `message ${isMe ? 'msg-me' : 'msg-them'}`;

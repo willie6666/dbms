@@ -1236,11 +1236,10 @@ label,
 }
 
 .message {
-    max-width: min(70%, 560px);
     padding: 0.8rem 1rem;
     border-radius: 18px;
-    overflow-wrap: break-word;
-    word-break: break-all;
+    overflow-wrap: anywhere;
+    word-break: break-word;
     white-space: pre-wrap;
 }
 
