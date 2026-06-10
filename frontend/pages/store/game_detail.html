@@ -276,7 +276,7 @@
             if (role === 'GUEST') {
                 reasonMsg = `<p style="color:var(--text-muted);font-size:14px;">請 <a href="/pages/auth/login.html">登入</a> 後才能發表評論。</p>`;
             } else {
-                canReview = isOwned || role === 'ADMIN' || role === 'CSR' || (role === 'DEVELOPER' && user.user_id == devId);
+                canReview = isOwned || role === 'ADMIN' || role === 'CSR' || (role === 'DEVELOPER' && (user.id || user.user_id) == devId);
                 if (!canReview) reasonMsg = `<p style="color:var(--text-muted);font-size:14px;">購買此遊戲後即可發表評論。</p>`;
             }
 
@@ -293,10 +293,10 @@
             }
             if (role === 'ADMIN') roleOptions += `<option value="ADMIN" ${!isOwned ? 'selected' : ''}>管理員 (Admin)</option>`;
             if (role === 'CSR') roleOptions += `<option value="CSR" ${!isOwned ? 'selected' : ''}>客服人員 (CSR)</option>`;
-            if (role === 'DEVELOPER' && user && user.user_id == devId) roleOptions += `<option value="AUTHOR" ${!isOwned ? 'selected' : ''}>開發者 (Author)</option>`;
+            if (role === 'DEVELOPER' && user && (user.id || user.user_id) == devId) roleOptions += `<option value="AUTHOR" ${!isOwned ? 'selected' : ''}>開發者 (Author)</option>`;
             
             let roleSelectHtml = '';
-            if (role === 'ADMIN' || role === 'CSR' || (role === 'DEVELOPER' && user && user.user_id == devId)) {
+            if (role === 'ADMIN' || role === 'CSR' || (role === 'DEVELOPER' && user && (user.id || user.user_id) == devId)) {
                 roleSelectHtml = `
                     <div class="form-group" style="margin-bottom:12px;">
                         <label style="font-size:12px;color:var(--text-muted);">發布身分：</label>
@@ -464,10 +464,10 @@
                     if (role === 'ADMIN') replyRoleOptions += `<option value="ADMIN" ${!isOwned ? 'selected' : ''}>ADMIN</option>`;
                     if (role === 'CSR') replyRoleOptions += `<option value="CSR" ${!isOwned ? 'selected' : ''}>CSR</option>`;
                     const user = getCurrentUser();
-                    if (role === 'DEVELOPER' && user && user.user_id == devId) replyRoleOptions += `<option value="AUTHOR" ${!isOwned ? 'selected' : ''}>AUTHOR</option>`;
+                    if (role === 'DEVELOPER' && user && (user.id || user.user_id) == devId) replyRoleOptions += `<option value="AUTHOR" ${!isOwned ? 'selected' : ''}>AUTHOR</option>`;
                     
                     let replySelectHtml = '';
-                    if (role === 'ADMIN' || role === 'CSR' || (role === 'DEVELOPER' && user && user.user_id == devId)) {
+                    if (role === 'ADMIN' || role === 'CSR' || (role === 'DEVELOPER' && user && (user.id || user.user_id) == devId)) {
                         replySelectHtml = `
                             <select id="reply-role-${reviewId}" class="input" style="height:32px; width:90px; font-size:12px; padding:0 8px; margin-right:8px; border:none; background:rgba(255,255,255,0.1); color:white;">
                                 ${replyRoleOptions}

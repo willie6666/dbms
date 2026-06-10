@@ -59,7 +59,7 @@ func GetGames(c *gin.Context) {
 	if developer != "" {
 		query = query.
 			Joins("JOIN users filter_developers ON filter_developers.user_id = games.developer_id").
-			Where("filter_developers.username ILIKE ?", "%"+developer+"%")
+			Where("filter_developers.username ILIKE ?", developer)
 	}
 	if minPrice, err := strconv.ParseFloat(c.Query("min_price"), 64); err == nil {
 		query = query.Where("games.price >= ?", minPrice)
