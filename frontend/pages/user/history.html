@@ -67,7 +67,7 @@
 
                     const itemId  = itemInfo.item_id || itemInfo.id;
                     const game    = itemInfo.Game || itemInfo.game || {};
-                    const title   = game.title || '未知遊戲';
+                    const title   = game.title || game.Title || itemInfo.game_title || itemInfo.GameTitle || itemInfo.title || '未知遊戲';
                     const price   = Number(itemInfo.purchase_price || itemInfo.price || 0);
                     const refundStatus = itemInfo.refund_status || itemInfo.refundStatus || '';
 

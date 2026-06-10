@@ -79,9 +79,12 @@
                         <h3>申請 #${refundId} — ${escapeHtml(gameTitle)}</h3>
                         <p>申請人：${escapeHtml(username)} &nbsp;|&nbsp; 金額：NT$ ${price.toLocaleString()} &nbsp;|&nbsp; 理由：${escapeHtml(reason)}</p>
                     </div>
-                    <div class="library-item-actions">
-                        <button class="button is-success is-light" onclick="processRefund(${refundId}, 'APPROVED')">核准退款</button>
-                        <button class="button is-danger is-light" onclick="processRefund(${refundId}, 'REJECTED')">駁回</button>
+                    <div class="library-item-actions" style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+                        <div style="display:flex; gap:8px;">
+                            <button class="button is-success is-light" onclick="processRefund(${refundId}, 'APPROVED')">核准退款</button>
+                            <button class="button is-danger is-light" onclick="processRefund(${refundId}, 'REJECTED')">駁回</button>
+                        </div>
+                        <input type="text" id="reject-reason-${refundId}" class="input" placeholder="駁回理由 (選填)" style="width:200px; height:32px; font-size:12px;">
                     </div>
                 `;
                 listEl.appendChild(item);
@@ -91,9 +94,16 @@
         async function processRefund(refundId, status) {
             const label = status === 'APPROVED' ? '核准' : '駁回';
             if (!confirm(`確定要${label}此退款申請嗎？`)) return;
+            
+            let rejectReason = "";
+            if (status === 'REJECTED') {
+                const reasonInput = document.getElementById(`reject-reason-${refundId}`);
+                if (reasonInput) rejectReason = reasonInput.value.trim();
+            }
+
             try {
                 // PUT /api/csr/refunds/{id}
-                await apiProcessRefund(refundId, status);
+                await apiProcessRefund(refundId, status, rejectReason);
                 alert(`已${label}退款申請！`);
                 await loadRefunds();
             } catch (err) {

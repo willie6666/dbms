@@ -191,7 +191,8 @@
 
             history.forEach(req => {
                 const date = (req.created_at || '').slice(0, 10);
-                const title = req.game_title || '未知遊戲';
+                const game = req.game || req.Game || {};
+                const title = req.game_title || req.GameTitle || game.title || game.Title || req.title || '未知遊戲';
                 
                 let statusHtml = '';
                 if (req.status === 'PENDING') {
