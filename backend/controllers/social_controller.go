@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 
 	"vapor_auror_backend/database"
@@ -44,6 +45,26 @@ func getReviewAuthorByID(userID uint) reviewAuthorDTO {
 	return getReviewAuthor(user, userID)
 }
 
+func parseRoleFromContent(content string) (role string, cleanContent string) {
+	if strings.HasPrefix(content, "[ROLE:ADMIN]") {
+		return "ADMIN", strings.TrimPrefix(content, "[ROLE:ADMIN]")
+	}
+	if strings.HasPrefix(content, "[ROLE:CSR]") {
+		return "CSR", strings.TrimPrefix(content, "[ROLE:CSR]")
+	}
+	if strings.HasPrefix(content, "[ROLE:AUTHOR]") {
+		return "AUTHOR", strings.TrimPrefix(content, "[ROLE:AUTHOR]")
+	}
+	return "USERS", content
+}
+
+func buildRoleContent(content string, role string) string {
+	if role == "ADMIN" || role == "CSR" || role == "AUTHOR" {
+		return "[ROLE:" + role + "]" + content
+	}
+	return content
+}
+
 // GetReviews handles GET /api/games/:id/reviews
 func GetReviews(c *gin.Context) {
 	gameID := c.Param("id")
@@ -62,6 +83,7 @@ func GetReviews(c *gin.Context) {
 		Author        reviewAuthorDTO `json:"user"`
 		AuthorName    string          `json:"author_username"`
 		Content       string          `json:"content"`
+		PostedAsRole  string          `json:"posted_as_role"`
 		CreatedAt     string          `json:"created_at"`
 	}
 	type ReviewDTO struct {
@@ -73,6 +95,7 @@ func GetReviews(c *gin.Context) {
 		Content    string           `json:"content"`
 		Attitude   string           `json:"attitude"`
 		Status     string           `json:"status"`
+		PostedAsRole string         `json:"posted_as_role"`
 		CreatedAt  string           `json:"created_at"`
 		Replies    []ReviewReplyDTO `json:"replies"`
 	}
@@ -85,27 +108,31 @@ func GetReviews(c *gin.Context) {
 		replyDTOs := make([]ReviewReplyDTO, 0, len(replies))
 		for _, reply := range replies {
 			author := getReviewAuthorByID(reply.UserID)
+			replyRole, replyContent := parseRoleFromContent(reply.Content)
 			replyDTOs = append(replyDTOs, ReviewReplyDTO{
 				ReviewReplyID: reply.ReviewReplyID,
 				ReviewID:      reply.ReviewID,
 				UserID:        reply.UserID,
 				Author:        author,
 				AuthorName:    author.Username,
-				Content:       reply.Content,
+				Content:       replyContent,
+				PostedAsRole:  replyRole,
 				CreatedAt:     reply.CreatedAt.Format(time.RFC3339),
 			})
 		}
 
 		author := getReviewAuthorByID(r.UserID)
+		revRole, revContent := parseRoleFromContent(r.Content)
 		fullReviews = append(fullReviews, ReviewDTO{
 			ReviewID:   r.ReviewID,
 			GameID:     r.GameID,
 			UserID:     r.UserID,
 			Author:     author,
 			AuthorName: author.Username,
-			Content:    r.Content,
+			Content:    revContent,
 			Attitude:   r.Attitude,
 			Status:     r.Status,
+			PostedAsRole: revRole,
 			CreatedAt:  r.CreatedAt.Format(time.RFC3339),
 			Replies:    replyDTOs,
 		})
@@ -121,8 +148,9 @@ func PostReview(c *gin.Context) {
 	gameID := c.Param("id")
 
 	var input struct {
-		Attitude string `json:"attitude" binding:"required"` // POSITIVE or NEGATIVE
-		Content  string `json:"content" binding:"required"`
+		Attitude   string `json:"attitude" binding:"required"` // POSITIVE or NEGATIVE
+		Content    string `json:"content" binding:"required"`
+		PostAsRole string `json:"post_as_role"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -139,18 +167,39 @@ func PostReview(c *gin.Context) {
 		return
 	}
 
-	// VERIFY OWNERSHIP: Only players who own the game can leave a review
-	var license models.GameLicense
-	if err := database.DB.Where("user_id = ? AND game_id = ? AND status = ?", userID, game.GameID, "ACTIVE").First(&license).Error; err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden: You must own the game to leave a review"})
+	var user models.User
+	if err := database.DB.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
 	}
+
+	canBypass := false
+	if input.PostAsRole == "ADMIN" && user.Role == "ADMIN" {
+		canBypass = true
+	} else if input.PostAsRole == "CSR" && user.Role == "CSR" {
+		canBypass = true
+	} else if input.PostAsRole == "AUTHOR" && user.Role == "DEVELOPER" && game.DeveloperID == userID {
+		canBypass = true
+	} else {
+		input.PostAsRole = "USERS"
+	}
+
+	if !canBypass {
+		// VERIFY OWNERSHIP: Only players who own the game can leave a review
+		var license models.GameLicense
+		if err := database.DB.Where("user_id = ? AND game_id = ? AND status = ?", userID, game.GameID, "ACTIVE").First(&license).Error; err != nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden: You must own the game to leave a review"})
+			return
+		}
+	}
+
+	finalContent := buildRoleContent(input.Content, input.PostAsRole)
 
 	review := models.Review{
 		GameID:   game.GameID,
 		UserID:   userID,
 		Attitude: input.Attitude,
-		Content:  input.Content,
+		Content:  finalContent,
 	}
 
 	if err := database.DB.Create(&review).Error; err != nil {
@@ -427,6 +476,7 @@ func ReplyToReview(c *gin.Context) {
 	var input struct {
 		ParentReplyID *uint  `json:"parent_reply_id"` // Optional
 		Content       string `json:"content" binding:"required"`
+		PostAsRole    string `json:"post_as_role"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -439,11 +489,37 @@ func ReplyToReview(c *gin.Context) {
 		return
 	}
 
+	var game models.Game
+	if err := database.DB.First(&game, review.GameID).Error; err == nil {
+		var user models.User
+		if err := database.DB.First(&user, userID).Error; err == nil {
+			canBypass := false
+			if input.PostAsRole == "ADMIN" && user.Role == "ADMIN" {
+				canBypass = true
+			} else if input.PostAsRole == "CSR" && user.Role == "CSR" {
+				canBypass = true
+			} else if input.PostAsRole == "AUTHOR" && user.Role == "DEVELOPER" && game.DeveloperID == userID {
+				canBypass = true
+			} else {
+				input.PostAsRole = "USERS"
+			}
+
+			if !canBypass {
+				// We don't block users from replying even if they don't own the game in original code,
+				// but we shouldn't allow them to pretend they are ADMIN.
+			}
+		}
+	} else {
+		input.PostAsRole = "USERS"
+	}
+
+	finalContent := buildRoleContent(input.Content, input.PostAsRole)
+
 	reply := models.ReviewReply{
 		ReviewID:      review.ReviewID,
 		UserID:        userID,
 		ParentReplyID: input.ParentReplyID,
-		Content:       input.Content,
+		Content:       finalContent,
 	}
 
 	if err := database.DB.Create(&reply).Error; err != nil {

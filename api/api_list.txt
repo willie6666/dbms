@@ -66,8 +66,8 @@
 =========================================
 5. 社交、評論與通訊 (Social & Reviews)
 =========================================
-[POST]   /api/social/games/{id}/reviews       - [JWT] 對遊戲發表評價 (UC-20)
-[POST]   /api/social/reviews/{review_id}/replies     - [JWT] 樓中樓回覆評論 (社交輔助)
+[POST]   /api/social/games/{id}/reviews       - [JWT] 對遊戲發表評價 (支援選擇特權發布身分) (UC-20)
+[POST]   /api/social/reviews/{review_id}/replies     - [JWT] 樓中樓回覆評論 (支援選擇特權發布身分) (社交輔助)
 [DELETE] /api/social/reviews/replies/{reply_id}     - [JWT] 刪除樓中樓回覆 (社交輔助)
 [GET]    /api/social/friends                  - [JWT] 查看好友列表 (過濾黑名單，包含最新訊息、未讀狀態，並依時間與ID降冪排序) (社交管理輔助)
 [GET]    /api/social/friends/requests         - [JWT] 查看待審核的好友邀請 (社交管理輔助)

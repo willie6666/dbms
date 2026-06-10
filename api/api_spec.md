@@ -182,7 +182,7 @@
 - **Go 對應模組**: `social_controller.go` (函式: `GetReviews`)
 - **Headers**: 無
 - **Responses**:
-  - `200 OK`: `[ { "review_id": 1, "content": "...", "attitude": "POSITIVE", "user": {...}, "replies": [...] } ]`
+  - `200 OK`: `[ { "review_id": 1, "content": "...", "attitude": "POSITIVE", "posted_as_role": "USERS", "user": {...}, "replies": [...] } ]`
   - **注意**: 回傳格式為陣列 (非包在 `{"data": [...]}` 內)。
 
 ### `[GET] /api/developer/games` (查看自己的遊戲列表)
@@ -458,7 +458,8 @@
   ```json
   {
     "attitude": "POSITIVE", // 'POSITIVE' 或 'NEGATIVE'
-    "content": "神作不解釋！"
+    "content": "神作不解釋！",
+    "post_as_role": "USERS" // 選填，可指定發布身分 ('USERS', 'ADMIN', 'CSR', 'AUTHOR')
   }
   ```
 - **Responses**:
@@ -473,7 +474,8 @@
   ```json
   {
     "parent_reply_id": 5, // 選填。如果有帶值，代表是「對回覆的回覆」
-    "content": "我完全同意這篇評論！"
+    "content": "我完全同意這篇評論！",
+    "post_as_role": "USERS" // 選填，可指定發布身分 ('USERS', 'ADMIN', 'CSR', 'AUTHOR')
   }
   ```
 - **Responses**:

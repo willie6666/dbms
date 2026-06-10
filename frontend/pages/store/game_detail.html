@@ -149,14 +149,15 @@
                 let isOwned = false;
                 let isWishlisted = false;
                 let isCarted = false;
+                window._gameDevId = game.game ? game.game.developer_id : game.developer_id;
                 if (role !== 'GUEST') {
                     try {
                         const lib = await apiGetLibrary();
                         const libArr = Array.isArray(lib) ? lib : (lib.data || lib.games || []);
                         isOwned = libArr.some(item => {
-                            const game = item.game || item;
-                            const gameId = game.game_id || game.id || item.game_id;
-                            return Number(gameId) === Number(currentGameId) && (item.status === 'ACTIVE' || !item.status);
+                            const g = item.game || item;
+                            const gid = g.game_id || g.id || item.game_id;
+                            return Number(gid) === Number(currentGameId) && (item.status === 'ACTIVE' || !item.status);
                         });
                     } catch (_) { }
 
@@ -164,9 +165,9 @@
                         const wishlist = await apiGetWishlist();
                         const wishlistArr = Array.isArray(wishlist) ? wishlist : (wishlist.data || wishlist.games || []);
                         isWishlisted = wishlistArr.some(item => {
-                            const game = item.game || item;
-                            const gameId = game.game_id || game.id || item.game_id;
-                            return Number(gameId) === Number(currentGameId);
+                            const g = item.game || item;
+                            const gid = g.game_id || g.id || item.game_id;
+                            return Number(gid) === Number(currentGameId);
                         });
                     } catch (_) { }
 
@@ -174,12 +175,13 @@
                         const cart = await apiGetCart();
                         const cartArr = Array.isArray(cart) ? cart : (cart.data || cart.items || []);
                         isCarted = cartArr.some(item => {
-                            const game = item.game || item;
-                            const gameId = game.game_id || game.id || item.game_id;
-                            return Number(gameId) === Number(currentGameId);
+                            const g = item.game || item;
+                            const gid = g.game_id || g.id || item.game_id;
+                            return Number(gid) === Number(currentGameId);
                         });
                     } catch (_) { }
                 }
+                window._gameIsOwned = isOwned;
 
                 renderActionArea(game, role, isOwned, isWishlisted, isCarted);
                 renderReviewWriteArea(game, role, user, isOwned);
@@ -269,11 +271,12 @@
 
             let canReview = false;
             let reasonMsg = '';
+            const devId = window._gameDevId;
 
             if (role === 'GUEST') {
                 reasonMsg = `<p style="color:var(--text-muted);font-size:14px;">請 <a href="/pages/auth/login.html">登入</a> 後才能發表評論。</p>`;
             } else {
-                canReview = isOwned;
+                canReview = isOwned || role === 'ADMIN' || role === 'CSR' || (role === 'DEVELOPER' && user.user_id == devId);
                 if (!canReview) reasonMsg = `<p style="color:var(--text-muted);font-size:14px;">購買此遊戲後即可發表評論。</p>`;
             }
 
@@ -282,9 +285,32 @@
                 return;
             }
 
+            let roleOptions = '';
+            if (isOwned) {
+                roleOptions += `<option value="USERS">玩家 (User)</option>`;
+            } else {
+                roleOptions += `<option value="USERS" disabled>玩家 (User) - 需購買遊戲</option>`;
+            }
+            if (role === 'ADMIN') roleOptions += `<option value="ADMIN" ${!isOwned ? 'selected' : ''}>管理員 (Admin)</option>`;
+            if (role === 'CSR') roleOptions += `<option value="CSR" ${!isOwned ? 'selected' : ''}>客服人員 (CSR)</option>`;
+            if (role === 'DEVELOPER' && user && user.user_id == devId) roleOptions += `<option value="AUTHOR" ${!isOwned ? 'selected' : ''}>開發者 (Author)</option>`;
+            
+            let roleSelectHtml = '';
+            if (role === 'ADMIN' || role === 'CSR' || (role === 'DEVELOPER' && user && user.user_id == devId)) {
+                roleSelectHtml = `
+                    <div class="form-group" style="margin-bottom:12px;">
+                        <label style="font-size:12px;color:var(--text-muted);">發布身分：</label>
+                        <select id="review-post-role" class="input" style="height:32px; font-size:14px; width:auto; display:inline-block; padding: 0 10px;">
+                            ${roleOptions}
+                        </select>
+                    </div>
+                `;
+            }
+
             area.innerHTML = `
                 <div class="review-write-box">
                     <h3>發表評論</h3>
+                    ${roleSelectHtml}
                     <div class="review-rating" id="rating-group">
                         <label class="selected">
                             <input type="radio" name="sentiment" value="positive" checked>
@@ -327,9 +353,18 @@
                 const div = document.createElement('div');
                 const sentiment = (r.attitude || r.sentiment || r.rating || 'positive').toLowerCase();
                 div.className = `review-item ${sentiment}`;
-                const badge = sentiment === 'positive'
+                let badge = sentiment === 'positive'
                     ? `<span class="review-sentiment sentiment-positive">推薦</span>`
                     : `<span class="review-sentiment sentiment-negative">不推薦</span>`;
+
+                if (r.posted_as_role === 'ADMIN') {
+                    badge += ` <span style="color:#ff7b93; border: 1px solid #7c2d3a; background-color: #2b1f24; border-radius: 12px; padding: 2px 10px; font-size: 11px; font-weight: bold; margin-left: 8px;">ADMIN</span>`;
+                } else if (r.posted_as_role === 'CSR') {
+                    badge += ` <span style="color:#f39c12; border: 1px solid #d68910; background-color: #2e2213; border-radius: 12px; padding: 2px 10px; font-size: 11px; font-weight: bold; margin-left: 8px;">CSR</span>`;
+                } else if (r.posted_as_role === 'AUTHOR') {
+                    badge += ` <span style="color:#66c0f4; border: 1px solid #234f6e; background-color: #1a2a36; border-radius: 12px; padding: 2px 10px; font-size: 11px; font-weight: bold; margin-left: 8px;">AUTHOR</span>`;
+                }
+
                 const author = escapeHtml(r.author_username || r.author || r.username || (r.user && r.user.username) || '玩家');
                 
                 let dateStr = r.date || r.created_at || '';
@@ -392,10 +427,19 @@
                         const deleteBtn = canDelete
                             ? `<button class="button is-text is-small" onclick="deleteReply(${replyId})" title="刪除此回覆">刪除</button>`
                             : '';
+                        let replyBadge = '';
+                        if (reply.posted_as_role === 'ADMIN') {
+                            replyBadge = `<span style="color:#ff7b93; border: 1px solid #7c2d3a; background-color: #2b1f24; border-radius: 12px; padding: 2px 10px; font-size: 10px; font-weight: bold; margin-left: 8px; vertical-align: middle;">ADMIN</span>`;
+                        } else if (reply.posted_as_role === 'CSR') {
+                            replyBadge = `<span style="color:#f39c12; border: 1px solid #d68910; background-color: #2e2213; border-radius: 12px; padding: 2px 10px; font-size: 10px; font-weight: bold; margin-left: 8px; vertical-align: middle;">CSR</span>`;
+                        } else if (reply.posted_as_role === 'AUTHOR') {
+                            replyBadge = `<span style="color:#66c0f4; border: 1px solid #234f6e; background-color: #1a2a36; border-radius: 12px; padding: 2px 10px; font-size: 10px; font-weight: bold; margin-left: 8px; vertical-align: middle;">AUTHOR</span>`;
+                        }
+
                         repliesHtml += `
                             <div class="reply-item">
                                 <div class="reply-author">
-                                    <span style="font-weight: 600;">${rAuthor}</span>
+                                    <span style="font-weight: 600;">${rAuthor}</span>${replyBadge}
                                     <span style="color: #8f98a0; font-size: 12px; margin-left: 8px;">${rDate}</span>
                                     ${deleteBtn}
                                 </div>
@@ -409,10 +453,33 @@
                 // Add Reply Input Area (Only if logged in)
                 const role = getCurrentRole();
                 if (role !== 'GUEST') {
+                    let replyRoleOptions = '';
+                    const isOwned = window._gameIsOwned || false;
+                    const devId = window._gameDevId || 0;
+                    if (isOwned) {
+                        replyRoleOptions += `<option value="USERS">玩家</option>`;
+                    } else {
+                        replyRoleOptions += `<option value="USERS" disabled>玩家</option>`;
+                    }
+                    if (role === 'ADMIN') replyRoleOptions += `<option value="ADMIN" ${!isOwned ? 'selected' : ''}>ADMIN</option>`;
+                    if (role === 'CSR') replyRoleOptions += `<option value="CSR" ${!isOwned ? 'selected' : ''}>CSR</option>`;
+                    const user = getCurrentUser();
+                    if (role === 'DEVELOPER' && user && user.user_id == devId) replyRoleOptions += `<option value="AUTHOR" ${!isOwned ? 'selected' : ''}>AUTHOR</option>`;
+                    
+                    let replySelectHtml = '';
+                    if (role === 'ADMIN' || role === 'CSR' || (role === 'DEVELOPER' && user && user.user_id == devId)) {
+                        replySelectHtml = `
+                            <select id="reply-role-${reviewId}" class="input" style="height:32px; width:90px; font-size:12px; padding:0 8px; margin-right:8px; border:none; background:rgba(255,255,255,0.1); color:white;">
+                                ${replyRoleOptions}
+                            </select>
+                        `;
+                    }
+
                     repliesHtml += `
-                        <div class="reply-input-area">
-                            <input type="text" id="reply-input-${reviewId}" placeholder="留個言吧...">
-                            <button onclick="submitReply(${reviewId})">回覆</button>
+                        <div class="reply-input-area" style="display:flex; align-items:center;">
+                            ${replySelectHtml}
+                            <input type="text" id="reply-input-${reviewId}" placeholder="留個言吧..." style="flex:1;">
+                            <button onclick="submitReply(${reviewId})" style="margin-left:8px;">回覆</button>
                         </div>
                     `;
                 }
@@ -456,8 +523,11 @@
             const input = document.getElementById(`reply-input-${reviewId}`);
             const content = input.value.trim();
             if (!content) return;
+            const roleSelect = document.getElementById(`reply-role-${reviewId}`);
+            const postAsRole = roleSelect ? roleSelect.value : 'USERS';
+
             try {
-                await apiPostReply(reviewId, content);
+                await apiPostReply(reviewId, content, postAsRole);
                 showToast('回覆成功！', 'success');
                 // 重新載入評論
                 const reviews = await apiGetReviews(currentGameId);
@@ -572,8 +642,11 @@
             btn.disabled = true;
             btn.textContent = '送出中...';
 
+            const roleSelect = document.getElementById('review-post-role');
+            const postAsRole = roleSelect ? roleSelect.value : 'USERS';
+
             try {
-                await apiPostReview(currentGameId, sentiment, text);
+                await apiPostReview(currentGameId, sentiment, text, postAsRole);
                 textEl.value = '';
                 showToast('評論已送出！', 'success');
                 const gameResponse = await apiGetGame(currentGameId);

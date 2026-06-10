@@ -140,19 +140,19 @@ async function apiGetReviews(gameId) {
 }
 
 // POST /api/social/games/{id}/reviews
-async function apiPostReview(gameId, attitude, content) {
+async function apiPostReview(gameId, attitude, content, postAsRole = 'USERS') {
     const res = await authFetch(`/api/social/games/${gameId}/reviews`, {
         method: 'POST',
-        body: JSON.stringify({ attitude: attitude.toUpperCase(), content })
+        body: JSON.stringify({ attitude: attitude.toUpperCase(), content, post_as_role: postAsRole })
     });
     return parseResponse(res);
 }
 
 // POST /api/social/reviews/{id}/replies
-async function apiPostReply(reviewId, content) {
+async function apiPostReply(reviewId, content, postAsRole = 'USERS') {
     const res = await authFetch(`/api/social/reviews/${reviewId}/replies`, {
         method: 'POST',
-        body: JSON.stringify({ content })
+        body: JSON.stringify({ content, post_as_role: postAsRole })
     });
     return parseResponse(res);
 }
