@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine AS build
+FROM docker.io/library/golang:1.26-alpine AS build
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN go mod download
 COPY . .
 RUN go build -o /app/vapor-auror-backend .
 
-FROM alpine:3.22
+FROM docker.io/library/alpine:3.22
 
 RUN apk add --no-cache ca-certificates tzdata
 
