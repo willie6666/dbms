@@ -75,7 +75,7 @@ func GetGames(c *gin.Context) {
 			if len(parts) == 2 && parts[0] == "Bearer" {
 				if claims, err := utils.ParseToken(parts[1]); err == nil {
 					userID := uint(claims["user_id"].(float64))
-					query = query.Where("NOT EXISTS (SELECT 1 FROM game_licenses WHERE game_licenses.game_id = games.game_id AND game_licenses.user_id = ? AND game_licenses.status = 'ACTIVE')", userID)
+					query = query.Where("NOT EXISTS (SELECT 1 FROM game_licenses WHERE game_licenses.game_id = games.game_id AND game_licenses.user_id = ? AND game_licenses.status = 'ACTIVE') AND games.developer_id != ?", userID, userID)
 				}
 			}
 		}

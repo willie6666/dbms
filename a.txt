@@ -1,0 +1,3 @@
+你可以先閱讀專案 /architecture /api 等等得先理解 然後再 制定計畫 然後告訴我影響到的 db / fronend / backend  / api / architecture / mermaid 的範圍
+然後告訴我技術留
+接著制定task 然後修改

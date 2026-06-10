@@ -154,7 +154,7 @@
   - `?developer=StudioAurora` (開發者名稱篩選)
   - `?min_price=100&max_price=500` (價格區間篩選)
   - `?sort=price_asc` (排序方式：`price_asc` 便宜到貴, `price_desc` 貴到便宜)
-  - `?hide_owned=true` (隱藏已購買遊戲：需同時提供 Authorization Bearer Token 才能生效)
+  - `?hide_owned=true` (隱藏已購買遊戲與自己開發的遊戲：需同時提供 Authorization Bearer Token 才能生效)
 - **Responses**:
   - `200 OK`:
     ```json
