@@ -21,5 +21,5 @@ type TransactionItem struct {
 	RefundStatus  string  `gorm:"-" json:"refund_status,omitempty"`
 
 	// Preload relationship to fetch the actual Game details
-	Game Game `gorm:"foreignKey:GameID" json:"game"`
+	Game Game `gorm:"foreignKey:GameID;references:GameID" json:"game"`
 }
