@@ -12,6 +12,7 @@
   2. **購買限制檢查與身分特權 (Bypass Ownership)**：
      - 若為一般玩家 (預設)，後端強制檢查該玩家是否在 `game_licenses` 中擁有這款遊戲，且 `status = 'ACTIVE'`。**未購買或是已退款、已吊銷授權的玩家無法發表一般評論**。
      - 若選擇以特權身分發布 (例如 `ADMIN`, `CSR` 或 `AUTHOR`) 且具備對應權限，後端會**略過**購買檢查。
+       *(註：前端在解鎖開發者的 `AUTHOR` 選項時，運用了 `(user.id || user.user_id) == developerId` 高包容性探測機制，確保身份不漏接)*
   3. **隱藏字首機制與寫入**：將評論寫入 `reviews` 表。如果為特權發布，後端會在文字最前方自動加入隱藏前綴 (例如 `[ROLE:ADMIN]`)，全程**不更動 Database Schema**。狀態預設為 `'VISIBLE'`。
   4. **讀取評論**：當前端呼叫 `GET /api/games/:id/reviews`，後端會自動剔除前綴字首，並將身分轉成 `posted_as_role` 交給前端渲染專屬的身分標籤 (Badge)。
   5. **觸發自動計分 (Trigger Rating Update)**：

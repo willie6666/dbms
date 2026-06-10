@@ -27,6 +27,9 @@
     - 前端會列出如 `RPG`, `Action`, `Racing`, `Simulation` 等常見標籤（或從 `/api/tags` 動態獲取）。
     - 當玩家點擊特定標籤，前端發送 `?tag={name}`。
     - 後端透過 `JOIN game_tags` 與 `tags` 資料表，精準過濾出綁定該標籤的遊戲。選擇「所有遊戲」則會清除 `tag` 參數。
+  - **開發者篩選 (Developer Filter)**：
+    - 當玩家從特定開發者頁面進入，或點擊開發者名稱時，發送 `?developer={username}`。
+    - 後端會透過 `ILIKE` 執行「精確的字串比對」(不加上 `%` 萬用字元)，確保輸入 `dev_1` 不會錯誤搜出 `dev_10`。
   - **價格篩選 (Price Filter)**：
     - 提供預設的價格區間選項，例如：
       - 「免費遊玩」：發送 `?max_price=0`。
@@ -43,7 +46,7 @@
   - **隱藏已購買 (Hide Owned)**：
     - 這是一個 ON/OFF 切換開關。
     - 當開啟時，前端發送 `?hide_owned=true`，且必須在 Request Header 帶上使用者的 JWT Token。
-    - 後端偵測到該參數與 Token 後，會自動利用子查詢 (`NOT EXISTS`) 到 `game_licenses` 檢查。只要該玩家擁有的授權是 `ACTIVE`，該遊戲就會從搜尋結果中被剔除，讓玩家專注於探索新遊戲。
+    - 後端偵測到該參數與 Token 後，會自動利用子查詢 (`NOT EXISTS`) 到 `game_licenses` 檢查，**並額外比對 `games.developer_id != 當前使用者`**。只要該玩家擁有的授權是 `ACTIVE`，或是該遊戲正是由登入者自己開發的，該遊戲就會從搜尋結果中被剔除，讓玩家專注於探索尚未擁有的新遊戲。
   - **排序方式 (Sorting Dropdown)**：
     - 提供如「價格由低到高」或「價格由高到低」的選項。
     - 選擇後前端發送 `?sort=price_asc` 或 `?sort=price_desc`。

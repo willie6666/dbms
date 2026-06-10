@@ -160,3 +160,17 @@ browser (Frontend CSR 管理員點擊「核准退款」，JS 帶上 CSR Token �
     -> go.Gin (打包成功訊息 json 送回去)
 browser (Frontend 接收 json 資料，移除畫面上的待處理卡片)
 ```
+
+### 3.6 發表特權評論與隱藏字首機制 (Privileged Review & Hidden Prefix Flow)
+```text
+browser (Frontend 偵測到使用者具備開發者權限，解鎖身分選單。送出帶有 post_as_role="AUTHOR" 的 HTTP POST)
+    -> RESTful API (送到 /api/social/games/{id}/reviews)
+    -> go.Gin (攔截並通過 AuthMiddleware 解析身分)
+    -> go.Controller (發現附帶了特權發布請求，跳過購買 game_licenses 的擁有權檢查)
+    -> go.Controller (在存入資料庫前，將字串加工：content = "[ROLE:AUTHOR]" + content)
+    -> go.GORM (將加工後的字串寫入 reviews 資料表，完美避開修改 Database Schema)
+    -> go.Driver (去 PostgreSQL 寫入)
+    -> go.Gin (回傳成功)
+browser (後續透過 GET 取得評論，後端自動剝離字首並產生 posted_as_role 欄位回傳)
+    -> browser (前端利用 posted_as_role，在該則評論旁動態渲染出橘黃色的「AUTHOR」官方權威徽章)
+```

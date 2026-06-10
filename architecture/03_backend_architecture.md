@@ -67,6 +67,7 @@ backend/
 - **核心機制**:
   - **資料綁定**: 透過 `c.ShouldBindJSON()` 自動將前端傳來的 JSON 字串轉換為 Go 的 Struct 型別。
   - **交易確保 (Database Transaction)**: 對於具備高度關聯的操作（例如「購物車結帳」牽涉到清空購物車、新增訂單主檔、新增明細檔、發放遊戲授權四個動作），會強制開啟 GORM Transaction，確保 ACID (Atomic) 特性，任何一步出錯就全數 Rollback。
+  - **無痕 Schema 擴充機制 (Schema-less Data Extension)**: 為了在不修改底層 Database Schema (`reviews` 表) 的情況下實作評論的特權身分標籤，Controller 採用了「隱藏字首機制」。當玩家以 `ADMIN`、`CSR` 或 `AUTHOR` 等特權發表評論時，Controller 會在存入資料庫前自動將 `[ROLE:XXX]` 綴於文字前方；並在回傳給前端 (`GET`) 時自動將其解析分離，轉為獨立的 `posted_as_role` 屬性，達成低成本且靈活的功能擴充。
   - **標準化輸出**: 統一透過 `c.JSON(http.StatusOK, gin.H{...})` 輸出標準化的 JSON 格式給前端。
 
 ### 🔵 資料映射層 (Model Layer) - `models/`
