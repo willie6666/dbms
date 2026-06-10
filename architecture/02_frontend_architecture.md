@@ -106,3 +106,6 @@ frontend/
 - 遊戲介紹 (`description`) 支援豐富的 Markdown 語法。為了防範 XSS (跨站腳本攻擊)，前端在顯示這些內容時（如 `game_detail.html`, `edit_game.html`）採用了雙層防護機制：
 - **解析器**: 使用 `marked.js` 將 Markdown 文本轉換為 HTML。
 - **消毒器**: 緊接著將產生的 HTML 餵給 `DOMPurify` 進行嚴格的過濾，拔除所有具備潛在威脅的 `<script>` 或 `onerror` 等屬性後，才透過 `innerHTML` 寫入畫面中。
+
+### 4. 權限與身分解耦防護 (Role & ID Resolution)
+- 系統在前端負責大量的身分驗證顯示邏輯（例如：是否解鎖開發者的官方評論介面）。由於後端不同 API 回傳的 Payload 鍵值存在差異（登入時回傳 `user.id`，但在某些模組可能使用 `user_id`），前端在進行身分核對時（如判斷當前登入者是否為遊戲原作者），採取了高包容性的屬性探測機制 `(user.id || user.user_id) == developerId`。這確保了開發者能順暢地解鎖 `AUTHOR` 特權，在未購買自己遊戲的情況下，依然能發布官方評論或進行樓中樓回覆。

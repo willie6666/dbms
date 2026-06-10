@@ -97,12 +97,13 @@ browser (Frontend 接收 json 資料，將 token 存入 localStorage 並跳轉�
 
 ### 3.2 瀏覽/搜尋商店遊戲 (Browse Games Flow)
 ```text
-browser (Frontend 進入首頁或輸入關鍵字，JS 送出 HTTP GET ?q=Cyber)
-    -> RESTful API (送到 /api/games?q=Cyber)
+browser (Frontend 進入首頁或輸入搜尋條件，JS 送出 HTTP GET ?q=Cyber&developer=DevA&hide_owned=true)
+    -> RESTful API (送到 /api/games?q=Cyber&developer=DevA&hide_owned=true)
     -> go.Gin (攔截，轉送給 GameController 的 GetGames 功能)
-    -> go.Controller (解析 query 參數，發現有 q 關鍵字)
-    -> go.GORM (翻譯成帶有 LIKE 的 SQL: SELECT * FROM games WHERE title ILIKE '%Cyber%')
-    -> go.Driver (去 PostgreSQL 進行模糊搜尋撈出 raw data)
+    -> go.Controller (解析 query 參數，包含關鍵字模糊搜尋、developer 精確配對，並解析隱藏已購買功能)
+    -> go.GORM (翻譯成帶有 ILIKE 的 SQL，針對 developer 使用精確字串比對)
+    -> go.GORM (因 hide_owned=true，額外加入條件過濾「已在 game_licenses 獲得授權的遊戲」與「當前登入者自己開發的遊戲」)
+    -> go.Driver (去 PostgreSQL 進行複合條件搜尋撈出 raw data)
     -> go.GORM (把 raw data 轉譯成 []Game Object 陣列)
     -> go.Gin (打包成 json 陣列送回去)
 browser (Frontend 接收 json 資料，透過 JS 動態生成 HTML DOM 顯示遊戲卡片)

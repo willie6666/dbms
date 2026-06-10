@@ -23,7 +23,7 @@ backend/
 │   ├── images/                 # 遊戲封面圖與截圖 (經由 /media/images 對外服務)
 │   └── game-files/             # 遊戲可下載檔案 (經由 API 授權下載)
 ├── database/                   # [資料庫連線層]
-│   └── database.go             # 建立與 PostgreSQL 的連線池，並初始化全域的 GORM DB 實例
+│   └── db.go                   # 建立與 PostgreSQL 的連線池，並初始化全域的 GORM DB 實例
 ├── models/                     # [資料映射層 ORM]
 │   ├── user.go, game.go...     # 定義與資料庫 Table 一對一對應的 Go Struct (包含 GORM Tags 與 JSON 序列化規則)
 ├── routes/                     # [路由層]
