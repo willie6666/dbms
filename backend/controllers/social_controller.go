@@ -393,8 +393,24 @@ func SendFriendRequest(c *gin.Context) {
 
 	var existings []models.Friendship
 	if database.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", userID, input.ReceiverID, input.ReceiverID, userID).Limit(1).Find(&existings).RowsAffected > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Friend request already exists"})
-		return
+		existing := existings[0]
+		if existing.Status == "PENDING" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Friend request already exists"})
+			return
+		} else if existing.Status == "ACCEPTED" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "You are already friends"})
+			return
+		} else if existing.Status == "DECLINED" {
+			existing.SenderID = userID
+			existing.ReceiverID = input.ReceiverID
+			existing.Status = "PENDING"
+			if err := database.DB.Save(&existing).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send friend request"})
+				return
+			}
+			c.JSON(http.StatusCreated, gin.H{"message": "Friend request sent"})
+			return
+		}
 	}
 
 	friend := models.Friendship{
