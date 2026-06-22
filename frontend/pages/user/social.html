@@ -169,7 +169,7 @@
 
                 if (currentActiveTab === 'friends') {
                     div.onclick = () => openChat(userId, username);
-                    actionHtml = `<button class="button is-danger is-light is-small" onclick="event.stopPropagation(); blockUser(${userId}, '${escapeHtml(username)}')">封鎖</button>`;
+                    actionHtml = `<button class="button is-danger is-light is-small" data-username="${escapeHtml(username)}" onclick="event.stopPropagation(); blockUser(${userId}, this.dataset.username)">封鎖</button>`;
                 } 
                 else if (currentActiveTab === 'requests') {
                     const requestId = item.friendship_id || item.id || userId;
@@ -251,10 +251,11 @@
 
         // 封鎖邏輯 (移出好友，加入黑名單)
         async function blockUser(userId, username) {
-            if (confirm(`確定要封鎖 ${username} 嗎？他將無法再傳送訊息給你。`)) {
+            const safeUsername = escapeHtml(username);
+            if (confirm(`確定要封鎖 ${safeUsername} 嗎？他將無法再傳送訊息給你。`)) {
                 try {
                     await apiAddBlacklist(userId);
-                    alert(`已封鎖 ${username}`);
+                    alert(`已封鎖 ${safeUsername}`);
                     
                     if (currentChatFriendId === userId) {
                         closeChat();

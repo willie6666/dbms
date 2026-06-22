@@ -201,6 +201,12 @@ func UploadMedia(c *gin.Context) {
 		return
 	}
 
+	// 限制上傳檔案最大為 40MB
+	if fileHeader.Size > 40*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File size exceeds 40MB limit"})
+		return
+	}
+
 	mediaType := c.DefaultPostForm("media_type", "media")
 
 	// Open and read file bytes

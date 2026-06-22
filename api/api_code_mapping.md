@@ -1,9 +1,5 @@
 # VaporAuror API 與後端程式碼對應表 (API Code Mapping)
 
-這份文件詳細列出了本專案中所有 RESTful API 端點，以及它們在 Go 語言後端中對應的**路由註冊位置 (Router)** 與**負責處理邏輯的控制器函式 (Controller Function)**。
-
-> 💡 **超便利功能**：您可以直接點擊 `對應的控制器函式` 欄位中的連結，系統會自動幫您跳轉到該檔案的確切行數，非常方便您截圖！
-
 > **程式碼來源說明**：
 > - 路由註冊統一集中於 `backend/routes/routes.go`。
 > - 業務邏輯實作統一集中於 `backend/controllers/` 目錄下的各個 Controller 檔案。

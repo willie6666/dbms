@@ -59,6 +59,24 @@ func parseRoleFromContent(content string) (role string, cleanContent string) {
 }
 
 func buildRoleContent(content string, role string) string {
+	// 移除惡意使用者可能塞入的任何 [ROLE:...]
+	// 為了避免複雜的正則表達式，我們可以直接檢查並移除，或是用簡單的替換。
+	// 因為 parseRoleFromContent 依賴於開頭的 [ROLE:...]，我們將其去除乾淨。
+	for strings.HasPrefix(content, "[ROLE:ADMIN]") || strings.HasPrefix(content, "[ROLE:CSR]") || strings.HasPrefix(content, "[ROLE:AUTHOR]") || strings.HasPrefix(content, "[ROLE:USERS]") {
+		if strings.HasPrefix(content, "[ROLE:ADMIN]") {
+			content = strings.TrimPrefix(content, "[ROLE:ADMIN]")
+		}
+		if strings.HasPrefix(content, "[ROLE:CSR]") {
+			content = strings.TrimPrefix(content, "[ROLE:CSR]")
+		}
+		if strings.HasPrefix(content, "[ROLE:AUTHOR]") {
+			content = strings.TrimPrefix(content, "[ROLE:AUTHOR]")
+		}
+		if strings.HasPrefix(content, "[ROLE:USERS]") {
+			content = strings.TrimPrefix(content, "[ROLE:USERS]")
+		}
+	}
+
 	if role == "ADMIN" || role == "CSR" || role == "AUTHOR" {
 		return "[ROLE:" + role + "]" + content
 	}
